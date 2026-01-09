@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/* ---------------- STUDENTS ---------------- */
+model Student {
+  id         Int      @id @default(autoincrement())
+  rollNo     String   @unique
+  name       String
+  email      String   @unique
+  department String
+  semester   Int
+
+  placement  Placement?
+  ods        OD[]
+
+  createdAt  DateTime @default(now())
+}
+
+
+/* ---------------- PLACEMENTS ---------------- */
+model Placement {
+  id        Int    @id @default(autoincrement())
+  rollNo    String @unique
+  company   String
+
+  student   Student @relation(fields: [rollNo], references: [rollNo])
+}
+
+/* ---------------- EVENTS (INTERNAL OD) ---------------- */
+model Event {
+  id        Int      @id @default(autoincrement())
+  eventId   String   @unique
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    EventStatus @default(ACTIVE)
+
+  ods       OD[]
+}
+
+/* ---------------- OD / INTERNSHIP ---------------- */
+model OD {
+  id         Int      @id @default(autoincrement())
+  trackerId  String   @unique
+
+  type       ODType
+  startDate  DateTime
+  endDate    DateTime
+  duration   Int
+
+  proofFile  String?
+
+  studentId  Int
+  student    Student @relation(fields: [studentId], references: [id])
+
+  eventId    Int?
+  event      Event?  @relation(fields: [eventId], references: [id])
+
+  status     ODStatus @default(PENDING)
+
+  createdAt  DateTime @default(now())
+}
+
+/* ---------------- ENUMS ---------------- */
+enum ODType {
+  INTERNAL
+  INTERNSHIP
+}
+
+enum ODStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EventStatus {
+  ACTIVE
+  INACTIVE
+}
