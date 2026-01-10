@@ -13,5 +13,10 @@ app.use("/api/auth", authRoutes);
 const studentRoutes = require("./modules/students/student.routes");
 app.use("/api/students", studentRoutes);
 
+const placementRoutes = require("./modules/placements/placement.routes");
+app.use("/api/placements", placementRoutes);
+
+const odRoutes = require("./modules/od/od.routes");
+app.use("/api/od", odRoutes);
 
 module.exports = app;

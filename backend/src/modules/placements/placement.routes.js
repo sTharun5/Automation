@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { createODRequest } = require("./od.controller");
+const { checkPlacement } = require("./placement.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware.js");
 
-router.post("/create", verifyToken, createODRequest);
+router.get("/check/:studentId", verifyToken, checkPlacement);
 
 module.exports = router;
