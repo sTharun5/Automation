@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "smart_od",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -16,8 +16,6 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^7.0.12",
-    "prisma": "^6.19.1",
-    "uuid": "^13.0.0"
+    "prisma": "^6.19.1"
   }
 }

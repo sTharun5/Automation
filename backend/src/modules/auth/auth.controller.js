@@ -54,3 +54,26 @@ exports.login = async (req, res) => {
     }
   });
 };
+
+exports.verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  const record = await prisma.emailOTP.findFirst({
+    where: { email, otp },
+    orderBy: { createdAt: "desc" }
+  });
+
+  if (!record || record.expiresAt < new Date()) {
+    return res.status(401).json({ message: "Invalid or expired OTP" });
+  }
+
+  const student = await prisma.student.findUnique({ where: { email } });
+
+  const token = jwt.sign(
+    { id: student.id, email: student.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.json({ token, student });
+};

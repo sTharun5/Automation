@@ -83,3 +83,11 @@ enum EventStatus {
   ACTIVE
   INACTIVE
 }
+
+model EmailOTP {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
