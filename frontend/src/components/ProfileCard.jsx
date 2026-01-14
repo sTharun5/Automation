@@ -1,15 +1,17 @@
 export default function ProfileCard({ student }) {
   return (
-    <div className="bg-white/10 backdrop-blur rounded-xl p-6 text-white shadow-lg">
-      <h3 className="font-semibold text-lg mb-4">Profile</h3>
+    <section className="bg-white rounded-2xl shadow-xl p-6">
+      <h2 className="text-lg font-bold text-gray-800 mb-4">
+        Student Profile
+      </h2>
 
-      <div className="space-y-2 text-sm">
-        <p><span className="text-blue-200">Name:</span> {student.name}</p>
-        <p><span className="text-blue-200">Roll No:</span> {student.rollNo}</p>
-        <p><span className="text-blue-200">Email:</span> {student.email}</p>
-        <p><span className="text-blue-200">Department:</span> {student.department}</p>
-        <p><span className="text-blue-200">Semester:</span> {student.semester}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+        <p><b>Name:</b> {student.name}</p>
+        <p><b>Roll No:</b> {student.rollNo}</p>
+        <p><b>Email:</b> {student.email}</p>
+        <p><b>Department:</b> {student.department}</p>
+        <p><b>Semester:</b> {student.semester}</p>
       </div>
-    </div>
+    </section>
   );
 }

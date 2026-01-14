@@ -1,37 +1,75 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import ProfileCard from "../components/ProfileCard";
+import ActionCard from "../components/ActionCard";
 
 export default function Dashboard() {
-  const [me, setMe] = useState(null);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  const student = JSON.parse(localStorage.getItem("student"));
 
   useEffect(() => {
-    api.get("/auth/me").then((res) => setMe(res.data));
-  }, []);
+    if (!token || !student) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate, token, student]);
 
-  if (!me) return null;
-
-  if (!me.registered) {
+  if (!token || !student) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-900 to-red-700 text-white">
-        <div className="bg-white/10 p-10 rounded-xl text-center">
-          <h1 className="text-2xl font-bold">Access Restricted</h1>
-          <p className="mt-2">
-            Your email is not registered in the OD system.
-          </p>
-        </div>
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+        Authenticating...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-blue-900 text-white p-10">
-      <div className="bg-white/10 p-8 rounded-xl max-w-xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Welcome</h1>
-        <p><b>Name:</b> {me.student.name}</p>
-        <p><b>Roll No:</b> {me.student.rollNo}</p>
-        <p><b>Department:</b> {me.student.department}</p>
-        <p><b>Semester:</b> {me.student.semester}</p>
-      </div>
+    <div className="min-h-screen bg-slate-100 flex flex-col">
+      <Header />
+
+      <main className="flex-1 p-8 space-y-8">
+        <ProfileCard student={student} />
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ActionCard
+            title="Apply OD"
+            description="Apply for Internship / Internal OD"
+            color="blue"
+            buttonText="Apply Now"
+          />
+
+          <ActionCard
+            title="OD Status"
+            description="Track approval status"
+            color="green"
+            buttonText="View Status"
+          />
+
+          <ActionCard
+            title="History"
+            description="View previous OD records"
+            color="purple"
+            buttonText="View History"
+          />
+        </section>
+
+        <section className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-lg font-bold text-gray-800 mb-2">
+            System Rules
+          </h3>
+          <ul className="list-disc pl-6 text-gray-600 text-sm space-y-1">
+            <li>OD allowed only for placed students</li>
+            <li>Maximum OD duration: 60 days</li>
+            <li>OTP based secure login</li>
+            <li>All actions are logged</li>
+          </ul>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 }
