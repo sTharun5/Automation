@@ -1,50 +1,37 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import DateInput from "../components/DateInput";
-import FileUpload from "../components/FileUpload";
 
 export default function Dashboard() {
-  const [student, setStudent] = useState(null);
-  const [startDate, setStart] = useState("");
-  const [endDate, setEnd] = useState("");
-  const [proofFile, setProof] = useState("");
+  const [me, setMe] = useState(null);
 
   useEffect(() => {
-    setStudent(JSON.parse(localStorage.getItem("student")));
+    api.get("/auth/me").then((res) => setMe(res.data));
   }, []);
 
-  const submit = async () => {
-    try {
-      const res = await api.post("/od/create", {
-        startDate,
-        endDate,
-        proofFile
-      });
-      alert("OD Approved: " + res.data.trackerId);
-    } catch (e) {
-      alert(e.response.data.message);
-    }
-  };
+  if (!me) return null;
 
-  if (!student) return null;
+  if (!me.registered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-900 to-red-700 text-white">
+        <div className="bg-white/10 p-10 rounded-xl text-center">
+          <h1 className="text-2xl font-bold">Access Restricted</h1>
+          <p className="mt-2">
+            Your email is not registered in the OD system.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h2 className="text-xl font-bold">Internship OD</h2>
-
-      <div className="bg-gray-100 p-3 rounded mt-3">
-        <p>{student.name}</p>
-        <p>{student.rollNo}</p>
-        <p>{student.email}</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-blue-900 text-white p-10">
+      <div className="bg-white/10 p-8 rounded-xl max-w-xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Welcome</h1>
+        <p><b>Name:</b> {me.student.name}</p>
+        <p><b>Roll No:</b> {me.student.rollNo}</p>
+        <p><b>Department:</b> {me.student.department}</p>
+        <p><b>Semester:</b> {me.student.semester}</p>
       </div>
-
-      <DateInput label="Start Date" onChange={setStart} />
-      <DateInput label="End Date" onChange={setEnd} />
-      <FileUpload onChange={setProof} />
-
-      <button onClick={submit} className="w-full mt-4 bg-green-600 text-white p-2">
-        Submit OD
-      </button>
     </div>
   );
 }
