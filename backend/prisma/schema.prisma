@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// *
+///  * ================= OTP =================
+model emailotp {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+/// *
+///  * ================= EVENT =================
+model event {
+  id        Int          @id @default(autoincrement())
+  eventId   String       @unique
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    event_status @default(ACTIVE)
+  ods       od[]
+}
+
+/// *
+///  * ================= OD =================
+model od {
+  id        Int       @id @default(autoincrement())
+  trackerId String    @unique
+  type      od_type
+  startDate DateTime
+  endDate   DateTime
+  duration  Int
+  proofFile String?
+  studentId Int
+  eventId   Int?
+  status    od_status @default(PENDING)
+  createdAt DateTime  @default(now())
+  offerFile String?
+  event     event?    @relation(fields: [eventId], references: [id])
+  student   student   @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+  @@index([eventId])
+}
+
+/// *
+///  * ================= STUDENT =================
+model student {
+  id               Int               @id @default(autoincrement())
+  rollNo           String            @unique
+  name             String
+  email            String            @unique
+  department       String
+  semester         Int
+  createdAt        DateTime          @default(now())
+  ods              od[]
+  placement        placement?
+  placement_status placement_status?
+}
+
+/// *
+///  * ================= FACULTY =================
+model faculty {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  department String?
+  createdAt  DateTime @default(now())
+  facultyId  String   @unique
+}
+
+/// *
+///  * ================= ADMIN =================
+model admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+/// *
+///  * ================= PLACEMENT STATUS =================
+model placement_status {
+  id          Int             @id @default(autoincrement())
+  rollNo      String          @unique
+  status      placement_type
+  companyName String?
+  placedDate  DateTime?
+  updatedAt   DateTime        @default(now())
+
+  student     student @relation(fields: [rollNo], references: [rollNo])
+}
+
+
+model placement {
+  id      Int     @id @default(autoincrement())
+  rollNo  String  @unique
+  company String
+  student student @relation(fields: [rollNo], references: [rollNo])
+}
+
+/// *
+///  * ================= ENUMS =================
+enum od_type {
+  INTERNAL
+  INTERNSHIP
+}
+
+enum event_status {
+  ACTIVE
+  INACTIVE
+}
+
+enum od_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum placement_type {
+  PLACED
+  YET_TO_BE_PLACED
+  NIP
+}
