@@ -23,20 +23,27 @@ exports.setPlacementStatus = async (req, res) => {
     }
 
     const record = await prisma.placement_status.upsert({
-      where: { rollNo },          // ✅ UNIQUE
-      update: {
-        status,
-        companyName: status === "PLACED" ? companyName : null,
-        placedDate: status === "PLACED" ? placedDate : null,
-        updatedAt: new Date()
-      },
-      create: {
-        rollNo,
-        status,
-        companyName: status === "PLACED" ? companyName : null,
-        placedDate: status === "PLACED" ? placedDate : null
-      }
-    });
+  where: { rollNo },
+  update: {
+    status,
+    companyName: status === "PLACED" ? companyName : null,
+    placedDate:
+      status === "PLACED" && placedDate
+        ? new Date(placedDate)
+        : null,
+    updatedAt: new Date()
+  },
+  create: {
+    rollNo,
+    status,
+    companyName: status === "PLACED" ? companyName : null,
+    placedDate:
+      status === "PLACED" && placedDate
+        ? new Date(placedDate)
+        : null
+  }
+});
+
 
     return res.json({
       message: "Placement status updated",

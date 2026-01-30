@@ -6,11 +6,13 @@ export default function UpdatePlacementStatus() {
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   const [form, setForm] = useState({
-    studentId: "",
-    status: "",
-    companyName: "",
-    placedDate: "" // YYYY-MM-DD
-  });
+  studentId: "",
+  rollNo: "",
+  status: "",
+  companyName: "",
+  placedDate: ""
+});
+
 
   const dateRef = useRef(null);
   const token = localStorage.getItem("token");
@@ -33,11 +35,17 @@ export default function UpdatePlacementStatus() {
   };
 
   /* ================= STUDENT SELECT ================= */
-  const handleStudentChange = (id) => {
-    const student = students.find((s) => s.id === Number(id));
-    setSelectedStudent(student);
-    setForm({ ...form, studentId: id });
-  };
+ const handleStudentChange = (id) => {
+  const student = students.find((s) => s.id === Number(id));
+  setSelectedStudent(student);
+
+  setForm({
+    ...form,
+    studentId: id,
+    rollNo: student.rollNo // ✅ IMPORTANT
+  });
+};
+
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
@@ -53,19 +61,27 @@ export default function UpdatePlacementStatus() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/placement-status/set",
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  "http://localhost:5000/api/placement-status/set",
+  {
+    rollNo: form.rollNo,          // ✅ REQUIRED
+    status: form.status,
+    companyName: form.companyName,
+    placedDate: form.placedDate
+  },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
+
 
       alert("Placement status updated successfully");
 
       setForm({
-        rollNo: "",
-        status: "",
-        companyName: "",
-        placedDate: ""
-      });
+  studentId: "",
+  rollNo: "",
+  status: "",
+  companyName: "",
+  placedDate: ""
+});
+
       setSelectedStudent(null);
 
     } catch (err) {
