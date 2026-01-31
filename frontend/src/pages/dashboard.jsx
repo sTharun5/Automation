@@ -19,7 +19,7 @@ export default function Dashboard() {
     let storedUser = null;
     try {
       storedUser = JSON.parse(localStorage.getItem("user"));
-    } catch (err) {
+    } catch {
       storedUser = null;
     }
 
@@ -36,7 +36,7 @@ export default function Dashboard() {
   /* ================= LOADING STATE ================= */
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors">
         Authenticating...
       </div>
     );
@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   /* ================= MAIN UI ================= */
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-slate-950 transition">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors">
 
       {/* HEADER */}
       <Header />
@@ -52,12 +52,12 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <main className="flex-1 px-6 md:px-10 py-10 max-w-7xl mx-auto w-full space-y-12">
 
-        {/* HERO / PROFILE */}
+        {/* HERO */}
         <Hero student={student} />
 
         {/* ACTIONS */}
         <section>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
             Quick Actions
           </h2>
 
@@ -89,8 +89,8 @@ export default function Dashboard() {
         </section>
 
         {/* GUIDELINES */}
-        <section className="bg-white dark:bg-slate-900 rounded-2xl shadow p-6">
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">
+        <section className="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 transition-colors">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">
             OD Guidelines
           </h3>
 

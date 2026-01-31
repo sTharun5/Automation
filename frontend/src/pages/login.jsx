@@ -77,8 +77,7 @@ export default function Login() {
         otp: finalOtp
       });
       console.log("LOGIN RESPONSE:", res.data);
-console.log("ROLE RECEIVED:", res.data.role);
-
+      console.log("ROLE RECEIVED:", res.data.role);
 
       /* ================= STORE AUTH ================= */
       localStorage.setItem("token", res.data.token);
@@ -166,7 +165,7 @@ console.log("ROLE RECEIVED:", res.data.role);
       )}
 
       <div
-        className={`relative z-10 bg-white rounded-2xl shadow-2xl w-[440px] overflow-hidden ${
+        className={`relative z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-[440px] overflow-hidden ${
           shake ? "animate-shake" : ""
         }`}
       >
@@ -186,11 +185,11 @@ console.log("ROLE RECEIVED:", res.data.role);
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-700"
+                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
               <button
                 onClick={sendOTP}
-                className="w-full bg-blue-900 hover:bg-blue-800 text-white py-3 rounded-lg font-semibold"
+                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
               >
                 Send OTP
               </button>
@@ -209,20 +208,20 @@ console.log("ROLE RECEIVED:", res.data.role);
                     value={digit}
                     onChange={(e) => handleOtpChange(e.target.value, i)}
                     onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                    className="w-12 h-12 text-center text-xl font-bold border rounded-lg focus:ring-2 focus:ring-green-600"
+                    className="w-12 h-12 text-center text-xl font-bold border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 ))}
               </div>
 
               <div className="flex justify-between text-sm">
-                <span>
+                <span className="text-slate-600 dark:text-slate-400">
                   {canResend ? "Didn't get OTP?" : `Resend in ${seconds}s`}
                 </span>
                 <button
                   onClick={resendOTP}
                   disabled={!canResend}
                   className={`font-semibold ${
-                    canResend ? "text-blue-700" : "text-gray-400"
+                    canResend ? "text-blue-700 dark:text-blue-400" : "text-gray-400"
                   }`}
                 >
                   Resend OTP
@@ -235,7 +234,7 @@ console.log("ROLE RECEIVED:", res.data.role);
                 className={`w-full mt-4 py-3 rounded-lg font-semibold
                   ${
                     otp.join("").length === 6
-                      ? "bg-green-700 hover:bg-green-600 text-white"
+                      ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
                       : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
               >
@@ -244,7 +243,7 @@ console.log("ROLE RECEIVED:", res.data.role);
             </>
           )}
 
-          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+          {error && <p className="text-red-600 dark:text-red-400 text-sm text-center">{error}</p>}
 
           {success && (
             <div className="flex justify-center">

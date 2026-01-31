@@ -15,7 +15,7 @@ export default function NotificationBell() {
       {/* Bell */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative text-xl text-white hover:scale-110 transition"
+        className="relative text-xl text-slate-900 dark:text-white hover:scale-110 transition"
         aria-label="Notifications"
       >
         🔔
@@ -28,21 +28,20 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-3 w-72 bg-slate-800 rounded-xl shadow-xl border border-white/10 overflow-hidden animate-fadeIn z-50">
-
-          <div className="px-4 py-3 border-b border-slate-700 text-sm font-semibold text-white">
+        <div className="absolute right-0 mt-3 w-72 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-300 dark:border-white/10 overflow-hidden animate-fadeIn z-50">
+          <div className="px-4 py-3 border-b border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white">
             Notifications
           </div>
 
           {notifications.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-slate-400">
+            <p className="px-4 py-4 text-sm text-slate-500 dark:text-slate-400">
               No new notifications
             </p>
           ) : (
             notifications.map((n, i) => (
               <div
                 key={i}
-                className="px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 transition cursor-pointer"
+                className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition cursor-pointer"
               >
                 {n}
               </div>

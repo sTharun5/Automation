@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import ApplyOD from "./pages/ApplyOD";
@@ -8,13 +9,13 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import UpdatePlacementStatus from "./pages/UpdatePlacementStatus";
 
 /* ===============================
-   PROTECTED ROUTE COMPONENT
+   PROTECTED ROUTE
 ================================ */
-const ProtectedRoute = ({ allowedRole, children }) => {
-  const role = localStorage.getItem("role");
+const ProtectedRoute = ({ allowedRoles, children }) => {
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-  if (!token || role !== allowedRole) {
+  if (!token || !allowedRoles.includes(role)) {
     return <Navigate to="/" replace />;
   }
 
@@ -25,24 +26,42 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
+        {/* ================= PUBLIC ================= */}
         <Route path="/" element={<Login />} />
 
-        {/* STUDENT */}
+        {/* ================= STUDENT ================= */}
         <Route
           path="/student/dashboard"
           element={
-            <ProtectedRoute allowedRole="STUDENT">
+            <ProtectedRoute allowedRoles={["STUDENT"]}>
               <Dashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* FACULTY */}
+        <Route
+          path="/apply-od"
+          element={
+            <ProtectedRoute allowedRoles={["STUDENT"]}>
+              <ApplyOD />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/od/:odId"
+          element={
+            <ProtectedRoute allowedRoles={["STUDENT"]}>
+              <StudentODDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= FACULTY ================= */}
         <Route
           path="/faculty/dashboard"
           element={
-            <ProtectedRoute allowedRole="FACULTY">
+            <ProtectedRoute allowedRoles={["FACULTY"]}>
               <FacultyDashboard />
             </ProtectedRoute>
           }
@@ -51,25 +70,21 @@ export default function App() {
         <Route
           path="/faculty/update-placement"
           element={
-            <ProtectedRoute allowedRole="FACULTY">
+            <ProtectedRoute allowedRoles={["FACULTY"]}>
               <UpdatePlacementStatus />
             </ProtectedRoute>
           }
         />
 
-        {/* ADMIN */}
+        {/* ================= ADMIN ================= */}
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute allowedRole="ADMIN">
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
-
-        {/* SHARED */}
-        <Route path="/apply-od" element={<ApplyOD />} />
-        <Route path="/student/od/:odId" element={<StudentODDetails />} />
       </Routes>
     </BrowserRouter>
   );

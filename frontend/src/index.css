@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tailwind v4: dark mode driven by .dark class on html */
+@custom-variant dark (&&:where(.dark, .dark *));
+
+/* custom animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -10,6 +14,33 @@
     transform: translateY(0);
   }
 }
+
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
+}
+
+/* global theme handling - light mode when html does NOT have .dark */
+html:not(.dark),
+html:not(.dark) body,
+html:not(.dark) #root {
+  background-color: #ffffff;
+  color: rgb(15 23 42);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+html:not(.dark) #root {
+  min-height: 100vh;
+}
+
+/* dark mode - when html has class "dark" */
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: rgb(15 23 42);
+  color: white;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+html.dark #root {
+  min-height: 100vh;
 }
