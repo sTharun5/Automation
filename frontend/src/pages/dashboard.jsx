@@ -36,76 +36,86 @@ export default function Dashboard() {
   /* ================= LOADING STATE ================= */
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex items-center justify-center transition-colors">
-        Authenticating...
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col items-center justify-center gap-4 transition-colors">
+        <div className="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin" />
+        <p className="text-slate-600 dark:text-slate-400 font-medium">Loading your dashboard...</p>
       </div>
     );
   }
 
   /* ================= MAIN UI ================= */
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors">
-
-      {/* HEADER */}
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 px-6 md:px-10 py-10 max-w-7xl mx-auto w-full space-y-12">
-
-        {/* HERO */}
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-8 md:py-12 max-w-6xl mx-auto w-full space-y-10 md:space-y-14">
         <Hero student={student} />
 
-        {/* ACTIONS */}
-        <section>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
-            Quick Actions
-          </h2>
+        {/* Quick Actions */}
+        <section className="animate-fadeIn">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="flex h-9 w-1 rounded-full bg-gradient-to-b from-blue-600 to-indigo-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Quick Actions
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
             <ActionCard
               title="Apply OD"
               description="Apply for Internship or Internal OD"
               color="blue"
+              icon="📝"
               buttonText="Apply Now"
               onClick={() => navigate("/apply-od")}
             />
-
             <ActionCard
               title="OD Status"
               description="Track approval and current status"
               color="green"
+              icon="📋"
               buttonText="View Status"
               onClick={() => navigate("/od-status")}
             />
-
             <ActionCard
               title="OD History"
               description="View previously approved ODs"
               color="purple"
+              icon="📚"
               buttonText="View History"
               onClick={() => navigate("/od-history")}
             />
           </div>
         </section>
 
-        {/* GUIDELINES */}
-        <section className="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 transition-colors">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">
-            OD Guidelines
-          </h3>
+        {/* Guidelines */}
+        <section className="animate-fadeIn bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 transition-colors">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-bold">
+              !
+            </span>
+            <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
+              OD Guidelines
+            </h3>
+          </div>
 
-          <ul className="list-disc pl-6 text-sm text-slate-600 dark:text-slate-400 space-y-2">
-            <li>OD is allowed only for placed students</li>
-            <li>Maximum OD duration is 60 days</li>
-            <li>Internship proof must follow the prescribed format</li>
-            <li>OTP-based secure login is mandatory</li>
-            <li>All OD actions are logged and audited</li>
+          <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            {[
+              "OD is allowed only for placed students",
+              "Maximum OD duration is 60 days",
+              "Internship proof must follow the prescribed format",
+              "OTP-based secure login is mandatory",
+              "All OD actions are logged and audited",
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-slate-500" />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
         </section>
-
       </main>
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );

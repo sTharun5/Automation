@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getOdById } from "../services/odService";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 export default function StudentODDetails() {
   const { odId } = useParams();
@@ -13,24 +15,31 @@ export default function StudentODDetails() {
   }, [odId]);
 
   if (!od) {
-    return <p className="text-center text-slate-400">Loading...</p>;
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
+        <Header />
+        <main className="flex-1 flex items-center justify-center px-4">
+          <p className="text-slate-600 dark:text-slate-400">Loading...</p>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  // 🔹 Status mapping
-  const statusText =
-    od.status === "PENDING" ? "Initiated" : od.status;
+  const statusText = od.status === "PENDING" ? "Initiated" : od.status;
 
   return (
-    <div className="min-h-screen bg-[#0b1220] flex justify-center py-10 px-4">
-      <div className="w-full max-w-5xl bg-[#111c2e] rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
+      <Header />
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              On-Duty Application Details
+            </h2>
+          </div>
 
-        <div className="px-6 py-4 border-b border-slate-700">
-          <h2 className="text-xl font-semibold text-slate-200">
-            On-Duty Application Details
-          </h2>
-        </div>
-
-        <div className="divide-y divide-slate-700 text-slate-300">
+          <div className="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
 
           {/* 🔹 TRACKER ID (NOT DB ID) */}
           <Row
@@ -93,62 +102,50 @@ export default function StudentODDetails() {
               danger
             />
           )}
+          </div>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }
 
-/* ================= REUSABLE ROW ================= */
-
 function Row({ label, value, highlight, status, danger }) {
-  let valueClass = "text-slate-200";
-
-  if (highlight) valueClass = "text-blue-400 font-semibold";
-  if (status) valueClass = "text-yellow-400 font-semibold";
-  if (danger) valueClass = "text-red-400";
+  let valueClass = "text-slate-700 dark:text-slate-300";
+  if (highlight) valueClass = "text-blue-600 dark:text-blue-400 font-semibold";
+  if (status) valueClass = "text-amber-600 dark:text-amber-400 font-semibold";
+  if (danger) valueClass = "text-red-600 dark:text-red-400";
 
   return (
     <div className="grid grid-cols-3 gap-4 px-6 py-4">
-      <div className="col-span-1 text-slate-400">{label}</div>
+      <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
       <div className={`col-span-2 ${valueClass}`}>{value}</div>
     </div>
   );
 }
 
-/* ================= FILE ROW ================= */
-
 function FileRow({ label, filePath }) {
   if (!filePath) {
     return (
       <div className="grid grid-cols-3 gap-4 px-6 py-4">
-        <div className="col-span-1 text-slate-400">{label}</div>
-        <div className="col-span-2 text-slate-500">
-          Not uploaded
-        </div>
+        <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
+        <div className="col-span-2 text-slate-500 dark:text-slate-400">Not uploaded</div>
       </div>
     );
   }
 
-  // extract filename only
   const fileName = filePath.split(/[\\/]/).pop();
 
   return (
     <div className="grid grid-cols-3 gap-4 px-6 py-4">
-      <div className="col-span-1 text-slate-400">{label}</div>
-
+      <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
       <div className="col-span-2 flex flex-col gap-2">
-        {/* ✅ FILENAME ONLY */}
-        <span className="text-slate-200 break-all">
-          {fileName}
-        </span>
-
-        {/* ✅ DOWNLOAD */}
+        <span className="text-slate-700 dark:text-slate-300 break-all">{fileName}</span>
         <a
           href={`http://localhost:3000/${filePath}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-blue-400 hover:underline"
+          className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
         >
           ⬇ Download
         </a>
