@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Header from "../components/Header";
@@ -9,17 +9,32 @@ import ActionCard from "../components/ActionCard";
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  const student = JSON.parse(localStorage.getItem("user"));
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  /* ================= AUTH GUARD ================= */
+  /* ================= LOAD AUTH ================= */
   useEffect(() => {
-    if (!token || !student) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, token, student]);
+    const token = localStorage.getItem("token");
 
-  if (!token || !student) {
+    let storedUser = null;
+    try {
+      storedUser = JSON.parse(localStorage.getItem("user"));
+    } catch (err) {
+      storedUser = null;
+    }
+
+    if (!token || !storedUser) {
+      localStorage.clear();
+      navigate("/", { replace: true });
+      return;
+    }
+
+    setStudent(storedUser);
+    setLoading(false);
+  }, [navigate]);
+
+  /* ================= LOADING STATE ================= */
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
         Authenticating...
@@ -27,9 +42,8 @@ export default function Dashboard() {
     );
   }
 
+  /* ================= MAIN UI ================= */
   return (
-    
-    
     <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-slate-950 transition">
 
       {/* HEADER */}
@@ -38,10 +52,10 @@ export default function Dashboard() {
       {/* MAIN CONTENT */}
       <main className="flex-1 px-6 md:px-10 py-10 max-w-7xl mx-auto w-full space-y-12">
 
-        {/* HERO SECTION */}
+        {/* HERO / PROFILE */}
         <Hero student={student} />
 
-        {/* ACTION SECTION */}
+        {/* ACTIONS */}
         <section>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
             Quick Actions
@@ -74,7 +88,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* INFO / SYSTEM GUIDELINES */}
+        {/* GUIDELINES */}
         <section className="bg-white dark:bg-slate-900 rounded-2xl shadow p-6">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">
             OD Guidelines

@@ -6,7 +6,7 @@ import NotificationBell from "./NotificationBell";
 import ConfirmLogoutModal from "./ConfirmLogoutModal";
 
 export default function Header() {
-  const student = JSON.parse(localStorage.getItem("student"));
+  const student = JSON.parse(localStorage.getItem("user")); // ✅ FIX
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
@@ -29,6 +29,8 @@ export default function Header() {
     );
   };
 
+  if (!student) return null; // 🛡️ safety
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-slate-900 shadow-md">
@@ -50,7 +52,6 @@ export default function Header() {
           {/* RIGHT */}
           <div className="flex items-center gap-5">
 
-            {/* Notification Bell */}
             <NotificationBell />
 
             {/* Theme Toggle */}
@@ -68,15 +69,15 @@ export default function Header() {
                 className="flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">
-                  {student?.name?.charAt(0)}
+                  {student.name.charAt(0)}
                 </div>
 
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-semibold text-white">
-                    {student?.name}
+                    {student.name}
                   </p>
                   <p className="text-xs text-slate-300">
-                    {student?.rollNo}
+                    {student.rollNo}
                   </p>
                 </div>
               </button>
@@ -86,10 +87,10 @@ export default function Header() {
 
                   <div className="px-4 py-3 border-b border-slate-700">
                     <p className="text-sm font-semibold text-white">
-                      {student?.name}
+                      {student.name}
                     </p>
                     <p className="text-xs text-slate-300">
-                      {student?.rollNo}
+                      {student.rollNo}
                     </p>
                   </div>
 
@@ -115,7 +116,6 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Logout Modal */}
       <ConfirmLogoutModal
         open={showLogout}
         onClose={() => setShowLogout(false)}

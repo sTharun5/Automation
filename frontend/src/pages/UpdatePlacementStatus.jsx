@@ -20,7 +20,7 @@ export default function UpdatePlacementStatus() {
   /* ================= LOAD STUDENTS ================= */
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/students/list", {
+      .get("http://localhost:3000/api/students/list", {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then((res) => setStudents(res.data))

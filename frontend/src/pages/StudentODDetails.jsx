@@ -145,7 +145,7 @@ function FileRow({ label, filePath }) {
 
         {/* ✅ DOWNLOAD */}
         <a
-          href={`http://localhost:5000/${filePath}`}
+          href={`http://localhost:3000/${filePath}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-blue-400 hover:underline"

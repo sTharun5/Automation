@@ -25,7 +25,7 @@ export default function ApplyOD() {
     const token = localStorage.getItem("token");
 
     axios
-      .get("http://localhost:5000/api/students/list", {
+      .get("http://localhost:3000/api/students/list", {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -71,7 +71,7 @@ export default function ApplyOD() {
       });
 
       const res = await axios.post(
-  "http://localhost:5000/api/od/apply",
+  "http://localhost:3000/api/od/apply",
   formData,
   {
     headers: {

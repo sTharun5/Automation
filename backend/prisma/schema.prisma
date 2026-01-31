@@ -8,7 +8,7 @@ datasource db {
 }
 
 /// *
-///  * ================= OTP =================
+/// * ================= OTP =================
 model emailotp {
   id        Int      @id @default(autoincrement())
   email     String
@@ -20,7 +20,7 @@ model emailotp {
 }
 
 /// *
-///  * ================= EVENT =================
+/// * ================= EVENT =================
 model event {
   id        Int          @id @default(autoincrement())
   eventId   String       @unique
@@ -32,7 +32,7 @@ model event {
 }
 
 /// *
-///  * ================= OD =================
+/// * ================= OD =================
 model od {
   id        Int       @id @default(autoincrement())
   trackerId String    @unique
@@ -54,7 +54,7 @@ model od {
 }
 
 /// *
-///  * ================= STUDENT =================
+/// * ================= STUDENT =================
 model student {
   id               Int               @id @default(autoincrement())
   rollNo           String            @unique
@@ -69,7 +69,7 @@ model student {
 }
 
 /// *
-///  * ================= FACULTY =================
+/// * ================= FACULTY =================
 model faculty {
   id         Int      @id @default(autoincrement())
   name       String
@@ -80,7 +80,7 @@ model faculty {
 }
 
 /// *
-///  * ================= ADMIN =================
+/// * ================= ADMIN =================
 model admin {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -89,18 +89,16 @@ model admin {
 }
 
 /// *
-///  * ================= PLACEMENT STATUS =================
+/// * ================= PLACEMENT STATUS =================
 model placement_status {
-  id          Int             @id @default(autoincrement())
-  rollNo      String          @unique
+  id          Int            @id @default(autoincrement())
   status      placement_type
   companyName String?
   placedDate  DateTime?
-  updatedAt   DateTime        @default(now())
-
-  student     student @relation(fields: [rollNo], references: [rollNo])
+  updatedAt   DateTime       @default(now())
+  rollNo      String?        @unique
+  student     student?       @relation(fields: [rollNo], references: [rollNo])
 }
-
 
 model placement {
   id      Int     @id @default(autoincrement())
@@ -110,7 +108,7 @@ model placement {
 }
 
 /// *
-///  * ================= ENUMS =================
+/// * ================= ENUMS =================
 enum od_type {
   INTERNAL
   INTERNSHIP
