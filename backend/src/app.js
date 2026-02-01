@@ -26,4 +26,10 @@ app.use("/api/admin", adminRoutes);
 const placementStatusRoutes = require("./modules/placementStatus/placementStatus.routes");
 app.use("/api/placement-status", placementStatusRoutes);
 
+const facultyRoutes = require("./modules/faculty/faculty.routes");
+app.use("/api/faculty", facultyRoutes);
+
+const notificationRoutes = require("./modules/notifications/notification.routes");
+app.use("/api/notifications", notificationRoutes);
+
 module.exports = app;

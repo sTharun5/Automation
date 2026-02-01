@@ -7,12 +7,21 @@ const prisma = new PrismaClient();
 ===================================== */
 exports.setPlacementStatus = async (req, res) => {
   try {
-    const { rollNo, status, companyName, placedDate } = req.body;
+    const { rollNo, status, companyName, lpa, placedDate } = req.body;
 
     if (!rollNo || !status) {
       return res.status(400).json({
         message: "rollNo and status are required"
       });
+    }
+
+    // Check Permissions
+    const email = req.user.email;
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+    const admin = await prisma.admin.findUnique({ where: { email } });
+
+    if (!faculty && !admin) {
+      return res.status(403).json({ message: "Access denied. Faculty or Admin only." });
     }
 
     const allowed = ["PLACED", "YET_TO_BE_PLACED", "NIP"];
@@ -23,26 +32,28 @@ exports.setPlacementStatus = async (req, res) => {
     }
 
     const record = await prisma.placement_status.upsert({
-  where: { rollNo },
-  update: {
-    status,
-    companyName: status === "PLACED" ? companyName : null,
-    placedDate:
-      status === "PLACED" && placedDate
-        ? new Date(placedDate)
-        : null,
-    updatedAt: new Date()
-  },
-  create: {
-    rollNo,
-    status,
-    companyName: status === "PLACED" ? companyName : null,
-    placedDate:
-      status === "PLACED" && placedDate
-        ? new Date(placedDate)
-        : null
-  }
-});
+      where: { rollNo },
+      update: {
+        status,
+        companyName: status === "PLACED" ? companyName : null,
+        lpa: status === "PLACED" ? lpa : null,
+        placedDate:
+          status === "PLACED" && placedDate
+            ? new Date(placedDate)
+            : null,
+        updatedAt: new Date()
+      },
+      create: {
+        rollNo,
+        status,
+        companyName: status === "PLACED" ? companyName : null,
+        lpa: status === "PLACED" ? lpa : null,
+        placedDate:
+          status === "PLACED" && placedDate
+            ? new Date(placedDate)
+            : null
+      }
+    });
 
 
     return res.json({

@@ -34,27 +34,29 @@ model event {
 /// *
 /// * ================= OD =================
 model od {
-  id        Int       @id @default(autoincrement())
-  trackerId String    @unique
-  type      od_type
-  startDate DateTime
-  endDate   DateTime
-  duration  Int
-  proofFile String?
-  studentId Int
-  eventId   Int?
-  status    od_status @default(PENDING)
-  createdAt DateTime  @default(now())
-  offerFile String?
-  event     event?    @relation(fields: [eventId], references: [id])
-  student   student   @relation(fields: [studentId], references: [id])
+  id                  Int       @id @default(autoincrement())
+  trackerId           String    @unique
+  activityId          String?   @unique
+  type                od_type
+  startDate           DateTime
+  endDate             DateTime
+  duration            Int
+  proofFile           String?
+  studentId           Int
+  eventId             Int?
+  status              od_status @default(PENDING)
+  verificationDetails Json?     // Stores OCR verification results
+  timeline            Json?     // Stores history of status changes
+  remarks             String?   @db.Text
+  createdAt           DateTime  @default(now())
+  offerFile           String?
+  event               event?    @relation(fields: [eventId], references: [id])
+  student             student   @relation(fields: [studentId], references: [id])
 
   @@index([studentId])
   @@index([eventId])
 }
 
-/// *
-/// * ================= STUDENT =================
 model student {
   id               Int               @id @default(autoincrement())
   rollNo           String            @unique
@@ -62,14 +64,16 @@ model student {
   email            String            @unique
   department       String
   semester         Int
+  mentorId         Int?              // Assigned Faculty Mentor
   createdAt        DateTime          @default(now())
   ods              od[]
   placement        placement?
   placement_status placement_status?
+  mentor           faculty?          @relation("StudentMentor", fields: [mentorId], references: [id])
+
+  @@index([mentorId])
 }
 
-/// *
-/// * ================= FACULTY =================
 model faculty {
   id         Int      @id @default(autoincrement())
   name       String
@@ -77,10 +81,9 @@ model faculty {
   department String?
   createdAt  DateTime @default(now())
   facultyId  String   @unique
+  students   student[] @relation("StudentMentor")
 }
 
-/// *
-/// * ================= ADMIN =================
 model admin {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -88,12 +91,11 @@ model admin {
   createdAt DateTime @default(now())
 }
 
-/// *
-/// * ================= PLACEMENT STATUS =================
 model placement_status {
   id          Int            @id @default(autoincrement())
   status      placement_type
   companyName String?
+  lpa         String?
   placedDate  DateTime?
   updatedAt   DateTime       @default(now())
   rollNo      String?        @unique
@@ -107,8 +109,6 @@ model placement {
   student student @relation(fields: [rollNo], references: [rollNo])
 }
 
-/// *
-/// * ================= ENUMS =================
 enum od_type {
   INTERNAL
   INTERNSHIP
@@ -120,13 +120,27 @@ enum event_status {
 }
 
 enum od_status {
-  PENDING
-  APPROVED
-  REJECTED
+  PENDING           // Initial submission
+  DOCS_VERIFIED     // Passed OCR, Activity ID generated
+  MENTOR_APPROVED   // Approved by Mentor
+  APPROVED          // Final approval (if different from mentor)
+  REJECTED          // Rejected at any stage
 }
 
 enum placement_type {
   PLACED
   YET_TO_BE_PLACED
   NIP
+}
+
+model notification {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @default("INFO") @db.VarChar(50)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

@@ -1,12 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const statCards = [
-  { label: "Eligibility", value: "Placed", sub: "✅", icon: "✓", accent: "bg-emerald-500" },
-  { label: "OD Usage", value: "18 / 60", sub: "Days", icon: "📅", accent: "bg-blue-500" },
-  { label: "Active OD", value: "Internship", sub: "Approved", icon: "📋", accent: "bg-violet-500" },
-];
-
-export default function Hero({ student }) {
+export default function Hero({ student, dashboardData }) {
   const navigate = useNavigate();
   const name = student?.name?.split(" ")[0] || "Student";
 
@@ -28,28 +22,63 @@ export default function Hero({ student }) {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        {statCards.map((card, i) => (
-          <div
-            key={i}
-            className="
-              rounded-2xl bg-white dark:bg-slate-800/80
-              border border-slate-200 dark:border-slate-700/80
-              shadow-sm p-5 md:p-6
-              transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600
-            "
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-2xl" aria-hidden>{card.icon}</span>
-              <span className={`h-1.5 w-8 rounded-full ${card.accent}`} />
-            </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-4">
-              {card.label}
-            </p>
-            <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-              {card.value} {card.sub && <span className="text-slate-500 dark:text-slate-400 font-normal text-base"> {card.sub}</span>}
-            </p>
+        {/* 1. Eligibility */}
+        <div className="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 md:p-6 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600">
+          <div className="flex items-center justify-between">
+            <span className="text-2xl" aria-hidden>✓</span>
+            <span className={`h-1.5 w-8 rounded-full bg-emerald-500`} />
           </div>
-        ))}
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-4">
+            Eligibility
+          </p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+            {dashboardData?.placement?.status === "PLACED"
+              ? (
+                <div className="flex flex-col items-start gap-1">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">Placed</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    @ {dashboardData.placement.companyName}
+                  </span>
+                  {dashboardData.placement.lpa && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 mt-0.5 border border-slate-200 dark:border-slate-600">
+                      Package: {dashboardData.placement.lpa} LPA
+                    </span>
+                  )}
+                </div>
+              )
+              : "Not Placed"
+            }
+          </p>
+        </div>
+
+        {/* 2. OD Usage */}
+        <div className="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 md:p-6 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600">
+          <div className="flex items-center justify-between">
+            <span className="text-2xl" aria-hidden>📅</span>
+            <span className={`h-1.5 w-8 rounded-full bg-blue-500`} />
+          </div>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-4">
+            OD Usage
+          </p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+            {dashboardData?.odStats?.usedDays || 0} <span className="text-slate-500 dark:text-slate-400 font-normal text-base"> / 60 Days</span>
+          </p>
+        </div>
+
+        {/* 3. Active OD */}
+        <div className="rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 md:p-6 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600">
+          <div className="flex items-center justify-between">
+            <span className="text-2xl" aria-hidden>📋</span>
+            <span className={`h-1.5 w-8 rounded-full bg-violet-500`} />
+          </div>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-4">
+            Active OD
+          </p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">
+            {dashboardData?.odStats?.activeOD?.type || "None"}
+            {dashboardData?.odStats?.activeOD && <span className="text-slate-500 dark:text-slate-400 font-normal text-base"> Approved</span>}
+          </p>
+        </div>
       </div>
 
       {/* CTA */}

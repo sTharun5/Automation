@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios"; // ✅ Import API
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -10,6 +11,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [student, setStudent] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null); // ✅ New State
   const [loading, setLoading] = useState(true);
 
   /* ================= LOAD AUTH ================= */
@@ -30,7 +32,18 @@ export default function Dashboard() {
     }
 
     setStudent(storedUser);
-    setLoading(false);
+
+    // ✅ Fetch Real-Time Data
+    api.get("/students/dashboard")
+      .then((res) => {
+        setDashboardData(res.data);
+      })
+      .catch((err) => {
+        console.error("Dashboard Fetch Error:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [navigate]);
 
   /* ================= LOADING STATE ================= */
@@ -49,7 +62,7 @@ export default function Dashboard() {
       <Header />
 
       <main className="flex-1 px-4 sm:px-6 md:px-8 py-8 md:py-12 max-w-6xl mx-auto w-full space-y-10 md:space-y-14">
-        <Hero student={student} />
+        <Hero student={student} dashboardData={dashboardData} />
 
         {/* Quick Actions */}
         <section className="animate-fadeIn">

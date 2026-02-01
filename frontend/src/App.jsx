@@ -7,6 +7,12 @@ import StudentODDetails from "./pages/StudentODDetails";
 import AdminDashboard from "./pages/AdminDashBoard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import UpdatePlacementStatus from "./pages/UpdatePlacementStatus";
+import FacultyApproval from "./pages/FacultyApproval";
+import MentorAssignment from "./pages/MentorAssignment";
+import MenteeDetails from "./pages/MenteeDetails";
+import ManageFaculty from "./pages/ManageFaculty";
+import ManageStudents from "./pages/ManageStudents";
+import Notifications from "./pages/Notifications";
 
 /* ===============================
    PROTECTED ROUTE
@@ -82,6 +88,54 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/assign-mentor"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <MentorAssignment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/faculty"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ManageFaculty />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ManageStudents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/approvals"
+          element={
+            <ProtectedRoute allowedRoles={["FACULTY"]}>
+              <FacultyApproval />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/mentee/:studentId"
+          element={
+            <ProtectedRoute allowedRoles={["FACULTY"]}>
+              <MenteeDetails />
             </ProtectedRoute>
           }
         />

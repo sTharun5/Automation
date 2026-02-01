@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "framer-motion": "^12.26.2",
     "jsonwebtoken": "^9.0.3",
-    "prisma": "^6.19.1"
+    "prisma": "^6.19.1",
+    "socket.io": "^4.8.3"
   }
 }

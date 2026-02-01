@@ -20,7 +20,7 @@ router.post(
    STUDENT / SYSTEM
 ================================ */
 router.get(
-  "/:studentId",
+  "/:rollNo",
   verifyToken,
   getPlacementStatus
 );

@@ -1,33 +1,36 @@
 import { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { updatePlacementStatus } from "../api/placementStatus"; // ✅ Import helper
+import api from "../api/axios"; // ✅ Import centralized axios
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 export default function UpdatePlacementStatus() {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   const [form, setForm] = useState({
-  studentId: "",
-  rollNo: "",
-  status: "",
-  companyName: "",
-  placedDate: ""
-});
+    studentId: "",
+    rollNo: "",
+    status: "",
+    companyName: "",
+    lpa: "",
+    placedDate: ""
+  });
 
 
   const dateRef = useRef(null);
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token"); // Not needed with api interceptor
 
   /* ================= LOAD STUDENTS ================= */
+  /* ================= LOAD STUDENTS ================= */
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/students/list", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+    api
+      .get("/students/list")
       .then((res) => setStudents(res.data))
       .catch(() => alert("Failed to load students"));
-  }, [token]);
+  }, []);
 
   /* ================= FORMAT DATE ================= */
   const formatDate = (isoDate) => {
@@ -37,16 +40,23 @@ export default function UpdatePlacementStatus() {
   };
 
   /* ================= STUDENT SELECT ================= */
- const handleStudentChange = (id) => {
-  const student = students.find((s) => s.id === Number(id));
-  setSelectedStudent(student);
-
-  setForm({
-    ...form,
-    studentId: id,
-    rollNo: student.rollNo // ✅ IMPORTANT
-  });
-};
+  /* ================= STUDENT SELECT ================= */
+  const handleStudentChange = (id) => {
+    if (!id) {
+      setForm({ ...form, studentId: "", rollNo: "" });
+      setSelectedStudent(null);
+      return;
+    }
+    const student = students.find((s) => s.id === Number(id));
+    if (student) {
+      setSelectedStudent(student);
+      setForm({
+        ...form,
+        studentId: id,
+        rollNo: student.rollNo
+      });
+    }
+  };
 
 
   /* ================= SUBMIT ================= */
@@ -62,27 +72,25 @@ export default function UpdatePlacementStatus() {
     }
 
     try {
-      await axios.post(
-  "http://localhost:5000/api/placement-status/set",
-  {
-    rollNo: form.rollNo,          // ✅ REQUIRED
-    status: form.status,
-    companyName: form.companyName,
-    placedDate: form.placedDate
-  },
-  { headers: { Authorization: `Bearer ${token}` } }
-);
+      await updatePlacementStatus({
+        rollNo: form.rollNo,
+        status: form.status,
+        companyName: form.companyName,
+        lpa: form.lpa,
+        placedDate: form.placedDate
+      });
 
 
       alert("Placement status updated successfully");
 
       setForm({
-  studentId: "",
-  rollNo: "",
-  status: "",
-  companyName: "",
-  placedDate: ""
-});
+        studentId: "",
+        rollNo: "",
+        status: "",
+        companyName: "",
+        lpa: "",
+        placedDate: ""
+      });
 
       setSelectedStudent(null);
 
@@ -95,6 +103,14 @@ export default function UpdatePlacementStatus() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-4xl mx-auto w-full">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+        >
+          <span>←</span> Back
+        </button>
+
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-8">
             Update Student Placement Status
@@ -107,14 +123,14 @@ export default function UpdatePlacementStatus() {
               onChange={(e) => handleStudentChange(e.target.value)}
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
             >
-            <option value="">Click to choose</option>
-            {students.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.rollNo}
-              </option>
-            ))}
-          </select>
-        </div>
+              <option value="">Click to choose</option>
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.rollNo}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {selectedStudent && (
             <div className="mb-6">
@@ -141,25 +157,40 @@ export default function UpdatePlacementStatus() {
               }
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
             >
-            <option value="">Click to choose</option>
-            <option value="PLACED">Placed</option>
-            <option value="YET_TO_BE_PLACED">Yet to be Placed</option>
-            <option value="NIP">NIP</option>
-          </select>
-        </div>
+              <option value="">Click to choose</option>
+              <option value="PLACED">Placed</option>
+              <option value="YET_TO_BE_PLACED">Yet to be Placed</option>
+              <option value="NIP">NIP</option>
+            </select>
+          </div>
 
           {form.status === "PLACED" && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Company Name *</label>
-              <input
-                type="text"
-                value={form.companyName}
-                onChange={(e) =>
-                  setForm({ ...form, companyName: e.target.value })
-                }
-                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
-              />
-            </div>
+            <>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Company Name *</label>
+                <input
+                  type="text"
+                  value={form.companyName}
+                  onChange={(e) =>
+                    setForm({ ...form, companyName: e.target.value })
+                  }
+                  className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Salary Package (LPA)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 12"
+                  value={form.lpa}
+                  onChange={(e) =>
+                    setForm({ ...form, lpa: e.target.value })
+                  }
+                  className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+                />
+              </div>
+            </>
           )}
 
           {form.status === "PLACED" && (
