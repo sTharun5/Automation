@@ -12,7 +12,7 @@ export default function Login() {
   const [step, setStep] = useState(1); // 1 = email, 2 = otp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [seconds, setSeconds] = useState(60);
+  const [seconds, setSeconds] = useState(300);
   const [canResend, setCanResend] = useState(false);
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -80,9 +80,9 @@ export default function Login() {
       console.log("ROLE RECEIVED:", res.data.role);
 
       /* ================= STORE AUTH ================= */
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("role", res.data.role);
+      sessionStorage.setItem("user", JSON.stringify(res.data.user));
 
       setSuccess(true);
 
@@ -165,9 +165,8 @@ export default function Login() {
       )}
 
       <div
-        className={`relative z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-[440px] overflow-hidden ${
-          shake ? "animate-shake" : ""
-        }`}
+        className={`relative z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-[440px] overflow-hidden ${shake ? "animate-shake" : ""
+          }`}
       >
         {/* HEADER */}
         <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 text-center">
@@ -220,9 +219,8 @@ export default function Login() {
                 <button
                   onClick={resendOTP}
                   disabled={!canResend}
-                  className={`font-semibold ${
-                    canResend ? "text-blue-700 dark:text-blue-400" : "text-gray-400"
-                  }`}
+                  className={`font-semibold ${canResend ? "text-blue-700 dark:text-blue-400" : "text-gray-400"
+                    }`}
                 >
                   Resend OTP
                 </button>
@@ -232,10 +230,9 @@ export default function Login() {
                 onClick={() => verifyOTP(otp.join(""))}
                 disabled={otp.join("").length !== 6}
                 className={`w-full mt-4 py-3 rounded-lg font-semibold
-                  ${
-                    otp.join("").length === 6
-                      ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  ${otp.join("").length === 6
+                    ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
               >
                 Verify & Login

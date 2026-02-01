@@ -72,7 +72,16 @@ exports.getDashboardData = async (req, res) => {
       where: { email },
       include: {
         placement_status: true,
-        ods: true
+        ods: true,
+        mentor: {
+          select: {
+            id: true,
+            name: true,
+            facultyId: true,
+            email: true,
+            department: true
+          }
+        }
       }
     });
 
@@ -106,7 +115,8 @@ exports.getDashboardData = async (req, res) => {
       student: {
         name: student.name,
         rollNo: student.rollNo,
-        department: student.department
+        department: student.department,
+        mentor: student.mentor
       },
       placement,
       odStats: {

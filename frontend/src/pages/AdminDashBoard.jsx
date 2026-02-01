@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProfileCard from "../components/ProfileCard";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem("user"));
 
   const [form, setForm] = useState({
     facultyId: "",
@@ -114,36 +115,59 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-xl shadow-sm mb-8 transition-colors">
-          <p className="text-lg text-slate-900 dark:text-white">
-            Welcome, <span className="font-semibold">{user?.name || "Admin"}</span>
-          </p>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Email: {user?.email}</p>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+          <div className="lg:col-span-8 space-y-8">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
+              <p className="text-lg text-slate-900 dark:text-white">
+                Welcome, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name || "Admin"}</span>
+              </p>
+              <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">System Administrator Access</p>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div
-            onClick={() => navigate("/admin/faculty")}
-            className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:border-blue-500 transition-all cursor-pointer"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">👨‍🏫</span>
-              <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                onClick={() => navigate("/admin/faculty")}
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <span className="text-3xl bg-blue-50 dark:bg-blue-900/30 p-2 rounded-xl">👨‍🏫</span>
+                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Faculty</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">View all faculty members and manage their mentee counts.</p>
+                <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors" />
+              </div>
+              <div
+                onClick={() => navigate("/admin/students")}
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <span className="text-3xl bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-xl">🎓</span>
+                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Students</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Examine all students and their assigned mentors.</p>
+                <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Manage Faculty</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">View all faculty members and manage their mentee counts.</p>
           </div>
-          <div
-            onClick={() => navigate("/admin/students")}
-            className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:border-blue-500 transition-all cursor-pointer"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-3xl">🎓</span>
-              <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+
+          <aside className="lg:col-span-4 space-y-6">
+            <ProfileCard student={user} />
+            <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+              <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Quick Stats</h4>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-slate-300">System Status</span>
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-slate-300">Database</span>
+                  <span className="text-xs font-bold text-blue-400">Connected</span>
+                </div>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Manage Students</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Examine all students and their assigned mentors.</p>
-          </div>
+          </aside>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-xl shadow-sm max-w-xl transition-colors">

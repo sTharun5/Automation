@@ -13,13 +13,14 @@ import MenteeDetails from "./pages/MenteeDetails";
 import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
 import Notifications from "./pages/Notifications";
+import ODHistory from "./pages/ODHistory";
 
 /* ===============================
    PROTECTED ROUTE
 ================================ */
 const ProtectedRoute = ({ allowedRoles, children }) => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const token = sessionStorage.getItem("token");
+  const role = sessionStorage.getItem("role");
 
   if (!token || !allowedRoles.includes(role)) {
     return <Navigate to="/" replace />;
@@ -59,6 +60,24 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["STUDENT"]}>
               <StudentODDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/od-history"
+          element={
+            <ProtectedRoute allowedRoles={["STUDENT"]}>
+              <ODHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/od-status"
+          element={
+            <ProtectedRoute allowedRoles={["STUDENT"]}>
+              <ODHistory />
             </ProtectedRoute>
           }
         />

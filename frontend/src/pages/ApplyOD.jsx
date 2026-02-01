@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import VerificationResultModal from "../components/VerificationResultModal";
 
 export default function ApplyOD() {
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
 
   const [students, setStudents] = useState([]);
@@ -30,7 +31,7 @@ export default function ApplyOD() {
 
   /* ================= LOAD STUDENTS ================= */
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     axios
       .get("http://localhost:3000/api/students/list", {
@@ -71,7 +72,7 @@ export default function ApplyOD() {
         return;
       }
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {

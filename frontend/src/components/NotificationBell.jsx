@@ -12,7 +12,7 @@ export default function NotificationBell() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await axios.get("http://localhost:3000/api/notifications", {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -25,7 +25,8 @@ export default function NotificationBell() {
     fetchNotifications();
 
     // Socket setup
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const role = sessionStorage.getItem("role");
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     if (user.email) {
       socketRef.current = io("http://localhost:3000");
       socketRef.current.emit("join", user.email);
@@ -52,7 +53,7 @@ export default function NotificationBell() {
   const markAsRead = async (id) => {
     try {
       if (!id) return; // For locally added notifications via socket without IDs yet
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       await axios.put(`http://localhost:3000/api/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });

@@ -12,7 +12,7 @@ export default function Notifications() {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const token = localStorage.getItem("token");
+                const token = sessionStorage.getItem("token");
                 const res = await axios.get("http://localhost:3000/api/notifications", {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -29,7 +29,7 @@ export default function Notifications() {
 
     const markAsRead = async (id) => {
         try {
-            const token = localStorage.getItem("token");
+            const token = sessionStorage.getItem("token");
             await axios.put(`http://localhost:3000/api/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -81,8 +81,8 @@ export default function Notifications() {
                                     key={n.id}
                                     onClick={() => !n.read && markAsRead(n.id)}
                                     className={`p-5 rounded-xl border transition-all cursor-pointer ${n.read
-                                            ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-                                            : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30"
+                                        ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                                        : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30"
                                         }`}
                                 >
                                     <div className="flex items-start justify-between gap-4">

@@ -6,7 +6,8 @@ import NotificationBell from "./NotificationBell";
 import ConfirmLogoutModal from "./ConfirmLogoutModal";
 
 export default function Header() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const role = sessionStorage.getItem("role");
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -52,11 +53,10 @@ export default function Header() {
               <div className="hidden sm:flex items-center rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5">
                 <button
                   onClick={() => theme !== "light" && toggleTheme()}
-                  className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-                    theme === "light"
-                      ? "bg-white dark:bg-slate-700 text-amber-600 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${theme === "light"
+                    ? "bg-white dark:bg-slate-700 text-amber-600 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                    }`}
                   aria-label="Light mode"
                   title="Light mode"
                 >
@@ -64,11 +64,10 @@ export default function Header() {
                 </button>
                 <button
                   onClick={() => theme !== "dark" && toggleTheme()}
-                  className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-                    theme === "dark"
-                      ? "bg-slate-700 text-indigo-300 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${theme === "dark"
+                    ? "bg-slate-700 text-indigo-300 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                    }`}
                   aria-label="Dark mode"
                   title="Dark mode"
                 >
@@ -98,8 +97,8 @@ export default function Header() {
                     <p className="text-sm font-semibold text-slate-900 dark:text-white truncate leading-tight">
                       {user.name}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight">
-                      {user.rollNo}
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5 font-medium">
+                      {role === "STUDENT" ? user.rollNo : role === "FACULTY" ? user.facultyId : "Administrator"}
                     </p>
                   </div>
                   <svg className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -108,15 +107,25 @@ export default function Header() {
                 {open && (
                   <div className="absolute right-0 mt-2 w-72 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl overflow-hidden animate-fadeIn z-50">
                     <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                          {user.name}
+                        </p>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${role === 'ADMIN' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                          role === 'FACULTY' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          }`}>
+                          {role}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                         {user.email}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Roll No: {user.rollNo}
-                      </p>
+                      {role !== 'ADMIN' && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                          {role === 'STUDENT' ? 'Roll No: ' : 'Faculty ID: '}{role === 'STUDENT' ? user.rollNo : user.facultyId}
+                        </p>
+                      )}
                     </div>
                     <div className="py-1">
                       <button className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
@@ -143,7 +152,7 @@ export default function Header() {
         open={showLogout}
         onClose={() => setShowLogout(false)}
         onConfirm={() => {
-          localStorage.clear();
+          sessionStorage.clear();
           navigate("/", { replace: true });
         }}
       />

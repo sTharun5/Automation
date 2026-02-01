@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProfileCard from "../components/ProfileCard";
 
 export default function FacultyDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
   const [mentees, setMentees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,10 +64,15 @@ export default function FacultyDashboard() {
               </div>
             </div>
 
-            <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-xl shadow-blue-500/20">
-              <p className="text-blue-100 text-sm font-medium">Active Mentees</p>
-              <h3 className="text-4xl font-black mt-1">{mentees.length}</h3>
+            <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden group">
+              <div className="relative z-10">
+                <p className="text-blue-100 text-sm font-medium">Active Mentees</p>
+                <h3 className="text-4xl font-black mt-1">{mentees.length}</h3>
+              </div>
+              <span className="absolute -bottom-4 -right-4 text-7xl opacity-10 group-hover:scale-110 transition-transform duration-700">👨‍🎓</span>
             </div>
+
+            <ProfileCard student={user} />
           </div>
 
           {/* Mentees Listing */}

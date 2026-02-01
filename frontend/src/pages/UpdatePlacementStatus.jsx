@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 
 export default function UpdatePlacementStatus() {
   const navigate = useNavigate();
+  const faculty = JSON.parse(sessionStorage.getItem("user"));
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
