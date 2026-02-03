@@ -55,6 +55,58 @@ exports.addFaculty = async (req, res) => {
 };
 
 /* =====================================================
+   ADD STUDENT (ADMIN ONLY)
+===================================================== */
+exports.addStudent = async (req, res) => {
+  try {
+    const { rollNo, name, email, department, semester } = req.body;
+
+    if (!rollNo || !name || !email) {
+      return res.status(400).json({
+        message: "Roll No, Name and Email are required"
+      });
+    }
+
+    // Check duplicate rollNo or email
+    const existing = await prisma.student.findFirst({
+      where: {
+        OR: [
+          { rollNo },
+          { email }
+        ]
+      }
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        message: "Student already exists (Roll No or Email match)"
+      });
+    }
+
+    const student = await prisma.student.create({
+      data: {
+        rollNo,
+        name,
+        email,
+        department: department || "CS", // Default fallback
+        semester: semester ? Number(semester) : 1
+      }
+    });
+
+    res.status(201).json({
+      message: "Student added successfully",
+      student
+    });
+
+  } catch (error) {
+    console.error("ADD STUDENT ERROR:", error);
+    res.status(500).json({
+      message: "Failed to add student"
+    });
+  }
+};
+
+/* =====================================================
    SEARCH FACULTY (ADMIN ONLY)
 ===================================================== */
 exports.searchFaculty = async (req, res) => {

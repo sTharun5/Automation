@@ -4,6 +4,7 @@ import api from "../api/axios";
 
 export default function ChatAssistant() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false); // Full screen toggle
     const [messages, setMessages] = useState([
         { type: "bot", text: "Greetings. I am **Disha 2.0**. select a query below or type your question regarding application procedures." }
     ]);
@@ -20,109 +21,178 @@ export default function ChatAssistant() {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    /* =========================================
-       📘 PROFESSIONAL KNOWLEDGE BASE
-       - Formal language
-       - Detailed procedures
-       - Format specifications
-    ========================================= */
-    const KNOWLEDGE_BASE = [
-        {
-            id: "apply",
-            keywords: ["apply", "how to", "create", "step", "procedure", "process", "submission"],
-            response: "**Application Procedure:**\n\n1. Navigate to the **Dashboard**.\n\n2. Click the **'Apply OD'** button located in the top-right corner.\n\n3. Input the **Company Name** and select the strictly required **Start/End Dates**.\n\n4. **Upload Evidence** with specific naming:\n   - **Offer Letter**: `RollNo-ITO-Date` (e.g., `201CS111-ITO-08.06.2025`)\n   - **Aim/Objective**: `RollNo-ITI-Date` (e.g., `201CS111-ITI-08.06.2025`)\n\n5. Click **Submit** to forward the request to your assigned Faculty Mentor."
-        },
-        {
-            id: "formats",
-            keywords: ["format", "size", "upload", "pdf", "image", "file", "requirement", "name", "naming"],
-            response: "**Document Standards:**\n\nPlease strictly adhere to these specific naming formats:\n\n📄 **Offer Letter**:\n`RollNo-ITO-Date.pdf`\n(e.g., `201CS111-ITO-08.06.2025.pdf`)\n\n📄 **Aim/Objective**:\n`RollNo-ITI-Date.pdf`\n(e.g., `201CS111-ITI-08.06.2025.pdf`)\n\n⚠️ **Restrictions**:\n- Maximum File Size: **5 MB**\n- Content must be clearly legible."
-        },
-        {
-            id: "purpose",
-            keywords: ["purpose", "what is", "portal", "system", "about"],
-            response: "**System Overview:**\n\nThe **Smart OD Automation System** is an institutional platform designed to digitize the On-Duty request workflow. It facilitates:\n\n- Real-time tracking of placement ODs.\n- Digital validation of offer letters.\n- Streamlined Mentor-Student communication."
-        },
-        {
-            id: "approval",
-            keywords: ["approve", "status", "pending", "mentor", "wait"],
-            response: "**Approval Workflow:**\n\nUpon submission, your request status is set to **PENDING**.\n\n🔸 **Review**: Your mapped Faculty Mentor will review the attached documents.\n\n🔹 **Outcome**: You will receive a system notification upon **APPROVAL** or **REJECTION**.\n\n🔸 **Action**: Monitor your dashboard or notification center for updates."
-        },
-        {
-            id: "cancel",
-            keywords: ["cancel", "delete", "revoke", "modify"],
-            response: "**Cancellation Policy:**\n\n❌ **Pending Requests**:\nCan be withdrawn via the 'Trash' icon in the OD History section.\n\n🔒 **Approved Requests**:\nCannot be modified by students. Contact the Administrator for revocation if necessary."
-        },
-        {
-            id: "contact",
-            keywords: ["contact", "help", "support", "issue", "error"],
-            response: "**Support:**\n\nFor technical issues or data discrepancies, please contact the System Administrator or your Department Coordinator."
-        },
-        {
-            id: "greeting",
-            keywords: ["hello", "hi", "greetings", "start"],
-            response: "Greetings. I am **Disha 2.0**. I can assist you with:\n\n1. Application Procedures\n2. File Naming & Formats\n3. System Policies\n\nHow may I assist you?"
-        }
-    ];
+    const [attachments, setAttachments] = useState([]);
+    const fileInputRef = useRef(null);
 
     /* =========================================
-       ⚙️ LOGIC ENGINE WITH API
+       📎 ATTACHMENT HANDLERS
     ========================================= */
-    const findBestResponse = (query) => {
-        const tokens = query.toLowerCase().split(/\s+/);
-        let bestMatch = null;
-        let maxScore = 0;
-
-        KNOWLEDGE_BASE.forEach((topic) => {
-            let score = 0;
-            tokens.forEach((token) => {
-                if (topic.keywords.some((k) => k.includes(token) || token.includes(k))) {
-                    score += 1;
-                }
-            });
-
-            if (score > maxScore) {
-                maxScore = score;
-                bestMatch = topic;
+    const handleFileSelect = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (attachments.length >= 2) {
+                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Maximum 2 attachments allowed (Offer Letter & Aim)." }]);
+                return;
             }
-        });
+            if (!file.type.includes("pdf")) {
+                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Only PDF files are supported." }]);
+                return;
+            }
+            // Basic filename check suggestion (optional, but helpful)
+            if (!file.name.includes("-ITO-") && !file.name.includes("-ITI-")) {
+                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`." }]);
+            }
 
-        if (maxScore > 0 && bestMatch) {
-            return bestMatch.response;
+            setAttachments(prev => [...prev, file]);
         }
-
-        return "I apologize, but I could not identify a standardized response for that inquiry. Please try keywords such as **'Application Process'**, **'File Formats'**, or **'Approval Status'**.";
     };
 
+    const removeAttachment = (index) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    /* =========================================
+       📢 HELPER FUNCTIONS
+    ========================================= */
     const fetchODStatus = async () => {
         try {
-            const res = await api.get("/od/my-ods");
+            const user = JSON.parse(sessionStorage.getItem("user"));
+            if (!user || !user.id) return "❌ Please log in to check your OD status.";
+
+            const res = await api.get(`/od/my-ods?studentId=${user.id}`);
             const ods = res.data;
 
-            // CASE 1: No ODs found
-            if (!Array.isArray(ods) || ods.length === 0) {
-                return "**Status Update:**\n\nNo records found. You have not submitted any On-Duty applications yet.\n\nTo apply, use the **'Apply OD'** button on your dashboard.";
+            if (!ods || ods.length === 0) {
+                return "ℹ️ You have no OD applications yet.";
             }
 
-            // CASE 2: ODs exist - Formatting
-            const formattedList = ods.slice(0, 5).map((od, index) => {
-                const statusIcon = od.status === "APPROVED" ? "✅" : od.status === "REJECTED" ? "❌" : "⏳";
-                const date = new Date(od.startDate).toLocaleDateString();
-                const company = od.company || "Unknown Company";
-                return `${index + 1}. **${company}** (${date}): ${statusIcon} **${od.status}**`;
-            }).join("\n");
+            const statusList = ods.map(od =>
+                `📌 **${od.company}**\n   Status: **${od.status}**\n   Dates: ${new Date(od.startDate).toLocaleDateString()} - ${new Date(od.endDate).toLocaleDateString()}`
+            ).join("\n\n");
 
-            return `**Current Application Status:**\n\n${formattedList}\n\n(Displaying most recent 5 records)`;
+            return `Here are your recent OD applications:\n\n${statusList}`;
+        } catch (error) {
+            console.error(error);
+            return "❌ Failed to fetch OD status. Please try again later.";
+        }
+    };
+
+    const findBestResponse = (query) => {
+        const lower = query.toLowerCase();
+        if (lower.includes("procedure") || lower.includes("process")) {
+            return "To apply for an OD:\n1. **Upload** your Offer Letter & Aim.\n2. Use the **Smart Apply** command (e.g., `Apply OD...`).\n3. Wait for **Faculty Approval**.\n4. Once approved, download your OD form.";
+        }
+        if (lower.includes("format") || lower.includes("document")) {
+            return "Files must be in **PDF** format.\n\nNaming Convention:\n- Offer Letter: `RollNo-ITO-Date.pdf`\n- Aim: `RollNo-ITI-Date.pdf`\n\nExample: `22CS001-ITO-01.02.2024.pdf`";
+        }
+        if (lower.includes("purpose") || lower.includes("system")) {
+            return "This **Smart OD System** automates the On-Duty application process for students with placement offers, eliminating manual paperwork! 🚀";
+        }
+        if (lower.includes("hello") || lower.includes("hi")) {
+            return "Hello! 👋 How can I assist you with your OD application today?";
+        }
+        return "I'm not sure about that. Try asking about **OD Status**, **Formats**, or **Procedures**.";
+    };
+
+    /* =========================================
+       🧠 SMART APPLY LOGIC
+    ========================================= */
+    const processSmartApply = async (text) => {
+        // Regex: Apply OD <Start> to <End> for <Company> <Industry> <Campus>
+        // Flexible regex to catch fields
+        const regex = /Apply OD (\d{2}[-.]\d{2}[-.]\d{4}) to (\d{2}[-.]\d{2}[-.]\d{4}) for (.+?) (IT|Core|Research) (On Campus|Off Campus)/i;
+        const match = text.match(regex);
+
+        if (!match) {
+            return "❌ **Invalid Format.**\nPlease use: `Apply OD <Start> to <End> for <Company> <Industry> <Campus>`\nExample: `Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus`";
+        }
+
+        if (attachments.length !== 2) {
+            return "❌ **Missing Attachments.**\nPlease attach exactly 2 PDF files: **Offer Letter** and **Aim/Objective** before sending.";
+        }
+
+        const [_, startDate, endDate, companyName, industry, campusType] = match;
+
+        // Verify Student Session
+        const user = JSON.parse(sessionStorage.getItem("user"));
+        if (!user || !user.id) return "❌ **Authentication Failed.** Please log in again.";
+
+        try {
+            // 1. Fetch Offers to find ID
+            const token = sessionStorage.getItem("token");
+            const offersRes = await api.get(`/students/${user.id}/offers`);
+            const offers = offersRes.data;
+
+            // Fuzzy match company name
+            const selectedOffer = offers.find(o => o.company.name.toLowerCase().includes(companyName.toLowerCase().trim()));
+
+            if (!selectedOffer) {
+                return `❌ **Company Not Found.**\nI could not find an offer from '**${companyName}**' in your records. Please check the spelling.`;
+            }
+
+            // 2. Prepare Form Data
+            const formData = new FormData();
+            formData.append("studentId", user.id);
+            formData.append("offerId", selectedOffer.id);
+            formData.append("industry", industry);
+            formData.append("campusType", campusType);
+
+            // Format dates for backend (YYYY-MM-DD) - assuming input is DD.MM.YYYY or DD-MM-YYYY
+            const toISODate = (d) => {
+                const parts = d.split(/[-.]/);
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            };
+
+            const startISO = toISODate(startDate);
+            const endISO = toISODate(endDate);
+
+            formData.append("startDate", startISO);
+            formData.append("endDate", endISO);
+
+            // Calculate duration
+            const s = new Date(startISO);
+            const e = new Date(endISO);
+            const days = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
+            formData.append("duration", days);
+
+            // Assign files based on naming convention guess or order?
+            // Safer: Check content of filename. If ambiguous, assume order: 1=Aim, 2=Offer (or ask user).
+            // Better: Strict filename check.
+            const offerFile = attachments.find(f => f.name.includes("ITO"));
+            const aimFile = attachments.find(f => f.name.includes("ITI"));
+
+            if (!offerFile || !aimFile) {
+                return "❌ **Filename Error.**\nCould not identify files.\n- Offer Letter must contain `-ITO-`\n- Aim must contain `-ITI-`";
+            }
+
+            formData.append("offerFile", offerFile);
+            formData.append("aimFile", aimFile);
+            formData.append("iqacStatus", "Initiated");
+
+            // 3. Submit
+            await api.post("/od/apply", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+
+            setAttachments([]); // Clear
+            return `✅ **Success!**\nOD Application for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days.\nTrack status in 'My ODs'.`;
 
         } catch (error) {
-            console.error("Chatbot API Error:", error);
+            console.error(error);
+            const errData = error.response?.data;
 
-            // CASE 3: Authentication Error
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                return "**Authentication Notice:**\n\nUser verification failed. Please refresh the page or log in again to view sensitive data.";
+            // 🛑 CHECKLIST RENDERER
+            if (errData?.steps && Array.isArray(errData.steps)) {
+                const stepsList = errData.steps.map(step => {
+                    const icon = step.success ? "✅" : "❌";
+                    const status = step.success ? "**Success**" : `**Failed**: ${step.error || ""}`;
+                    return `${icon} **${step.name}**\n   ${status}`; // Indented status
+                }).join("\n\n");
+
+                return `⚠️ **Verification Incomplete**\n\n${stepsList}\n\nPlease correct the issues marked with ❌ and try again.`;
             }
 
-            // CASE 4: Network/Server Error
-            return "**System Notice:**\n\nUnable to retrieve status at this moment. Please check your network connection or contact support if the issue persists.";
+            return `❌ **Submission Failed.**\n${errData?.message || error.message}`;
         }
     };
 
@@ -136,6 +206,22 @@ export default function ChatAssistant() {
         setIsTyping(true);
 
         const lowerText = text.toLowerCase();
+
+        // 🧠 SMART APPLY COMMAND CHECK
+        if (lowerText.startsWith("apply od")) {
+            // Simulate processing
+            setMessages(prev => [...prev, { type: "bot", text: "🔄 Processing Smart Application..." }]);
+
+            const resultMsg = await processSmartApply(text);
+
+            setMessages(prev => {
+                // Remove 'Processing' message (last one)
+                const filtered = prev.slice(0, -1);
+                return [...filtered, { type: "bot", text: resultMsg }];
+            });
+            setIsTyping(false);
+            return;
+        }
 
         // Check for Status/Track keywords FIRST
         if (lowerText.includes("status") || lowerText.includes("track") || lowerText.includes("check") || lowerText.includes("my od")) {
@@ -164,113 +250,175 @@ export default function ChatAssistant() {
     ];
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 pointer-events-none">
-            {/* Interaction Area enable pointer events */}
-            <div className={`pointer-events-auto transition-all duration-300 origin-bottom-right ${isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"}`}>
-                <div className="w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[500px]">
-                    {/* Header */}
-                    <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 text-white flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl">🤖</span>
-                            <div>
-                                <h3 className="font-bold text-sm">Disha 2.0</h3>
-                                <p className="text-[10px] opacity-80">Automated Agent</p>
-                            </div>
+        <>
+            {/* Main Chat Window */}
+            <div
+                className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col overflow-hidden shadow-2xl
+                ${isExpanded
+                        ? "inset-0 w-full h-full rounded-none"
+                        : `bottom-24 right-6 w-96 max-h-[600px] h-[500px] rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
+                    }
+                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
+            `}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
+                            <span className="text-xl leading-none">🤖</span>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded-full transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
+                        <div>
+                            <h3 className="font-bold text-base tracking-wide flex items-center gap-2">
+                                Disha 2.0
+                                <span className="bg-green-400/90 w-2 h-2 rounded-full animate-pulse shadow-green-400/50 shadow-lg"></span>
+                            </h3>
+                            <p className="text-[10px] uppercase tracking-wider opacity-90 font-medium">Smart Assistant</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* Expand / Collapse Button */}
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="p-2 hover:bg-white/20 rounded-full transition-all duration-200"
+                            title={isExpanded ? "Minimize" : "Full Screen"}
+                        >
+                            {isExpanded ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3" /><path d="M21 8h-3a2 2 0 0 1-2-2V3" /><path d="M3 16h3a2 2 0 0 1 2 2v3" /><path d="M16 21v-3a2 2 0 0 1 2-2h3" /></svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" /></svg>
+                            )}
+                        </button>
+                        {/* Close Button */}
+                        <button
+                            onClick={() => { setIsOpen(false); setIsExpanded(false); }}
+                            className="p-2 hover:bg-red-500/80 hover:shadow-red-500/30 hover:shadow-lg rounded-full transition-all duration-200"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </div>
+                </div>
 
-                    {/* Messages */}
-                    <div className="flex-1 p-4 overflow-y-auto bg-slate-50 dark:bg-slate-950/50 space-y-3 custom-scrollbar">
-                        {messages.map((msg, i) => (
-                            <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
-                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed shadow-sm ${msg.type === "user"
-                                    ? "bg-blue-600 text-white rounded-br-none"
-                                    : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none"
-                                    }`}>
-                                    {msg.text}
+                {/* Messages Body */}
+                <div className="flex-1 overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50 space-y-4">
+                    {messages.map((msg, i) => (
+                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                            {msg.type === "bot" && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs shadow-md shrink-0">🤖</div>
+                            )}
+                            <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
+                                ${msg.type === "user"
+                                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
+                                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50 shadow-slate-200/50 dark:shadow-none"
+                                }`}>
+                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+                            </div>
+                            {msg.type === "user" && (
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs shadow-sm shrink-0">👤</div>
+                            )}
+                        </div>
+                    ))}
+                    {isTyping && (
+                        <div className="flex justify-start items-end gap-2">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs shadow-md shrink-0">🤖</div>
+                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-700/50">
+                                <div className="flex gap-1.5">
+                                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                    <span className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"></span>
                                 </div>
                             </div>
-                        ))}
-                        {isTyping && (
-                            <div className="flex justify-start">
-                                <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm border border-slate-100 dark:border-slate-700">
-                                    <div className="flex gap-1">
-                                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                        <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
 
-                    {/* Input Area */}
-                    <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-                        {/* Quick Chips */}
-                        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 no-scrollbar">
-                            {QUICK_CHIPS.map((chip, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => handleSend(chip)}
-                                    className="whitespace-nowrap px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs rounded-full border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                                >
-                                    {chip}
-                                </button>
+                {/* Attachments & Quick Actions Panel (Glassy) */}
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-slate-700/50">
+                    {/* Attachments Chips */}
+                    {attachments.length > 0 && (
+                        <div className="px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
+                            {attachments.map((file, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 text-xs px-3 py-1.5 rounded-lg text-indigo-700 dark:text-indigo-300 shadow-sm transition-all hover:scale-105">
+                                    <span className="text-base">📄</span>
+                                    <span className="max-w-[120px] truncate font-medium">{file.name}</span>
+                                    <button onClick={() => removeAttachment(i)} className="ml-1 text-indigo-400 hover:text-red-500 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </button>
+                                </div>
                             ))}
                         </div>
+                    )}
 
-                        <div className="flex gap-2">
+                    {/* Quick Chips */}
+                    <div className="px-4 pt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        {QUICK_CHIPS.map((chip, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handleSend(chip)}
+                                className="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+                            >
+                                {chip}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Input Field */}
+                    <div className="p-4 flex items-center gap-3">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            className="hidden"
+                            accept="application/pdf"
+                        />
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500 rounded-xl transition-all active:scale-95"
+                            title="Attach PDF"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        </button>
+
+                        <div className="flex-1 relative">
                             <input
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder="Type your query..."
-                                className="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/50 dark:text-white placeholder:text-slate-400"
+                                placeholder="Ask Disha..."
+                                className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
                             />
                             <button
                                 onClick={() => handleSend()}
                                 disabled={!input.trim()}
-                                className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* FAB Toggle Area */}
-            <div className="flex items-center gap-4 pointer-events-auto">
-                {!isOpen && (
-                    <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white px-4 py-2 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 text-sm font-semibold animate-bounce">
+            {/* Floating Action Button (FAB) */}
+            {!isExpanded && (
+                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0" : "visible opacity-100"}`}>
+                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white px-5 py-2.5 rounded-full shadow-xl border border-white/20 dark:border-slate-700 text-sm font-semibold animate-bounce hidden sm:block">
                         Chat with Disha 2.0 👋
                     </div>
-                )}
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`h-14 w-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 ${isOpen
-                        ? "bg-slate-700 rotate-90"
-                        : "bg-blue-600 hover:bg-blue-700 scale-100"
-                        }`}
-                >
-                    {isOpen ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    ) : (
-                        <span className="text-3xl">🤖</span>
-                    )}
-                </button>
-            </div>
-        </div>
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className="group relative h-16 w-16 rounded-full shadow-2xl flex items-center justify-center bg-gradient-to-tr from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-500 transform hover:scale-110 active:scale-95 ring-4 ring-indigo-200 dark:ring-indigo-900/40"
+                    >
+                        <span className="text-3xl animate-pulse">🤖</span>
+                        {/* Ping effect */}
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span>
+                        </span>
+                    </button>
+                </div>
+            )}
+        </>
     );
 }

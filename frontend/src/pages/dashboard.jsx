@@ -105,6 +105,42 @@ export default function Dashboard() {
               </div>
             </section>
 
+            {/* 🤖 Smart Apply Feature Highlight */}
+            <section className="animate-fadeIn relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-900 dark:to-indigo-900 shadow-lg text-white p-6 md:p-8">
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="flex-1 space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    New Feature
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-white">
+                    Apply Instantly with Disha 2.0 🤖
+                  </h3>
+                  <p className="text-indigo-100 text-sm md:text-base leading-relaxed max-w-xl">
+                    Skip the forms! Simply open the chat, attach your <b>Offer Letter</b> & <b>Aim</b> PDF, and type the command below.
+                  </p>
+
+                  <div className="mt-4 bg-black/20 backdrop-blur-md rounded-xl p-4 border border-white/10 font-mono text-xs md:text-sm text-indigo-50 overflow-x-auto">
+                    <p className="mb-2 opacity-70">// Command Format</p>
+                    <p>Apply OD <span className="text-yellow-300">Start</span> to <span className="text-yellow-300">End</span> for <span className="text-green-300">Company</span> <span className="text-blue-300">Industry</span> <span className="text-pink-300">Campus</span></p>
+                    <div className="my-2 border-t border-white/10"></div>
+                    <p className="opacity-70 mb-1">// Example</p>
+                    <p className="text-white">Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus</p>
+                  </div>
+                </div>
+
+                <div className="hidden md:block">
+                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-4xl animate-bounce">
+                    ⚡️
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative Background */}
+              <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-48 h-48 bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
+            </section>
+
             {/* Guidelines */}
             <section className="animate-fadeIn bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 transition-colors">
               <div className="flex items-center gap-3 mb-5">

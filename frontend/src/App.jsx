@@ -38,7 +38,8 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
 // Layout component to selectively show ChatAssistant
 const Layout = ({ children }) => {
   const location = useLocation();
-  const showChat = location.pathname !== "/"; // Don't show on login
+  const role = sessionStorage.getItem("role");
+  const showChat = location.pathname !== "/" && role === "STUDENT";
 
   return (
     <>

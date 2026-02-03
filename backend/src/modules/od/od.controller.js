@@ -90,14 +90,14 @@ async function verifyDocumentContent(filePath, studentName, companyName, startDa
 
     // Determine overall success
     const allPassed = verificationDetails.name.found &&
-      verificationDetails.company.found &&
-      verificationDetails.dates.found;
+      verificationDetails.company.found;
+    // verificationDetails.dates.found; // ⚠️ DISABLED BY ADMIN REQUEST
 
     // Build summary message
     let summary = [];
     summary.push(verificationDetails.name.found ? "✅ Name: Found" : "❌ Name: Not Found");
     summary.push(verificationDetails.company.found ? "✅ Company: Found" : "❌ Company: Not Found");
-    summary.push(verificationDetails.dates.found ? "✅ Joining Date: Found" : "❌ Joining Date: Not Found");
+    summary.push(verificationDetails.dates.found ? "✅ Joining Date: Found" : "⚠️ Joining Date: Not Found (Ignored)");
 
     return {
       success: allPassed,
@@ -123,6 +123,9 @@ async function verifyDocumentContent(filePath, studentName, companyName, startDa
 exports.applyOD = async (req, res) => {
   try {
     const {
+      studentId,
+      industry,
+      campusType,
       startDate,
       endDate,
       duration,
@@ -181,39 +184,48 @@ exports.applyOD = async (req, res) => {
     const companyNameForOCR = offer.company.name;
 
     /* ===== VALIDATE FILENAMES ===== */
+    /* ===== VALIDATE FILENAMES & DETAILS ===== */
+    const validationSteps = [];
+
+    const addStep = (name, success, error = null) => {
+      validationSteps.push({ name, success, error });
+    };
+
+
     const validateDocument = (file, expectedType) => {
-      const originalName = file.originalname;
-      const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf(".")) || originalName;
+      let originalName = file.originalname.trim();
 
-      // Regex: <ROLL_NO>-<OD_TYPE>-<D.M.YYYY> or <DD.MM.YYYY>
+      // Step 1: Filename Format
+      const nameWithoutExt = originalName.toLowerCase().endsWith(".pdf")
+        ? originalName.slice(0, -4)
+        : originalName;
+
       const regex = /^[A-Z0-9]+-(ITO|ITI)-\d{1,2}\.\d{1,2}\.\d{4}$/;
-
       if (!regex.test(nameWithoutExt)) {
-        throw new Error(
-          `Invalid filename format for ${file.fieldname}. Expected format: <ROLL_NO>-${expectedType}-<DD.MM.YYYY> (e.g. ${student.rollNo}-${expectedType}-01.02.2024)`
-        );
+        addStep(`${expectedType} Filename Format`, false, `Invalid format. Expected: <ROLL>-${expectedType}-<DATE>`);
+        return false;
       }
+      addStep(`${expectedType} Filename Format`, true);
 
       const parts = nameWithoutExt.split("-");
       const fileRollNo = parts[0];
       const fileType = parts[1];
-      const fileDate = parts[2]; // This is what matched the \d.\d.\d regex
+      const fileDate = parts[2];
 
-      // 1. Verify Roll No
+      // Step 2: Roll Number
       if (fileRollNo !== student.rollNo) {
-        throw new Error(
-          `Roll number in ${file.fieldname} filename (${fileRollNo}) does not match student roll number (${student.rollNo})`
-        );
+        addStep(`${expectedType} Roll Number`, false, `Found ${fileRollNo}, expected ${student.rollNo}`);
+        return false;
       }
+      addStep(`${expectedType} Roll Number`, true);
 
-      // 2. Verify OD Type
+      // Step 3: Type check
       if (fileType !== expectedType) {
-        throw new Error(
-          `Invalid OD Type in ${file.fieldname}. Expected ${expectedType}, found ${fileType}`
-        );
+        addStep(`${expectedType} Document Type`, false, `Found ${fileType}, expected ${expectedType}`);
+        return false;
       }
 
-      // 3. Verify Date (Today OR Start Date)
+      // Step 4: Date Check
       const today = new Date();
       const formatDate = (date) => {
         const d = String(date.getDate()).padStart(2, '0');
@@ -225,8 +237,6 @@ exports.applyOD = async (req, res) => {
       const todayString = formatDate(today);
       const startString = formatDate(new Date(startDate));
 
-      // Also handle case where user didn't use leading zeros in filename but we pad them in our strings
-      // We can normalize the fileDate by splitting and re-joining with padding
       const normalizeDateString = (str) => {
         const [d, m, y] = str.split(".");
         return `${d.padStart(2, '0')}.${m.padStart(2, '0')}.${y}`;
@@ -235,10 +245,12 @@ exports.applyOD = async (req, res) => {
       const normalizedFileDate = normalizeDateString(fileDate);
 
       if (normalizedFileDate !== todayString && normalizedFileDate !== startString) {
-        throw new Error(
-          `Date in ${file.fieldname} filename (${fileDate}) must be either today's date (${todayString}) or the OD start date (${startString})`
-        );
+        addStep(`${expectedType} Date Match`, false, `Date ${normalizedFileDate} must be Today (${todayString}) or Start Date (${startString})`);
+        return false;
       }
+      addStep(`${expectedType} Date Match`, true);
+
+      return true;
     };
 
     try {
@@ -309,6 +321,18 @@ exports.applyOD = async (req, res) => {
     );
 
     if (!ocrResult.success) {
+      // Add OCR failure as a step
+      const failedReasons = [];
+      if (!ocrResult.verificationDetails.name.found) failedReasons.push("Student Name");
+      if (!ocrResult.verificationDetails.company.found) failedReasons.push("Company Name");
+      if (!ocrResult.verificationDetails.dates.found) failedReasons.push("Joining Date");
+
+      validationSteps.push({
+        name: "AI Content Verification",
+        success: false,
+        error: `Could not verify: ${failedReasons.join(", ")}`
+      });
+
       // Delete uploaded files if verification fails to clean up
       try {
         fs.unlinkSync(aimFilePath);
@@ -318,11 +342,14 @@ exports.applyOD = async (req, res) => {
       }
 
       return res.status(400).json({
-        message: ocrResult.message || "Document verification failed. Please ensure you uploaded the correct offer letter.",
-        verificationDetails: ocrResult.verificationDetails,
-        summary: ocrResult.summary
+        message: "Document verification incomplete",
+        steps: validationSteps,
+        verificationDetails: ocrResult.verificationDetails
       });
     }
+
+    // OCR Success Step
+    validationSteps.push({ name: "AI Content Verification", success: true });
 
     /* ===== SAVE OD ===== */
     const timeline = [
@@ -434,7 +461,8 @@ exports.updateOdStatus = async (req, res) => {
     }
 
     // Validate Status
-    if (!["APPROVED", "REJECTED", "PENDING"].includes(status)) {
+    const validStatuses = ["APPROVED", "REJECTED", "PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED"];
+    if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
     }
 
