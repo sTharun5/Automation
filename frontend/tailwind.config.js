@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Outfit', 'sans-serif'],
+      },
       keyframes: {
         fadeInUp: {
           "0%": { opacity: "0", transform: "translateY(40px)" },

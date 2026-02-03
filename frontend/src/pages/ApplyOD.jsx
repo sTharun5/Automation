@@ -10,8 +10,8 @@ export default function ApplyOD() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
 
-  const [students, setStudents] = useState([]);
-  const [offers, setOffers] = useState([]); // ✅ New: Store offers for selected student
+  // ✅ Auto-set student ID from session
+  const [offers, setOffers] = useState([]);
   const [error, setError] = useState("");
   const { showToast } = useToast();
 
@@ -21,8 +21,8 @@ export default function ApplyOD() {
   const [verificationSummary, setVerificationSummary] = useState("");
 
   const [form, setForm] = useState({
-    studentId: "",
-    offerId: "", // ✅ New: track selected offer
+    studentId: user?.id || "", // ✅ Auto-fill
+    offerId: "",
     industry: "",
     campusType: "",
     startDate: "",
@@ -33,28 +33,9 @@ export default function ApplyOD() {
     iqacStatus: "Initiated"
   });
 
-  /* ================= LOAD STUDENTS ================= */
+  /* ================= LOAD OFFERS AUTOMATICALLY ================= */
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-
-    axios
-      .get("http://localhost:3000/api/students/list", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => setStudents(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch students", err);
-      });
-  }, []);
-
-  /* ================= LOAD OFFERS WHEN STUDENT SELECT CHANGED ================= */
-  useEffect(() => {
-    if (!form.studentId) {
-      setOffers([]);
-      return;
-    }
+    if (!form.studentId) return;
 
     const token = sessionStorage.getItem("token");
     axios
@@ -146,22 +127,15 @@ export default function ApplyOD() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-8">Apply On-Duty (OD)</h2>
 
+          {/* Read-Only Student Info */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student <span className="text-red-500">*</span></label>
-            <select
-              value={form.studentId}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
-              onChange={(e) =>
-                setForm({ ...form, studentId: e.target.value })
-              }
-            >
-              <option value="">Click to choose</option>
-              {students.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.rollNo})
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student</label>
+            <input
+              type="text"
+              value={`${user.name} (${user.rollNo})`}
+              readOnly
+              className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-500 dark:text-slate-400 cursor-not-allowed font-medium"
+            />
           </div>
 
           <div className="mb-6">
@@ -181,7 +155,7 @@ export default function ApplyOD() {
                 }
               }}
             >
-              <option value="">{form.studentId ? "Click to choose" : "Select a student first"}</option>
+              <option value="">{offers.length > 0 ? "Click to choose" : "Loading offers..."}</option>
               {offers.filter(o => o.company.isApproved).map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.company.name} ({o.lpa} LPA)
@@ -189,10 +163,10 @@ export default function ApplyOD() {
               ))}
             </select>
             {offers.length > 0 && offers.filter(o => o.company.isApproved).length === 0 && (
-              <p className="text-red-500 text-xs mt-1">None of this student's offers are from approved companies. They are not eligible for OD.</p>
+              <p className="text-red-500 text-xs mt-1">None of your offers are from approved companies. You are not eligible for OD.</p>
             )}
-            {offers.length === 0 && form.studentId && (
-              <p className="text-amber-500 text-xs mt-1">This student has no recorded offers. Please add an offer first.</p>
+            {offers.length === 0 && (
+              <p className="text-amber-500 text-xs mt-1">No offers found. Please contact the placement cell or admin.</p>
             )}
           </div>
 
@@ -347,7 +321,7 @@ export default function ApplyOD() {
               onClick={handleSubmit}
               className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold text-white transition-colors"
             >
-              Create & Add Another
+              Submit Application
             </button>
           </div>
         </div>

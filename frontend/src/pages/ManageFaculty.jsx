@@ -12,6 +12,15 @@ export default function ManageFaculty() {
     const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 
+    // Form State
+    const [form, setForm] = useState({
+        facultyId: "",
+        name: "",
+        email: "",
+        department: ""
+    });
+    const [formLoading, setFormLoading] = useState(false);
+
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
@@ -33,6 +42,29 @@ export default function ManageFaculty() {
             showToast("Failed to fetch faculty list", "error");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleAddFaculty = async () => {
+        if (!form.facultyId || !form.name || !form.email) {
+            showToast("Faculty ID, Name and Email are required", "error");
+            return;
+        }
+
+        try {
+            setFormLoading(true);
+            await api.post("/admin/add-faculty", form);
+            showToast("✅ Faculty added successfully", "success");
+            setForm({ facultyId: "", name: "", email: "", department: "" });
+            fetchFaculty(); // Refresh list
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to add faculty", "error");
+        } finally {
+            setFormLoading(false);
         }
     };
 
@@ -73,19 +105,71 @@ export default function ManageFaculty() {
                         </button>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Manage Faculty</h1>
                     </div>
-                    <button
-                        onClick={() => navigate("/admin/assign-mentor")}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
-                    >
-                        <span>🤝</span> Assign Mentees
-                    </button>
                 </div>
 
+                {/* Add Faculty Form */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm mb-8 transition-colors">
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">➕ Add New Faculty</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <input
+                            type="text"
+                            name="facultyId"
+                            placeholder="Faculty ID (Unique)"
+                            value={form.facultyId}
+                            onChange={handleChange}
+                            className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                        />
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Full Name"
+                            value={form.name}
+                            onChange={handleChange}
+                            className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                        />
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email Address"
+                            value={form.email}
+                            onChange={handleChange}
+                            className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                        />
+                        <input
+                            type="text"
+                            name="department"
+                            placeholder="Department"
+                            value={form.department}
+                            onChange={handleChange}
+                            className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                        />
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                        <button
+                            onClick={handleAddFaculty}
+                            disabled={formLoading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {formLoading ? "Adding..." : "Add Faculty"}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Faculty List */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
+                        <h2 className="font-bold text-slate-700 dark:text-slate-300">Faculty Directory</h2>
+                        <button
+                            onClick={() => navigate("/admin/assign-mentor")}
+                            className="text-blue-600 hover:text-blue-700 text-sm font-semibold hover:underline"
+                        >
+                            Manage Assignments →
+                        </button>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Faculty Details</th>
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Department</th>
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Mentees</th>

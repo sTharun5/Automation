@@ -5,7 +5,7 @@ import api from "../api/axios";
 export default function ChatAssistant() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { type: "bot", text: "Greetings. I am the Smart OD Support Agent. select a query below or type your question regarding application procedures." }
+        { type: "bot", text: "Greetings. I am **Disha 2.0**. select a query below or type your question regarding application procedures." }
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -60,7 +60,7 @@ export default function ChatAssistant() {
         {
             id: "greeting",
             keywords: ["hello", "hi", "greetings", "start"],
-            response: "Greetings. I am the **Automated Support Agent**. I can assist you with:\n\n1. Application Procedures\n2. File Naming & Formats\n3. System Policies\n\nHow may I assist you?"
+            response: "Greetings. I am **Disha 2.0**. I can assist you with:\n\n1. Application Procedures\n2. File Naming & Formats\n3. System Policies\n\nHow may I assist you?"
         }
     ];
 
@@ -173,7 +173,7 @@ export default function ChatAssistant() {
                         <div className="flex items-center gap-2">
                             <span className="text-xl">🤖</span>
                             <div>
-                                <h3 className="font-bold text-sm">Smart OD Support</h3>
+                                <h3 className="font-bold text-sm">Disha 2.0</h3>
                                 <p className="text-[10px] opacity-80">Automated Agent</p>
                             </div>
                         </div>
@@ -248,22 +248,29 @@ export default function ChatAssistant() {
                 </div>
             </div>
 
-            {/* FAB Toggle */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`pointer-events-auto h-14 w-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 ${isOpen
-                    ? "bg-slate-700 rotate-90"
-                    : "bg-blue-600 hover:bg-blue-700 scale-100"
-                    }`}
-            >
-                {isOpen ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                ) : (
-                    <span className="text-3xl">🤖</span>
+            {/* FAB Toggle Area */}
+            <div className="flex items-center gap-4 pointer-events-auto">
+                {!isOpen && (
+                    <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white px-4 py-2 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 text-sm font-semibold animate-bounce">
+                        Chat with Disha 2.0 👋
+                    </div>
                 )}
-            </button>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`h-14 w-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 ${isOpen
+                        ? "bg-slate-700 rotate-90"
+                        : "bg-blue-600 hover:bg-blue-700 scale-100"
+                        }`}
+                >
+                    {isOpen ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    ) : (
+                        <span className="text-3xl">🤖</span>
+                    )}
+                </button>
+            </div>
         </div>
     );
 }

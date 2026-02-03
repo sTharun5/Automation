@@ -15,6 +15,7 @@ import ManageStudents from "./pages/ManageStudents";
 import Notifications from "./pages/Notifications";
 import ODHistory from "./pages/ODHistory";
 import ManageCompanies from "./pages/ManageCompanies";
+import HelpSupport from "./pages/HelpSupport";
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -73,6 +74,7 @@ export default function App() {
                 <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                 <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
                 <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />
+                <Route path="/help" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}><HelpSupport /></ProtectedRoute>} />
               </Routes>
             </Layout>
           </BrowserRouter>

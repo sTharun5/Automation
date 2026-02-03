@@ -128,10 +128,15 @@ export default function Header() {
                       )}
                     </div>
                     <div className="py-1">
-                      <button className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                        <span className="text-slate-400" aria-hidden>❓</span>
-                        Help & Support
-                      </button>
+                      {role !== "ADMIN" && (
+                        <button
+                          onClick={() => { setOpen(false); navigate("/help"); }}
+                          className="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                        >
+                          <span className="text-slate-400" aria-hidden>❓</span>
+                          Help & Support
+                        </button>
+                      )}
                       <button
                         onClick={() => { setOpen(false); setShowLogout(true); }}
                         className="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors"
