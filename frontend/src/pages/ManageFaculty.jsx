@@ -3,11 +3,23 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function ManageFaculty() {
     const navigate = useNavigate();
     const [faculty, setFaculty] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: null,
+        isDanger: false
+    });
 
     useEffect(() => {
         fetchFaculty();
@@ -18,10 +30,33 @@ export default function ManageFaculty() {
             const res = await api.get("/admin/all-faculty");
             setFaculty(res.data);
         } catch (err) {
-            alert("Failed to fetch faculty list");
+            showToast("Failed to fetch faculty list", "error");
         } finally {
             setLoading(false);
         }
+    };
+
+    const confirmDeleteFaculty = async (id) => {
+        try {
+            await api.delete(`/admin/faculty/${id}`);
+            showToast("Faculty deleted successfully. Students unassigned.", "success");
+            fetchFaculty();
+        } catch (err) {
+            showToast("Failed to delete faculty", "error");
+        } finally {
+            setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+    };
+
+    const handleDeleteFaculty = (id, name) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Faculty",
+            message: `Are you sure you want to delete ${name}? Their assigned students will be unassigned, not deleted.`,
+            onConfirm: () => confirmDeleteFaculty(id),
+            isDanger: true,
+            confirmText: "Yes, Delete"
+        });
     };
 
     return (
@@ -89,6 +124,13 @@ export default function ManageFaculty() {
                                                 >
                                                     Manage Assignments
                                                 </button>
+                                                <button
+                                                    onClick={() => handleDeleteFaculty(f.id, f.name)}
+                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors ml-4"
+                                                    title="Delete Faculty"
+                                                >
+                                                    🗑️
+                                                </button>
                                             </td>
                                         </tr>
                                     ))
@@ -102,6 +144,10 @@ export default function ManageFaculty() {
                     </div>
                 </div>
             </main>
+            <ConfirmationModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+            />
             <Footer />
         </div>
     );

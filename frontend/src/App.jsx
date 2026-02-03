@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
@@ -14,6 +14,11 @@ import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
 import Notifications from "./pages/Notifications";
 import ODHistory from "./pages/ODHistory";
+import ManageCompanies from "./pages/ManageCompanies";
+import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import ChatAssistant from "./components/ChatAssistant";
 
 /* ===============================
    PROTECTED ROUTE
@@ -29,136 +34,50 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
   return children;
 };
 
+// Layout component to selectively show ChatAssistant
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const showChat = location.pathname !== "/"; // Don't show on login
+
+  return (
+    <>
+      {children}
+      {showChat && <ChatAssistant />}
+    </>
+  );
+};
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ================= PUBLIC ================= */}
-        <Route path="/" element={<Login />} />
-
-        {/* ================= STUDENT ================= */}
-        <Route
-          path="/student/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/apply-od"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <ApplyOD />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/student/od/:odId"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <StudentODDetails />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/od-history"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <ODHistory />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/od-status"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT"]}>
-              <ODHistory />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ================= FACULTY ================= */}
-        <Route
-          path="/faculty/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <FacultyDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/faculty/update-placement"
-          element={
-            <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <UpdatePlacementStatus />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ================= ADMIN ================= */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/assign-mentor"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <MentorAssignment />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/faculty"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <ManageFaculty />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/students"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <ManageStudents />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}>
-              <Notifications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/faculty/approvals"
-          element={
-            <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <FacultyApproval />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/faculty/mentee/:studentId"
-          element={
-            <ProtectedRoute allowedRoles={["FACULTY"]}>
-              <MenteeDetails />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider>
+      <ToastProvider>
+        <NotificationProvider>
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                {/* ... routes ... */}
+                {/* I will use the actual routes below */}
+                <Route path="/" element={<Login />} />
+                <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Dashboard /></ProtectedRoute>} />
+                <Route path="/apply-od" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ApplyOD /></ProtectedRoute>} />
+                <Route path="/student/od/:odId" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentODDetails /></ProtectedRoute>} />
+                <Route path="/od-history" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODHistory /></ProtectedRoute>} />
+                <Route path="/od-status" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODHistory /></ProtectedRoute>} />
+                <Route path="/faculty/dashboard" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyDashboard /></ProtectedRoute>} />
+                <Route path="/faculty/update-placement" element={<ProtectedRoute allowedRoles={["FACULTY"]}><UpdatePlacementStatus /></ProtectedRoute>} />
+                <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/assign-mentor" element={<ProtectedRoute allowedRoles={["ADMIN"]}><MentorAssignment /></ProtectedRoute>} />
+                <Route path="/admin/faculty" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageFaculty /></ProtectedRoute>} />
+                <Route path="/admin/students" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageStudents /></ProtectedRoute>} />
+                <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageCompanies /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
+                <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
+                <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+        </NotificationProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

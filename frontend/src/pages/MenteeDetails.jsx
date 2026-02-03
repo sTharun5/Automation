@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function MenteeDetails() {
     const { studentId } = useParams();
@@ -10,18 +12,52 @@ export default function MenteeDetails() {
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const { showToast } = useToast();
+
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: null,
+        isDanger: false
+    });
+
+    const fetchDetails = async () => {
+        try {
+            const res = await api.get(`/faculty/mentee/${studentId}`);
+            setStudent(res.data);
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to fetch student details");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmRemoveOffer = async (offerId) => {
+        try {
+            await api.delete(`/students/offer/${offerId}`);
+            showToast("Offer removed successfully", "success");
+            fetchDetails(); // Refresh
+        } catch (err) {
+            showToast("Failed to remove offer", "error");
+        } finally {
+            setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+    };
+
+    const handleRemoveOffer = (offerId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Remove Offer",
+            message: "Are you sure you want to remove this offer? This action cannot be undone.",
+            onConfirm: () => confirmRemoveOffer(offerId),
+            isDanger: true,
+            confirmText: "Yes, Remove"
+        });
+    };
 
     useEffect(() => {
-        const fetchDetails = async () => {
-            try {
-                const res = await api.get(`/faculty/mentee/${studentId}`);
-                setStudent(res.data);
-            } catch (err) {
-                setError(err.response?.data?.message || "Failed to fetch student details");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDetails();
     }, [studentId]);
 
@@ -68,32 +104,35 @@ export default function MenteeDetails() {
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 💼 Placement Status
                             </h2>
-                            {student.placement_status?.status === "PLACED" ? (
-                                <div className="space-y-4">
-                                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
-                                        <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-widest">Status</p>
-                                        <p className="text-lg font-bold text-green-900 dark:text-green-100">PLACED</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 uppercase font-bold">Company</p>
-                                        <p className="text-slate-900 dark:text-white font-semibold">{student.placement_status.companyName}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 uppercase font-bold">Package (LPA)</p>
-                                        <p className="text-slate-900 dark:text-white font-semibold">{student.placement_status.lpa} LPA</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 uppercase font-bold">Offer Date</p>
-                                        <p className="text-slate-900 dark:text-white font-semibold">
-                                            {new Date(student.placement_status.placedDate).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : student.placement_status?.status === "NIP" ? (
+                            {student.placement_status === "NIP" ? (
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
                                     <p className="text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-1">Status</p>
                                     <p className="text-xl font-black text-slate-900 dark:text-white">NIP</p>
                                     <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-tighter">Not Interested in Placement</p>
+                                </div>
+                            ) : (student.offers && student.offers.length > 0) || student.placement_status === "PLACED" ? (
+                                <div className="space-y-4">
+                                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                                        <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-widest">Status</p>
+                                        <p className="text-lg font-bold text-green-900 dark:text-green-100 uppercase">PLACED</p>
+                                    </div>
+                                    {student.offers && student.offers.map((offer, idx) => (
+                                        <div key={offer.id} className={`${idx > 0 ? "pt-4 border-t border-slate-100 dark:border-slate-800" : ""} group relative`}>
+                                            <button
+                                                onClick={() => handleRemoveOffer(offer.id)}
+                                                className="absolute top-0 right-0 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                title="Delete Offer"
+                                            >
+                                                🗑️
+                                            </button>
+                                            <p className="text-xs text-slate-500 uppercase font-bold">Offer {student.offers.length > 1 ? idx + 1 : ""}</p>
+                                            <p className="text-slate-900 dark:text-white font-semibold pr-6">{offer.company.name}</p>
+                                            <p className="text-xs text-slate-500">{offer.lpa} LPA • {new Date(offer.placedDate).toLocaleDateString()}</p>
+                                        </div>
+                                    ))}
+                                    {(!student.offers || student.offers.length === 0) && (
+                                        <p className="text-[10px] text-green-600 mt-1 italic">No offer details recorded yet</p>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800 text-center">
@@ -165,6 +204,10 @@ export default function MenteeDetails() {
                     </div>
                 </div>
             </main>
+            <ConfirmationModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+            />
             <Footer />
         </div>
     );

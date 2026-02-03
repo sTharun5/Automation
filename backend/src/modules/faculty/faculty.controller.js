@@ -23,11 +23,9 @@ exports.getMentees = async (req, res) => {
                 name: true,
                 department: true,
                 email: true,
-                placement_status: {
-                    select: {
-                        status: true,
-                        companyName: true
-                    }
+                placement_status: true,
+                offers: {
+                    include: { company: true }
                 }
             },
             orderBy: { rollNo: "asc" }
@@ -58,7 +56,9 @@ exports.getMenteeDetails = async (req, res) => {
         const student = await prisma.student.findUnique({
             where: { id: Number(studentId) },
             include: {
-                placement_status: true,
+                offers: {
+                    include: { company: true }
+                },
                 ods: {
                     orderBy: { createdAt: "desc" }
                 }

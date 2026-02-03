@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { addFaculty, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents } = require("./admin.controller");
+const { addFaculty, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty } = require("./admin.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 const { isAdmin } = require("../../middlewares/isAdmin.middleware");
 
@@ -34,7 +34,23 @@ router.put(
   removeMentor
 );
 
+router.delete(
+  "/faculty/:id",
+  verifyToken,
+  isAdmin,
+  deleteFaculty
+);
+
 router.get("/all-faculty", verifyToken, isAdmin, getAllFaculty);
 router.get("/all-students", verifyToken, isAdmin, getAllStudents);
+router.put("/update-student-status", verifyToken, updateStudentStatus);
+
+/* =========================
+   ADMIN / FACULTY: COMPANY MGMT
+========================= */
+router.get("/companies", verifyToken, listCompanies);
+router.post("/companies", verifyToken, createCompany);
+router.post("/toggle-company-approval", verifyToken, isAdmin, toggleCompanyApproval);
+router.delete("/companies/:id", verifyToken, isAdmin, deleteCompany);
 
 module.exports = router;

@@ -1,8 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { isStudentPlaced } = require("../placements/placement.service");
 const { v4: uuidv4 } = require("uuid");
 const { validateInternshipFile } = require("../../utils/fileValidator");
+const { getOfferById } = require("../students/offer.service");
 
 /**
  * Create OD / Internship
@@ -14,13 +14,22 @@ exports.createOD = async (data) => {
     startDate,
     endDate,
     eventId,
-    proofFile
+    proofFile,
+    offerId // ✅ New requirement
   } = data;
 
-  // 1️⃣ CHECK PLACEMENT
-  const placed = await isStudentPlaced(studentId);
-  if (!placed) {
-    throw new Error("OD allowed only for placed students");
+  // 1️⃣ VALIDATE OFFER & COMPANY APPROVAL
+  const offer = await getOfferById(offerId);
+  if (!offer) {
+    throw new Error("Invalid offer selection");
+  }
+
+  if (offer.studentId !== Number(studentId)) {
+    throw new Error("This offer does not belong to the student");
+  }
+
+  if (!offer.company.isApproved) {
+    throw new Error(`OD cannot be approved for ${offer.company.name}. This company is not on the approved list.`);
   }
 
   // 2️⃣ PARSE DATES
@@ -70,7 +79,7 @@ exports.createOD = async (data) => {
   const trackerId = "OD-" + uuidv4().slice(0, 8).toUpperCase();
 
   // 8️⃣ CREATE OD (FINAL)
-  return prisma.oD.create({
+  return prisma.od.create({ // Note: Prisma model name is 'od' not 'oD' in the updated schema
     data: {
       trackerId,
       type,
@@ -78,8 +87,9 @@ exports.createOD = async (data) => {
       endDate: end,
       duration,
       proofFile,
-      studentId,
-      eventId: type === "INTERNAL" ? eventId : null,
+      studentId: Number(studentId),
+      offerId: Number(offerId),
+      eventId: type === "INTERNAL" ? Number(eventId) : null,
       status: "APPROVED"
     }
   });

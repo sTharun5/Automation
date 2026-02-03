@@ -48,23 +48,32 @@ export default function Hero({ student, dashboardData }) {
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-4">
             Eligibility
           </p>
-          <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-            {dashboardData?.placement?.status === "PLACED"
-              ? (
-                <div className="flex flex-col items-start gap-1">
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">Placed</span>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    @ {dashboardData.placement.companyName}
+          <p className="mt-1">
+            {dashboardData?.placement?.status === "NIP" ? (
+              <span className="text-xl font-bold text-amber-600 dark:text-amber-400">NIP</span>
+            ) : (dashboardData?.placement?.offers && dashboardData.placement.offers.length > 0) ? (
+              <div className="space-y-3">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 uppercase">Placed</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded">
+                    {dashboardData.placement.totalOffers} {dashboardData.placement.totalOffers === 1 ? 'Offer' : 'Offers'}
                   </span>
-                  {dashboardData.placement.lpa && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 mt-0.5 border border-slate-200 dark:border-slate-600">
-                      Package: {dashboardData.placement.lpa} LPA
-                    </span>
-                  )}
                 </div>
-              )
-              : "Not Placed"
-            }
+                <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                  {dashboardData.placement.offers.map((offer, idx) => (
+                    <div key={offer.id} className={`p-2 rounded-lg border border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-700/30 ${idx === 0 ? 'ring-1 ring-emerald-500/30 dark:ring-emerald-400/20' : ''}`}>
+                      <div className="flex justify-between items-start">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{offer.companyName}</span>
+                        <span className="text-xs font-black text-blue-600 dark:text-blue-400 ml-2 whitespace-nowrap">{offer.lpa} LPA</span>
+                      </div>
+                      <p className="text-[9px] text-slate-500 font-medium">{new Date(offer.placedDate).toLocaleDateString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span className="text-xl font-bold text-slate-400 italic">Not Placed</span>
+            )}
           </p>
         </div>
 

@@ -1,5 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const companyService = require("./company.service");
+const notificationService = require("../notification/notification.service");
 
 /* =====================================================
    ADD FACULTY (ADMIN ONLY)
@@ -99,6 +101,30 @@ exports.assignMentor = async (req, res) => {
       }
     });
 
+    // Navigate to find details for notifications
+    const mentor = await prisma.faculty.findUnique({ where: { id: Number(mentorId) } });
+    const students = await prisma.student.findMany({ where: { id: { in: studentIds.map(id => Number(id)) } } });
+
+    // Notify Mentor
+    if (mentor) {
+      await notificationService.createNotification(
+        mentor.email,
+        "New Mentees Assigned",
+        `You have been assigned ${students.length} new students.`,
+        "INFO"
+      );
+    }
+
+    // Notify Students
+    for (const student of students) {
+      await notificationService.createNotification(
+        student.email,
+        "Mentor Assigned",
+        `You have been assigned a new mentor: ${mentor?.name}.`,
+        "INFO"
+      );
+    }
+
     res.json({ message: "Mentor assigned successfully to students" });
   } catch (error) {
     console.error("ASSIGN MENTOR ERROR:", error);
@@ -164,16 +190,149 @@ exports.getAllStudents = async (req, res) => {
         mentor: {
           select: { id: true, name: true, facultyId: true }
         },
-        placement_status: {
-          select: { status: true }
+        offers: {
+          include: { company: true }
         }
       },
       orderBy: { rollNo: "asc" }
     });
 
+
+
+    // Check for unassigned students and notify admin
+    await notificationService.checkAndNotifyUnassignedStudents();
+
     res.json(students);
   } catch (error) {
     console.error("GET ALL STUDENTS ERROR:", error);
     res.status(500).json({ message: "Failed to fetch students" });
+  }
+};
+/* =====================================================
+   LIST ALL COMPANIES (ADMIN ONLY)
+===================================================== */
+exports.listCompanies = async (req, res) => {
+  try {
+    const { approvedOnly } = req.query;
+    const filter = approvedOnly === "true" ? { isApproved: true } : {};
+
+    const companies = await companyService.listCompanies(filter);
+    res.json(companies);
+  } catch (error) {
+    console.error("LIST COMPANIES ERROR:", error);
+    res.status(500).json({
+      message: "Failed to fetch companies",
+      error: error.message
+    });
+  }
+};
+
+/* =====================================================
+   CREATE COMPANY (ADMIN ONLY)
+===================================================== */
+exports.createCompany = async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Company name is required" });
+
+    const company = await companyService.getOrCreateCompany(name);
+    res.status(201).json(company);
+  } catch (error) {
+    console.error("CREATE COMPANY ERROR:", error);
+    res.status(500).json({ message: "Failed to create company" });
+  }
+};
+
+/* =====================================================
+   TOGGLE COMPANY APPROVAL (ADMIN ONLY)
+===================================================== */
+exports.toggleCompanyApproval = async (req, res) => {
+  try {
+    const { id, isApproved } = req.body;
+    if (!id) return res.status(400).json({ message: "Company ID is required" });
+
+    const company = await companyService.toggleCompanyApproval(id, isApproved);
+    res.json({ message: "Company approval toggled", company });
+  } catch (error) {
+    console.error("TOGGLE COMPANY ERROR:", error);
+    res.status(500).json({ message: "Failed to toggle company approval" });
+  }
+};
+
+/* =====================================================
+   DELETE COMPANY (ADMIN ONLY)
+===================================================== */
+exports.deleteCompany = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Company ID is required" });
+
+    // Delete company (Offers will be deleted via cascade if defined)
+    await prisma.company.delete({
+      where: { id: Number(id) }
+    });
+
+    res.json({ message: "Company deleted successfully" });
+  } catch (error) {
+    console.error("DELETE COMPANY ERROR:", error);
+    res.status(500).json({ message: "Failed to delete company" });
+  }
+};
+
+/* =====================================================
+   UPDATE STUDENT PLACEMENT STATUS
+===================================================== */
+exports.updateStudentStatus = async (req, res) => {
+  try {
+    const { studentId, placement_status } = req.body;
+    if (!studentId) return res.status(400).json({ message: "Student ID is required" });
+
+    // Link check for faculty
+    if (req.user.role !== "ADMIN") {
+      const faculty = await prisma.faculty.findUnique({ where: { email: req.user.email } });
+      if (!faculty) return res.status(403).json({ message: "Access denied" });
+
+      const student = await prisma.student.findUnique({ where: { id: Number(studentId) } });
+      if (!student) return res.status(404).json({ message: "Student not found" });
+
+      if (student.mentorId !== faculty.id) {
+        return res.status(403).json({ message: "Unauthorized: You are not the mentor of this student" });
+      }
+    }
+
+    await prisma.student.update({
+      where: { id: Number(studentId) },
+      data: { placement_status }
+    });
+
+    res.json({ message: "Student status updated" });
+  } catch (error) {
+    console.error("UPDATE STUDENT STATUS ERROR:", error);
+    res.status(500).json({ message: "Failed to update student status" });
+  }
+};
+/* =====================================================
+   DELETE FACULTY (ADMIN ONLY) - Safe Unlink Strategy
+===================================================== */
+exports.deleteFaculty = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Faculty ID is required" });
+
+    // 1. Unassign all students linked to this mentor
+    await prisma.student.updateMany({
+      where: { mentorId: Number(id) },
+      data: { mentorId: null }
+    });
+
+    // 2. Delete the faculty
+    await prisma.faculty.delete({
+      where: { id: Number(id) }
+    });
+
+    res.json({ message: "Faculty deleted successfully. Students have been unassigned." });
+  } catch (error) {
+    console.error("DELETE FACULTY ERROR:", error);
+    res.status(500).json({ message: "Failed to delete faculty" });
   }
 };

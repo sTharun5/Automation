@@ -4,10 +4,22 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProfileCard from "../components/ProfileCard";
+import { useToast } from "../context/ToastContext";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
+  const { showToast } = useToast();
+
+  // Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    isDanger: false
+  });
 
   const [form, setForm] = useState({
     facultyId: "",
@@ -34,8 +46,9 @@ export default function AdminDashboard() {
       const res = await api.get(`/students/search?q=${searchQuery}`);
       setStudents(res.data);
       setSelectedStudent(null);
+      setSelectedStudent(null);
     } catch (err) {
-      alert("Search failed");
+      showToast("Search failed", "error");
     }
   };
 
@@ -46,24 +59,37 @@ export default function AdminDashboard() {
     try {
       const res = await api.get(`/od/admin/student/${student.id}`);
       setStudentODs(res.data);
+      setStudentODs(res.data);
     } catch (err) {
-      alert("Failed to load ODs");
+      showToast("Failed to load ODs", "error");
     } finally {
       setLoadingODs(false);
     }
   };
 
   /* ================= CANCEL OD ================= */
-  const handleCancelOD = async (odId) => {
-    if (!window.confirm("Are you sure you want to cancel this OD?")) return;
+  const confirmCancelOD = async (odId) => {
     try {
       await api.put(`/od/update-status/${odId}`, { status: "REJECTED" });
-      alert("OD Cancelled Successfully");
+      showToast("OD Cancelled Successfully", "success");
       // Refresh list
       handleSelectStudent(selectedStudent);
     } catch (err) {
-      alert("Failed to cancel OD");
+      showToast("Failed to cancel OD", "error");
+    } finally {
+      setConfirmModal({ ...confirmModal, isOpen: false });
     }
+  };
+
+  const handleCancelOD = (odId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Cancel OD",
+      message: "Are you sure you want to cancel this OD?",
+      onConfirm: () => confirmCancelOD(odId),
+      isDanger: true,
+      confirmText: "Yes, Cancel"
+    });
   };
 
   const handleChange = (e) => {
@@ -148,6 +174,18 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Students</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Examine all students and their assigned mentors.</p>
                 <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors" />
+              </div>
+              <div
+                onClick={() => navigate("/admin/companies")}
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <span className="text-3xl bg-amber-50 dark:bg-amber-900/30 p-2 rounded-xl">🏢</span>
+                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Companies</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Approve or reject companies for OD requests.</p>
+                <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-colors" />
               </div>
             </div>
           </div>
@@ -308,6 +346,10 @@ export default function AdminDashboard() {
           )}
         </div>
       </main>
+      <ConfirmationModal
+        {...confirmModal}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
       <Footer />
     </div>
   );

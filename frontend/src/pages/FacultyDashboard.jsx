@@ -98,10 +98,10 @@ export default function FacultyDashboard() {
                           <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300">
                             {student.name.charAt(0).toUpperCase()}
                           </div>
-                          {student.placement_status?.status === "PLACED" ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
-                          ) : student.placement_status?.status === "NIP" ? (
+                          {student.placement_status === "NIP" ? (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
+                          ) : (student.offers && student.offers.length > 0) || student.placement_status === "PLACED" ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
                           ) : (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
                           )}

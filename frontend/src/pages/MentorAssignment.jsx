@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function MentorAssignment() {
     const navigate = useNavigate();
@@ -39,6 +41,16 @@ export default function MentorAssignment() {
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
+    const { showToast } = useToast();
+
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: null,
+        isDanger: false
+    });
 
     // Real-time Faculty Search
     useEffect(() => {
@@ -100,47 +112,70 @@ export default function MentorAssignment() {
     };
 
     /* ================= REMOVE MENTOR ================= */
-    const handleRemoveMentor = async (studentId) => {
-        if (!window.confirm("Are you sure you want to remove the mentor from this student?")) return;
+    const confirmRemoveMentor = async (studentId) => {
         try {
             setLoading(true);
             await api.put("/admin/remove-mentor", { studentId });
-            setMessage("Mentor removed successfully");
+            showToast("Mentor removed successfully", "success");
             handleStudentSearch(); // Refresh list
         } catch (err) {
-            alert("Removal failed");
+            showToast("Removal failed", "error");
         } finally {
             setLoading(false);
+            setConfirmModal({ ...confirmModal, isOpen: false });
         }
     };
 
+    const handleRemoveMentor = (studentId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Unassign Mentor",
+            message: "Are you sure you want to remove the mentor from this student?",
+            onConfirm: () => confirmRemoveMentor(studentId),
+            isDanger: true,
+            confirmText: "Yes, Remove"
+        });
+    };
+
     /* ================= SUBMIT ASSIGNMENT ================= */
-    const handleAssign = async () => {
-        if (!selectedFaculty || selectedStudents.length === 0) {
-            alert("Please select a faculty and at least one student");
-            return;
-        }
-
-        const hasAssigned = selectedStudents.some(s => s.mentor);
-        if (hasAssigned) {
-            if (!window.confirm("Some selected students already have a mentor. Reassign them?")) return;
-        }
-
+    const performAssignment = async () => {
         try {
             setLoading(true);
             await api.put("/admin/assign-mentor", {
                 mentorId: selectedFaculty.id,
                 studentIds: selectedStudents.map((s) => s.id)
             });
-            setMessage(`Successfully assigned ${selectedStudents.length} students to ${selectedFaculty.name}`);
+            showToast(`Successfully assigned ${selectedStudents.length} students to ${selectedFaculty.name}`, "success");
             setSelectedFaculty(null);
             setSelectedStudents([]);
             setFaculties([]);
             setStudents([]);
         } catch (err) {
-            alert(err.response?.data?.message || "Assignment failed");
+            showToast(err.response?.data?.message || "Assignment failed", "error");
         } finally {
             setLoading(false);
+            setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+    };
+
+    const handleAssign = () => {
+        if (!selectedFaculty || selectedStudents.length === 0) {
+            showToast("Please select a faculty and at least one student", "warning");
+            return;
+        }
+
+        const hasAssigned = selectedStudents.some(s => s.mentor);
+        if (hasAssigned) {
+            setConfirmModal({
+                isOpen: true,
+                title: "Reassign Students",
+                message: "Some selected students already have a mentor. Are you sure you want to reassign them?",
+                onConfirm: performAssignment,
+                isDanger: false,
+                confirmText: "Yes, Reassign"
+            });
+        } else {
+            performAssignment();
         }
     };
 
@@ -353,7 +388,11 @@ export default function MentorAssignment() {
                     </div>
                 </div>
             </main>
+            <ConfirmationModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+            />
             <Footer />
-        </div>
+        </div >
     );
 }

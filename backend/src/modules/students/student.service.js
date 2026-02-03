@@ -52,8 +52,11 @@ export const getStudentByIdService = async (id) => {
   return await prisma.student.findUnique({
     where: { id: Number(id) },
     include: {
-      placement: true,
-      placementStatus: true,
+      offers: {
+        include: {
+          company: true
+        }
+      },
       ods: true
     }
   });

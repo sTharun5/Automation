@@ -4,13 +4,16 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import VerificationResultModal from "../components/VerificationResultModal";
+import { useToast } from "../context/ToastContext";
 
 export default function ApplyOD() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
 
   const [students, setStudents] = useState([]);
+  const [offers, setOffers] = useState([]); // ✅ New: Store offers for selected student
   const [error, setError] = useState("");
+  const { showToast } = useToast();
 
   // Modal state for verification results
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -19,6 +22,7 @@ export default function ApplyOD() {
 
   const [form, setForm] = useState({
     studentId: "",
+    offerId: "", // ✅ New: track selected offer
     industry: "",
     campusType: "",
     startDate: "",
@@ -45,6 +49,27 @@ export default function ApplyOD() {
       });
   }, []);
 
+  /* ================= LOAD OFFERS WHEN STUDENT SELECT CHANGED ================= */
+  useEffect(() => {
+    if (!form.studentId) {
+      setOffers([]);
+      return;
+    }
+
+    const token = sessionStorage.getItem("token");
+    axios
+      .get(`http://localhost:3000/api/students/${form.studentId}/offers`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then((res) => setOffers(res.data))
+      .catch((err) => {
+        console.error("Failed to fetch offers", err);
+        setOffers([]);
+      });
+  }, [form.studentId]);
+
   /* ================= DURATION WITH 60 DAY LIMIT ================= */
   const calculateDuration = (start, end) => {
     if (!start || !end) return "";
@@ -68,7 +93,7 @@ export default function ApplyOD() {
   const handleSubmit = async () => {
     try {
       if (!form.aimFile || !form.offerFile) {
-        alert("Please upload both documents");
+        showToast("Please upload both documents", "warning");
         return;
       }
 
@@ -101,7 +126,7 @@ export default function ApplyOD() {
         setVerificationSummary(errorData.summary);
         setShowVerificationModal(true);
       } else {
-        alert(errorData?.message || "Failed to apply OD");
+        showToast(errorData?.message || "Failed to apply OD", "error");
       }
     }
   };
@@ -137,6 +162,38 @@ export default function ApplyOD() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Offer <span className="text-red-500">*</span></label>
+            <select
+              value={form.offerId}
+              className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+              onChange={(e) => {
+                const offerId = e.target.value;
+                const selectedOffer = offers.find(o => o.id === Number(offerId));
+                setForm({ ...form, offerId });
+
+                if (selectedOffer && !selectedOffer.company.isApproved) {
+                  setError(`Warning: ${selectedOffer.company.name} is not on the approved list. This OD might be automatically rejected.`);
+                } else {
+                  setError("");
+                }
+              }}
+            >
+              <option value="">{form.studentId ? "Click to choose" : "Select a student first"}</option>
+              {offers.filter(o => o.company.isApproved).map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.company.name} ({o.lpa} LPA)
+                </option>
+              ))}
+            </select>
+            {offers.length > 0 && offers.filter(o => o.company.isApproved).length === 0 && (
+              <p className="text-red-500 text-xs mt-1">None of this student's offers are from approved companies. They are not eligible for OD.</p>
+            )}
+            {offers.length === 0 && form.studentId && (
+              <p className="text-amber-500 text-xs mt-1">This student has no recorded offers. Please add an offer first.</p>
+            )}
           </div>
 
           <div className="mb-6">
@@ -294,7 +351,7 @@ export default function ApplyOD() {
             </button>
           </div>
         </div>
-      </main>
+      </main >
       <Footer />
       <VerificationResultModal
         isOpen={showVerificationModal}
@@ -302,6 +359,6 @@ export default function ApplyOD() {
         verificationDetails={verificationDetails}
         summary={verificationSummary}
       />
-    </div>
+    </div >
   );
 }

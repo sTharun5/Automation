@@ -32,6 +32,34 @@ model event {
 }
 
 /// *
+/// * ================= COMPANY =================
+model company {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  offers      offer[]
+}
+
+/// *
+/// * ================= OFFER =================
+model offer {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  companyId   Int
+  lpa         String?
+  offerLetter String?  // Path to offer letter file
+  placedDate  DateTime
+  createdAt   DateTime @default(now())
+  student     student  @relation(fields: [studentId], references: [id])
+  company     company  @relation(fields: [companyId], references: [id])
+  ods         od[]
+
+  @@index([studentId])
+  @@index([companyId])
+}
+
+/// *
 /// * ================= OD =================
 model od {
   id                  Int       @id @default(autoincrement())
@@ -43,6 +71,7 @@ model od {
   duration            Int
   proofFile           String?
   studentId           Int
+  offerId             Int?      // Link to a specific offer
   eventId             Int?
   status              od_status @default(PENDING)
   verificationDetails Json?     // Stores OCR verification results
@@ -52,9 +81,11 @@ model od {
   offerFile           String?
   event               event?    @relation(fields: [eventId], references: [id])
   student             student   @relation(fields: [studentId], references: [id])
+  offer               offer?    @relation(fields: [offerId], references: [id])
 
   @@index([studentId])
   @@index([eventId])
+  @@index([offerId])
 }
 
 model student {
@@ -67,8 +98,8 @@ model student {
   mentorId         Int?              // Assigned Faculty Mentor
   createdAt        DateTime          @default(now())
   ods              od[]
-  placement        placement?
-  placement_status placement_status?
+  offers           offer[]
+  placement_status String?           // Descriptive status (e.g. "PLACED", "YET_TO_BE_PLACED")
   mentor           faculty?          @relation("StudentMentor", fields: [mentorId], references: [id])
 
   @@index([mentorId])
@@ -91,22 +122,16 @@ model admin {
   createdAt DateTime @default(now())
 }
 
-model placement_status {
-  id          Int            @id @default(autoincrement())
-  status      placement_type
-  companyName String?
-  lpa         String?
-  placedDate  DateTime?
-  updatedAt   DateTime       @default(now())
-  rollNo      String?        @unique
-  student     student?       @relation(fields: [rollNo], references: [rollNo])
-}
+model notification {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @default("INFO") @db.VarChar(50)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 
-model placement {
-  id      Int     @id @default(autoincrement())
-  rollNo  String  @unique
-  company String
-  student student @relation(fields: [rollNo], references: [rollNo])
+  @@index([email])
 }
 
 enum od_type {
@@ -127,20 +152,8 @@ enum od_status {
   REJECTED          // Rejected at any stage
 }
 
-enum placement_type {
+enum placement_status_status {
   PLACED
   YET_TO_BE_PLACED
   NIP
-}
-
-model notification {
-  id        Int      @id @default(autoincrement())
-  email     String   @db.VarChar(255)
-  title     String   @db.VarChar(255)
-  message   String   @db.Text
-  type      String   @default("INFO") @db.VarChar(50)
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([email])
 }

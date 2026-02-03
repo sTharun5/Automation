@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
 
 export default function FacultyApproval() {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function FacultyApproval() {
     const [loading, setLoading] = useState(true);
     const [selectedOd, setSelectedOd] = useState(null);
     const [remarks, setRemarks] = useState("");
+    const { showToast } = useToast();
 
     useEffect(() => {
         fetchPendingODs();
@@ -32,8 +34,9 @@ export default function FacultyApproval() {
             setSelectedOd(null);
             setRemarks("");
             fetchPendingODs();
+            showToast("Status updated successfully", "success");
         } catch (err) {
-            alert("Failed to update status");
+            showToast("Failed to update status", "error");
         }
     };
 
@@ -77,8 +80,8 @@ export default function FacultyApproval() {
                                     key={od.id}
                                     onClick={() => setSelectedOd(od)}
                                     className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedOd?.id === od.id
-                                            ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
-                                            : "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-blue-300 shadow-sm"
+                                        ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
+                                        : "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-blue-300 shadow-sm"
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-2">

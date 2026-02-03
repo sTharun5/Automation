@@ -3,11 +3,23 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useToast } from "../context/ToastContext";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function ManageStudents() {
     const navigate = useNavigate();
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        onConfirm: null,
+        isDanger: false
+    });
 
     useEffect(() => {
         fetchStudents();
@@ -18,20 +30,33 @@ export default function ManageStudents() {
             const res = await api.get("/admin/all-students");
             setStudents(res.data);
         } catch (err) {
-            alert("Failed to fetch student list");
+            showToast("Failed to fetch student list", "error");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleRemoveMentor = async (studentId) => {
-        if (!window.confirm("Are you sure you want to remove the mentor for this student?")) return;
+    const confirmRemoveMentor = async (studentId) => {
         try {
             await api.put("/admin/remove-mentor", { studentId });
+            showToast("Mentor removed successfully", "success");
             fetchStudents(); // Refresh list
         } catch (err) {
-            alert("Removal failed");
+            showToast("Removal failed", "error");
+        } finally {
+            setConfirmModal({ ...confirmModal, isOpen: false });
         }
+    };
+
+    const handleRemoveMentor = (studentId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Unassign Mentor",
+            message: "Are you sure you want to remove the mentor for this student?",
+            onConfirm: () => confirmRemoveMentor(studentId),
+            isDanger: true,
+            confirmText: "Yes, Remove"
+        });
     };
 
     return (
@@ -86,10 +111,10 @@ export default function ManageStudents() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                {s.placement_status?.status === "PLACED" ? (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
-                                                ) : s.placement_status?.status === "NIP" ? (
+                                                {s.placement_status === "NIP" ? (
                                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
+                                                ) : (s.offers && s.offers.length > 0) || s.placement_status === "PLACED" ? (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed {s.offers?.length > 0 ? `(${s.offers.length})` : ""}</span>
                                                 ) : (
                                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
                                                 )}
@@ -133,6 +158,10 @@ export default function ManageStudents() {
                     </div>
                 </div>
             </main>
+            <ConfirmationModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+            />
             <Footer />
         </div>
     );

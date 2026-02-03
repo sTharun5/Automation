@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 const pdf = require("pdf-parse");
 const prisma = new PrismaClient();
-const { createNotification } = require("../notifications/notification.controller");
+const notificationService = require("../notification/notification.service");
 
 const generateTrackerId = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -123,12 +123,10 @@ async function verifyDocumentContent(filePath, studentName, companyName, startDa
 exports.applyOD = async (req, res) => {
   try {
     const {
-      studentId,
-      industry,
-      campusType,
       startDate,
       endDate,
-      duration
+      duration,
+      offerId // ✅ New
     } = req.body;
 
     /* ===== BASIC VALIDATION ===== */
@@ -138,10 +136,11 @@ exports.applyOD = async (req, res) => {
       !campusType ||
       !startDate ||
       !endDate ||
-      !duration
+      !duration ||
+      !offerId
     ) {
       return res.status(400).json({
-        message: "All required fields must be filled"
+        message: "All required fields (including offer) must be filled"
       });
     }
 
@@ -161,6 +160,25 @@ exports.applyOD = async (req, res) => {
         message: "Student not found"
       });
     }
+
+    /* ===== VERIFY OFFER & COMPANY APPROVAL ===== */
+    const offer = await prisma.offer.findUnique({
+      where: { id: Number(offerId) },
+      include: { company: true }
+    });
+
+    if (!offer || offer.studentId !== student.id) {
+      return res.status(400).json({ message: "Invalid offer selection" });
+    }
+
+    if (!offer.company.isApproved) {
+      return res.status(400).json({
+        message: `OD cannot be approved for ${offer.company.name}. This company is not on the approved list.`
+      });
+    }
+
+    // Use company name from the offer for OCR instead of the generic 'industry' dropdown
+    const companyNameForOCR = offer.company.name;
 
     /* ===== VALIDATE FILENAMES ===== */
     const validateDocument = (file, expectedType) => {
@@ -285,7 +303,7 @@ exports.applyOD = async (req, res) => {
     const ocrResult = await verifyDocumentContent(
       offerFilePath,
       student.name,
-      industry,
+      companyNameForOCR, // ✅ Use specific company
       startDate,
       endDate
     );
@@ -327,6 +345,7 @@ exports.applyOD = async (req, res) => {
         trackerId: generateTrackerId(),
         activityId: generateActivityId(),
         studentId: Number(studentId),
+        offerId: Number(offerId), // ✅ Link to offer
         type: "INTERNSHIP",
         startDate: new Date(startDate),
         endDate: new Date(endDate),
@@ -340,7 +359,7 @@ exports.applyOD = async (req, res) => {
     });
 
     // Notify Student and Mentor
-    await createNotification(
+    await notificationService.createNotification(
       student.email,
       "OD Documents Verified",
       `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
@@ -350,7 +369,7 @@ exports.applyOD = async (req, res) => {
     if (student.mentorId) {
       const mentor = await prisma.faculty.findUnique({ where: { id: student.mentorId } });
       if (mentor) {
-        await createNotification(
+        await notificationService.createNotification(
           mentor.email,
           "New OD Approval Pending",
           `Student ${student.name} (${student.rollNo}) has applied for OD. Review required.`,
@@ -436,6 +455,15 @@ exports.updateOdStatus = async (req, res) => {
       return res.status(404).json({ message: "OD not found" });
     }
 
+    // POLICY: If OD is already APPROVED, only ADMIN can change it (Revoke/Update)
+    if (od.status === "APPROVED") {
+      if (!admin) { // If not admin (i.e., is faculty)
+        return res.status(403).json({
+          message: "Only Administrators can revoke or modify an already Approved OD."
+        });
+      }
+    }
+
     // Update Timeline
     const currentTimeline = Array.isArray(od.timeline) ? od.timeline : [];
     const newEvent = {
@@ -456,7 +484,7 @@ exports.updateOdStatus = async (req, res) => {
 
     // Notify Student
     if (od.student) {
-      await createNotification(
+      await notificationService.createNotification(
         od.student.email,
         "OD Status Updated",
         `Your OD request (${od.trackerId}) has been ${status.replace("_", " ").toLowerCase()}.`,
@@ -489,7 +517,7 @@ exports.getMentorODs = async (req, res) => {
         students: {
           include: {
             ods: {
-              where: { status: { in: ["DOCS_VERIFIED", "PENDING_MENTOR", "MENTOR_APPROVED"] } },
+              where: { status: { in: ["PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED"] } },
               orderBy: { createdAt: "desc" },
               include: { student: true }
             }
@@ -538,6 +566,46 @@ exports.getStudentODs = async (req, res) => {
 
   } catch (error) {
     console.error("GET STUDENT ODs ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch ODs" });
+  }
+};
+
+/* =====================================================
+   GET MY ODs (STUDENT)
+ ===================================================== */
+/* =====================================================
+   GET MY ODs (STUDENT)
+ ===================================================== */
+exports.getMyODs = async (req, res) => {
+  try {
+    const email = req.user.email;
+    const student = await prisma.student.findUnique({ where: { email } });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const ods = await prisma.od.findMany({
+      where: { studentId: student.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        offer: {
+          include: { company: true }
+        },
+        event: true
+      }
+    });
+
+    // Map to include company name property if relation exists (or event name)
+    const mOds = ods.map(o => ({
+      ...o,
+      company: o.offer?.company?.name || o.event?.name || "Unknown"
+    }));
+
+    return res.json(mOds);
+
+  } catch (error) {
+    console.error("GET MY ODs ERROR:", error);
     return res.status(500).json({ message: "Failed to fetch ODs" });
   }
 };

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs } = require("./od.controller");
+const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs , getMyODs } = require("./od.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
 
@@ -45,6 +45,7 @@ router.post(
   applyOD
 );
 
+router.get("/my-ods", verifyToken, getMyODs); // ✅ New Route
 router.get("/:id", verifyToken, getOdById);
 
 router.put("/update-status/:id", verifyToken, updateOdStatus);
