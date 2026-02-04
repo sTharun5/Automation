@@ -262,17 +262,51 @@ exports.applyOD = async (req, res) => {
       });
     }
 
-    /* ===== OVERLAP CHECK ===== */
+    /* ===== SINGLE ACTIVE/PENDING OD ENFORCEMENT ===== */
+    const pendingStatuses = ["PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED"];
+
+    // Check for any incomplete application
+    const existingPendingOD = await prisma.od.findFirst({
+      where: {
+        studentId: Number(studentId),
+        status: { in: pendingStatuses }
+      }
+    });
+
+    if (existingPendingOD) {
+      return res.status(400).json({
+        message: "You already have a pending/processing OD application. Please wait until it is finalized."
+      });
+    }
+
+    // Check for an Active OD (Approved and currently ongoing)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeOD = await prisma.od.findFirst({
+      where: {
+        studentId: Number(studentId),
+        status: "APPROVED",
+        endDate: { gte: today } // End Date is in the future or today
+      }
+    });
+
+    if (activeOD) {
+      return res.status(400).json({
+        message: "You currently have an Active OD. You cannot apply for a new one until the current one is completed."
+      });
+    }
+
+    /* ===== OVERLAP CHECK (Double Check) ===== */
     const start = new Date(startDate);
     const end = new Date(endDate);
 
     const overlapping = await prisma.od.findFirst({
       where: {
         studentId: Number(studentId),
-        status: { in: ["PENDING", "APPROVED"] },
+        status: "APPROVED", // Only check against other approved ones (though the check above should catch it)
         OR: [
           {
-            // New Overlaps Existing
             AND: [
               { startDate: { lte: end } },
               { endDate: { gte: start } }
@@ -284,26 +318,16 @@ exports.applyOD = async (req, res) => {
 
     if (overlapping) {
       return res.status(400).json({
-        message: "You already have a Pending or Approved OD overlapping with these dates."
+        message: "The selected dates overlap with another Approved OD."
       });
     }
 
-    /* ===== 60 DAY RULE (USING studentId) ===== */
-    const used = await prisma.od.aggregate({
-      where: {
-        studentId: Number(studentId),
-        status: "APPROVED"
-      },
-      _sum: {
-        duration: true
-      }
-    });
-
-    const usedDays = used._sum.duration || 0;
-
-    if (usedDays + Number(duration) > 60) {
+    /* ===== PER OD LIMIT (60 DAYS) ===== */
+    // Note: Global 60-day cap removed as per new requirement. 
+    // Ensuring single OD duration does not exceed 60 days (handled in service or here).
+    if (Number(duration) > 60) {
       return res.status(400).json({
-        message: "OD limit exceeded. Maximum allowed is 60 days."
+        message: "Single OD duration cannot exceed 60 days."
       });
     }
 
@@ -428,7 +452,12 @@ exports.getOdById = async (req, res) => {
     const od = await prisma.od.findUnique({
       where: { id: Number(id) },
       include: {
-        student: true // ✅ gives rollNo, name, email safely
+        student: true,
+        offer: {
+          include: {
+            company: true
+          }
+        }
       }
     });
 

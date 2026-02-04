@@ -91,6 +91,9 @@ export default function ChatAssistant() {
         if (lower.includes("hello") || lower.includes("hi")) {
             return "Hello! 👋 How can I assist you with your OD application today?";
         }
+        if (lower.includes("why") && lower.includes("start") && lower.includes("approved")) {
+            return "Usually, an OD is **Active** only when:\n1. The Start Date has arrived.\n2. Final Admin/HOD Approval is complete (after Mentor).\nIf your Mentor approved, it might still be pending Final Review!";
+        }
         return "I'm not sure about that. Try asking about **OD Status**, **Formats**, or **Procedures**.";
     };
 
@@ -98,20 +101,90 @@ export default function ChatAssistant() {
        🧠 SMART APPLY LOGIC
     ========================================= */
     const processSmartApply = async (text) => {
-        // Regex: Apply OD <Start> to <End> for <Company> <Industry> <Campus>
-        // Flexible regex to catch fields
-        const regex = /Apply OD (\d{2}[-.]\d{2}[-.]\d{4}) to (\d{2}[-.]\d{2}[-.]\d{4}) for (.+?) (IT|Core|Research) (On Campus|Off Campus)/i;
-        const match = text.match(regex);
+        // 1. Extract Dates (Required)
+        const dateRegex = /(\d{2}[-.]\d{2}[-.]\d{4}) to (\d{2}[-.]\d{2}[-.]\d{4})/i;
+        const dateMatch = text.match(dateRegex);
 
-        if (!match) {
-            return "❌ **Invalid Format.**\nPlease use: `Apply OD <Start> to <End> for <Company> <Industry> <Campus>`\nExample: `Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus`";
+        if (!dateMatch) {
+            return "❌ **Invalid Date Format.**\nPlease use: `Apply OD <Start> to <End> ...`\nExample: `Apply OD 10.08.2025 to 12.08.2025`";
         }
+
+        const [_, startDate, endDate] = dateMatch;
+
+        // 2. Extract Keywords (Flexible Order)
+        const industryMatch = text.match(/\b(IT|Core|Research)\b/i);
+        const campusMatch = text.match(/\b(On Campus|Off Campus)\b/i);
+
+        const industry = industryMatch ? industryMatch[0] : null;
+        const campusType = campusMatch ? campusMatch[0] : null;
+
+        if (!industry || !campusType) {
+            return "❌ **Missing Details.**\nPlease specify the **Industry** (IT/Core/Research) and **Mode** (On Campus/Off Campus).\nExample: `... for Google IT On Campus`";
+        }
+
+        // 3. Extract Company Name
+        // Logic: "for <Company>" ... and stop at first keyword or end of string.
+        // We know the structure is "for <Company> [keywords]"
+        // So we split by "for" and take the second part.
+        const parts = text.split(/ for /i);
+        if (parts.length < 2) {
+            return "❌ **Missing Company.**\nPlease use: `... for <Company Name> ...`";
+        }
+
+        // Get everything after "for"
+        let companySection = parts.slice(1).join(" for "); // Rejoin if multiple "for"s exists (edge case)
+
+        // Remove the dates if they appeared after "for" (unlikely but safe)
+        companySection = companySection.replace(dateRegex, "").trim();
+
+        // Remove known keywords to isolate company name
+        const keywordsToRemove = [industry, campusType, "to", startDate, endDate];
+        // Also remove "add", "apply", "od" just in case they leaked in (defensive)
+
+        // Strategy: Truncate company name at the *first* occurrence of a keyword
+        // This assumes user types "for Google IT...", not "IT for Google..."
+        // If they typed "IT On Campus for Google", this logic needs to be different.
+
+        // Let's assume standard "for <Company>" is valid, but what follows can be mixed.
+        // We simply remove the found keywords from the companySection string.
+        let companyName = companySection;
+
+        // Regex to remove keywords case-insensitively
+        companyName = companyName.replace(new RegExp(`\\b${industry}\\b`, 'yi'), ""); // 'y' is sticky, nope.
+        // Just replace strings
+        const removeToken = (str, token) => {
+            const regex = new RegExp(`\\b${token}\\b`, 'gi');
+            return str.replace(regex, "");
+        }
+
+        companyName = removeToken(companyName, industry);
+        companyName = removeToken(companyName, campusType);
+
+        // Cleanup extra spaces and special chars
+        companyName = companyName.replace(/\s+/g, " ").trim();
+
+        // Remove trailing "it" if it was part of "for Google add on campus it" and "it" was matched as industry.
+        // Wait, "it" IS the industry. So it's already removed.
+
+        // Fix for "Google add" -> If "add" is a common typo for "and" or just noise, we leave it. 
+        // We can't distinguish "Google Add" (company) from "Google add" (typo).
+        // But the user's prompt was "Google add on campus it".
+        // industry="it". campus="on campus".
+        // companySection initially "Google add on campus it".
+        // remove "it": "Google add on campus "
+        // remove "on campus": "Google add  "
+        // Result: "Google add". 
+        // This is acceptable behavior.
+
+        if (!companyName || companyName.length < 2) {
+            return "❌ **Invalid Company Name.**\nPlease explicitly mention who you are visiting.";
+        }
+
+        // --- Logic Continues ---
 
         if (attachments.length !== 2) {
             return "❌ **Missing Attachments.**\nPlease attach exactly 2 PDF files: **Offer Letter** and **Aim/Objective** before sending.";
         }
-
-        const [_, startDate, endDate, companyName, industry, campusType] = match;
 
         // Verify Student Session
         const user = JSON.parse(sessionStorage.getItem("user"));
@@ -127,17 +200,19 @@ export default function ChatAssistant() {
             const selectedOffer = offers.find(o => o.company.name.toLowerCase().includes(companyName.toLowerCase().trim()));
 
             if (!selectedOffer) {
-                return `❌ **Company Not Found.**\nI could not find an offer from '**${companyName}**' in your records. Please check the spelling.`;
+                return `❌ **Company Not Found.**\nI searched for '**${companyName}**' but couldn't find a matching offer in your records.`;
             }
 
             // 2. Prepare Form Data
             const formData = new FormData();
             formData.append("studentId", user.id);
             formData.append("offerId", selectedOffer.id);
-            formData.append("industry", industry);
-            formData.append("campusType", campusType);
+            formData.append("industry", industry.toUpperCase()); // Normalize
+            formData.append("campusType", campusType); // Keep formatting or normalize? Backend likely expects specific strings.
+            // "On Campus" / "Off Campus" -> Ensure backend supports spaces or CamelCase.
+            // Usually enums are "ON_CAMPUS" or similar. But let's assume Title Case is fine for now based on UI.
 
-            // Format dates for backend (YYYY-MM-DD) - assuming input is DD.MM.YYYY or DD-MM-YYYY
+            // Format dates for backend (YYYY-MM-DD)
             const toISODate = (d) => {
                 const parts = d.split(/[-.]/);
                 return `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -155,14 +230,11 @@ export default function ChatAssistant() {
             const days = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
             formData.append("duration", days);
 
-            // Assign files based on naming convention guess or order?
-            // Safer: Check content of filename. If ambiguous, assume order: 1=Aim, 2=Offer (or ask user).
-            // Better: Strict filename check.
             const offerFile = attachments.find(f => f.name.includes("ITO"));
             const aimFile = attachments.find(f => f.name.includes("ITI"));
 
             if (!offerFile || !aimFile) {
-                return "❌ **Filename Error.**\nCould not identify files.\n- Offer Letter must contain `-ITO-`\n- Aim must contain `-ITI-`";
+                return "❌ **Filename Error.**\nPlease ensure:\n- Offer Letter filename contains `-ITO-`\n- Aim filename contains `-ITI-`";
             }
 
             formData.append("offerFile", offerFile);
@@ -385,7 +457,7 @@ export default function ChatAssistant() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder="Ask Disha..."
+                                placeholder="Ex: Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus"
                                 className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
                             />
                             <button

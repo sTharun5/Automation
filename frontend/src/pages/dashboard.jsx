@@ -68,104 +68,127 @@ export default function Dashboard() {
           <div className="lg:col-span-8 space-y-10 md:space-y-14">
             <Hero student={student} dashboardData={dashboardData} />
 
-            {/* Quick Actions */}
+            {/* Professional Quick Actions */}
             <section className="animate-fadeIn">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="flex h-9 w-1 rounded-full bg-gradient-to-b from-blue-600 to-indigo-600" />
-                <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                   Quick Actions
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
-                <ActionCard
-                  title="Apply OD"
-                  description="Apply for Internship or Internal OD"
-                  color="blue"
-                  icon="📝"
-                  buttonText="Apply Now"
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Apply OD */}
+                <button
                   onClick={() => navigate("/apply-od")}
-                />
-                <ActionCard
-                  title="OD Status"
-                  description="Track approval and current status"
-                  color="green"
-                  icon="📋"
-                  buttonText="View Status"
+                  className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500/50 hover:shadow-md transition-all duration-300 text-left"
+                >
+                  <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">New Application</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Submit a request for Internship or On-Duty leave.</p>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Start Application <span aria-hidden>→</span>
+                  </span>
+                </button>
+
+                {/* OD Status */}
+                <button
                   onClick={() => navigate("/od-status")}
-                />
-                <ActionCard
-                  title="OD History"
-                  description="View previously approved ODs"
-                  color="purple"
-                  icon="📚"
-                  buttonText="View History"
+                  className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 text-left"
+                >
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Track Status</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Monitor the progress of your active requests.</p>
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View Live Tracker <span aria-hidden>→</span>
+                  </span>
+                </button>
+
+                {/* OD History */}
+                <button
                   onClick={() => navigate("/od-history")}
-                />
+                  className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-violet-500/50 hover:shadow-md transition-all duration-300 text-left"
+                >
+                  <div className="p-2.5 bg-violet-50 dark:bg-violet-900/20 rounded-lg text-violet-600 dark:text-violet-400 mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Archive & Logs</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Access historical records of all approvals.</p>
+                  <span className="text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View History <span aria-hidden>→</span>
+                  </span>
+                </button>
               </div>
             </section>
 
-            {/* 🤖 Smart Apply Feature Highlight */}
-            <section className="animate-fadeIn relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-900 dark:to-indigo-900 shadow-lg text-white p-6 md:p-8">
-              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="flex-1 space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    New Feature
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white">
-                    Apply Instantly with Disha 2.0 🤖
-                  </h3>
-                  <p className="text-indigo-100 text-sm md:text-base leading-relaxed max-w-xl">
-                    Skip the forms! Simply open the chat, attach your <b>Offer Letter</b> & <b>Aim</b> PDF, and type the command below.
-                  </p>
+            {/* AI Command Center Feature */}
+            <section className="animate-fadeIn mt-6 group relative overflow-hidden rounded-xl bg-slate-900 text-slate-300 border border-slate-800 p-0.5">
+              <div className="relative z-10 bg-slate-950/50 rounded-[10px] p-6 md:p-8 backdrop-blur-sm">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex-1 space-y-4">
+                    <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      <span>Disha AI 2.0</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2">Automated Application Workflow</h3>
+                      <p className="text-sm text-slate-400 leading-relaxed max-w-lg">
+                        Use natural language commands in the chat assistant to instantly generate OD requests.
+                        Supported on all active chat sessions.
+                      </p>
+                    </div>
 
-                  <div className="mt-4 bg-black/20 backdrop-blur-md rounded-xl p-4 border border-white/10 font-mono text-xs md:text-sm text-indigo-50 overflow-x-auto">
-                    <p className="mb-2 opacity-70">// Command Format</p>
-                    <p>Apply OD <span className="text-yellow-300">Start</span> to <span className="text-yellow-300">End</span> for <span className="text-green-300">Company</span> <span className="text-blue-300">Industry</span> <span className="text-pink-300">Campus</span></p>
-                    <div className="my-2 border-t border-white/10"></div>
-                    <p className="opacity-70 mb-1">// Example</p>
-                    <p className="text-white">Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus</p>
+                    <div className="flex items-center gap-3 text-xs font-mono bg-slate-900 rounded-lg p-3 border border-slate-800 w-fit">
+                      <span className="text-indigo-400">$</span>
+                      <span className="text-slate-300">Apply OD 10.08.2025 to 12.08.2025 for Google</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="hidden md:block">
-                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-4xl animate-bounce">
-                    ⚡️
+                  <div className="shrink-0 relative">
+                    <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full"></div>
+                    <div className="relative bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-2xl skew-y-3 -rotate-3 group-hover:rotate-0 group-hover:skew-y-0 transition-all duration-500">
+                      <div className="flex items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      </div>
+                      <div className="space-y-2 text-[10px] font-mono text-slate-500 w-48">
+                        <p className="flex gap-2"><span className="text-blue-400">user:</span> <span className="text-slate-300">Apply OD...</span></p>
+                        <p className="flex gap-2"><span className="text-emerald-400">ai:</span> <span className="text-slate-300">Request generated. Verify?</span></p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Decorative Background */}
-              <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-48 h-48 bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
             </section>
 
-            {/* Guidelines */}
-            <section className="animate-fadeIn bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 transition-colors">
-              <div className="flex items-center gap-3 mb-5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-sm font-bold">
-                  !
-                </span>
-                <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
-                  OD Guidelines
-                </h3>
+            {/* Professional Guidelines Panel */}
+            <section className="animate-fadeIn mt-8">
+              <div className="flex items-center gap-2 mb-4">
+                <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Compliance & Guidelines</h3>
               </div>
 
-              <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  "OD is allowed only for placed students",
-                  "Maximum OD duration is 60 days",
-                  "Internship proof must follow the prescribed format",
-                  "OTP-based secure login is mandatory",
-                  "All OD actions are logged and audited",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-slate-500" />
-                    <span>{item}</span>
-                  </li>
+                  { title: "Eligibility", text: "Confirmed placement or valid NIP status is required." },
+                  { title: "Duration Limit", text: "Maximum cumulative duration of 60 days per academic year." },
+                  { title: "Documentation", text: "Offer letter and aim/objective PDF must be attached." },
+                  { title: "Security", text: "All sessions are logged. OTP verification mandatory." },
+                ].map((rule, i) => (
+                  <div key={i} className="flex gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+                    <div className="mt-0.5 w-1 h-1 rounded-full bg-slate-400 shrink-0"></div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">{rule.title}</h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{rule.text}</p>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </section>
           </div>
 

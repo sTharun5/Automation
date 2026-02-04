@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { getOdById } from "../services/odService";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -10,10 +10,61 @@ export default function StudentODDetails() {
   const [od, setOd] = useState(null);
 
   useEffect(() => {
+    fetchOD();
+    const interval = setInterval(fetchOD, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [odId]);
+
+  // Live Ticker
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchOD = () => {
     getOdById(odId)
       .then((res) => setOd(res.data))
       .catch((err) => console.error(err));
-  }, [odId]);
+  };
+
+  const [tick, setTick] = useState(0);
+
+  /* =========================================
+     ⏱️ HELPERS
+  ========================================= */
+  const calculateProgress = (startDate, endDate, status) => {
+    if (status === "REJECTED" || status === "PENDING") return 0;
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    const now = new Date().getTime();
+    if (now < start) return 0;
+    if (now > end) return 100;
+    const total = end - start;
+    const elapsed = now - start;
+    if (total === 0) return 100;
+    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+  };
+
+  const getElapsedDays = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const now = new Date();
+    if (now < start) return 0;
+    if (now > end) return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const diff = now - start;
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const getLiveStatus = (startDate, endDate, status) => {
+    if (status === "REJECTED") return { label: "Cancelled", color: "text-red-500" };
+    if (status === "PENDING" || status === "MENTOR_APPROVED" || status === "DOCS_VERIFIED") return { label: "Approval Pending", color: "text-amber-500" };
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (now < start) return { label: "Upcoming", color: "text-blue-500" };
+    if (now > end) return { label: "Completed", color: "text-green-500" };
+    return { label: "Active Now", color: "text-green-600 animate-pulse" };
+  };
 
   if (!od) {
     return (
@@ -36,7 +87,7 @@ export default function StudentODDetails() {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium w-fit bg-transparent border-none cursor-pointer"
         >
           <span>←</span> Back
         </button>
@@ -46,6 +97,31 @@ export default function StudentODDetails() {
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               On-Duty Application Details
             </h2>
+          </div>
+
+          {/* ⏱️ REAL-TIME TRACKING HEADER */}
+          <div className="px-6 py-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-end mb-2">
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md bg-white dark:bg-slate-800 shadow-sm ${getLiveStatus(od.startDate, od.endDate, od.status).color}`}>
+                  {getLiveStatus(od.startDate, od.endDate, od.status).label}
+                </span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {calculateProgress(od.startDate, od.endDate, od.status)}% Completed
+                </span>
+              </div>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                {getElapsedDays(od.startDate, od.endDate)} / {od.duration} Days
+              </span>
+            </div>
+            <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-400' : 'bg-gradient-to-r from-blue-500 to-indigo-500 relative'}`}
+                style={{ width: `${calculateProgress(od.startDate, od.endDate, od.status)}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]" style={{ backgroundImage: 'linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)', backgroundSize: '1rem 1rem' }}></div>
+              </div>
+            </div>
           </div>
 
           <div className="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
@@ -68,8 +144,8 @@ export default function StudentODDetails() {
                 {(od.timeline || []).map((step, idx) => (
                   <div key={idx} className="relative pl-10 animate-fadeIn" style={{ animationDelay: `${idx * 100}ms` }}>
                     <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 ${step.status === "REJECTED" ? "bg-red-500 border-red-100 dark:border-red-950" :
-                        idx === (od.timeline.length - 1) ? "bg-blue-600 border-blue-100 dark:border-blue-950 animate-pulse" :
-                          "bg-green-500 border-green-100 dark:border-green-950"
+                      idx === (od.timeline.length - 1) ? "bg-blue-600 border-blue-100 dark:border-blue-950 animate-pulse" :
+                        "bg-green-500 border-green-100 dark:border-green-950"
                       }`} />
                     <div>
                       <h5 className="font-bold text-slate-900 dark:text-white capitalize leading-tight">{step.label}</h5>
@@ -98,7 +174,7 @@ export default function StudentODDetails() {
 
             {/* Standard Info */}
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              <Row label="Industry" value={od.industry || od.verificationDetails?.company || "—"} />
+              <Row label="Industry" value={od.offer?.company?.name || od.verificationDetails?.company?.searched || "—"} />
               <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.duration} days)`} />
               <FileRow label="Aim & Objective" filePath={od.proofFile} />
               <FileRow label="Offer Letter" filePath={od.offerFile} />

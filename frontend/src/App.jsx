@@ -12,9 +12,10 @@ import MentorAssignment from "./pages/MentorAssignment";
 import MenteeDetails from "./pages/MenteeDetails";
 import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
-import Notifications from "./pages/Notifications";
-import ODHistory from "./pages/ODHistory";
 import ManageCompanies from "./pages/ManageCompanies";
+import ODHistory from "./pages/ODHistory";
+import Notifications from "./pages/Notifications";
+import ODStatus from "./pages/ODStatus";
 import HelpSupport from "./pages/HelpSupport";
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -64,7 +65,7 @@ export default function App() {
                 <Route path="/apply-od" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ApplyOD /></ProtectedRoute>} />
                 <Route path="/student/od/:odId" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentODDetails /></ProtectedRoute>} />
                 <Route path="/od-history" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODHistory /></ProtectedRoute>} />
-                <Route path="/od-status" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODHistory /></ProtectedRoute>} />
+                <Route path="/od-status" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODStatus /></ProtectedRoute>} />
                 <Route path="/faculty/dashboard" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyDashboard /></ProtectedRoute>} />
                 <Route path="/faculty/update-placement" element={<ProtectedRoute allowedRoles={["FACULTY"]}><UpdatePlacementStatus /></ProtectedRoute>} />
                 <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminDashboard /></ProtectedRoute>} />

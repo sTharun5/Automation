@@ -112,7 +112,7 @@ exports.getDashboardData = async (req, res) => {
     };
 
     // 2. Calculate OD Days (Approved only)
-    const approvedODs = student.ods.filter((od) => od.status === "APPROVED");
+    const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
     const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
 
     // 3. Current Active OD
