@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// *
+/// * ================= OTP =================
+model emailotp {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+/// *
+/// * ================= EVENT =================
+model event {
+  id        Int          @id @default(autoincrement())
+  eventId   String       @unique
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    event_status @default(ACTIVE)
+  ods       od[]
+}
+
+/// *
+/// * ================= COMPANY =================
+model company {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  offers     offer[]
+}
+
+/// *
+/// * ================= OFFER =================
+model offer {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  companyId   Int
+  lpa         String?
+  offerLetter String?
+  placedDate  DateTime
+  createdAt   DateTime @default(now())
+  ods         od[]
+  company     company  @relation(fields: [companyId], references: [id])
+  student     student  @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+  @@index([companyId])
+}
+
+/// *
+/// * ================= OD =================
+model od {
+  id                  Int       @id @default(autoincrement())
+  trackerId           String    @unique
+  type                od_type
+  startDate           DateTime
+  endDate             DateTime
+  duration            Int
+  proofFile           String?
+  studentId           Int
+  eventId             Int?
+  status              od_status @default(PENDING)
+  createdAt           DateTime  @default(now())
+  offerFile           String?
+  activityId          String?   @unique
+  remarks             String?   @db.Text
+  timeline            Json?
+  verificationDetails Json?
+  offerId             Int?
+  event               event?    @relation(fields: [eventId], references: [id])
+  offer               offer?    @relation(fields: [offerId], references: [id])
+  student             student   @relation(fields: [studentId], references: [id])
+
+  @@index([studentId])
+  @@index([eventId])
+  @@index([offerId])
+}
+
+model student {
+  id               Int      @id @default(autoincrement())
+  rollNo           String   @unique
+  name             String
+  email            String   @unique
+  department       String
+  semester         Int
+  createdAt        DateTime @default(now())
+  mentorId         Int?
+  placement_status String?
+  ods              od[]
+  offers           offer[]
+  mentor           faculty? @relation("StudentMentor", fields: [mentorId], references: [id])
+
+  @@index([mentorId])
+}
+
+model faculty {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  department String?
+  createdAt  DateTime  @default(now())
+  facultyId  String    @unique
+  students   student[] @relation("StudentMentor")
+}
+
+model admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+model notification {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  type      String   @default("INFO") @db.VarChar(50)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+enum od_type {
+  INTERNAL
+  INTERNSHIP
+}
+
+enum event_status {
+  ACTIVE
+  INACTIVE
+}
+
+enum od_status {
+  PENDING
+  DOCS_VERIFIED
+  MENTOR_APPROVED
+  APPROVED
+  REJECTED
+}
