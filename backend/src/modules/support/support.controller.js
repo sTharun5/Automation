@@ -36,7 +36,7 @@ exports.submitQuery = async (req, res) => {
 
         const mailOptions = {
             from: process.env.MAIL_USER,
-            to: process.env.ADMIN_EMAIL || "admin@smartod.com", // Valid Admin Email
+            to: process.env.ADMIN_EMAIL || "stharun612@gmail.com",
             subject: `[SUPPORT] ${senderRole}: ${subject}`,
             html: `
             <h3>New Support Query</h3>

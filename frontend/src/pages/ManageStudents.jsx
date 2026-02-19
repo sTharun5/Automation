@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
+import SearchInput from "../components/SearchInput";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -29,6 +30,7 @@ export default function ManageStudents() {
 
     const fetchStudents = async () => {
         try {
+            setLoading(true);
             const res = await api.get("/admin/all-students");
             setStudents(res.data);
         } catch (err) {
@@ -36,6 +38,15 @@ export default function ManageStudents() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchStudentSuggestions = async (query) => {
+        const res = await api.get(`/students/search?q=${query}`);
+        return res.data;
+    };
+
+    const handleSelectStudent = (student) => {
+        setStudents([student]);
     };
 
     const confirmRemoveMentor = async (studentId) => {
@@ -88,6 +99,29 @@ export default function ManageStudents() {
                         </button>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Manage Students</h1>
                     </div>
+                </div>
+
+                {/* Search Section */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="w-full md:w-1/2">
+                        <SearchInput
+                            placeholder="Search by Name or Roll No..."
+                            fetchSuggestions={fetchStudentSuggestions}
+                            onSelect={handleSelectStudent}
+                            renderSuggestion={(s) => (
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-slate-900 dark:text-white">{s.name}</span>
+                                    <span className="text-xs text-slate-500">{s.rollNo} • {s.department}</span>
+                                </div>
+                            )}
+                        />
+                    </div>
+                    <button
+                        onClick={fetchStudents}
+                        className="text-blue-600 hover:underline text-sm font-semibold"
+                    >
+                        Show All Students
+                    </button>
                     <div className="flex gap-3">
                         <button
                             onClick={() => setAddModalOpen(true)}

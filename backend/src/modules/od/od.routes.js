@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs , getMyODs } = require("./od.controller");
+const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs, getMyODs, getAllODs, getCompanyStats, getCompanyPlacedStudents } = require("./od.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
 
@@ -53,6 +53,9 @@ router.put("/update-status/:id", verifyToken, updateOdStatus);
 // 👮‍♂️ Admin / Faculty routes
 router.get("/mentor/pending", verifyToken, getMentorODs);
 router.get("/admin/student/:studentId", verifyToken, getStudentODs);
+router.get("/admin/all", verifyToken, getAllODs); // ✅ New Admin Search Route
+router.get("/admin/company-stats", verifyToken, getCompanyStats); // ✅ Company Stats Route
+router.get("/admin/company-placed", verifyToken, getCompanyPlacedStudents); // ✅ Company Placed Students Route
 
 
 module.exports = router;

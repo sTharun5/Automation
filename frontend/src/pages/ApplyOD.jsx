@@ -12,6 +12,7 @@ export default function ApplyOD() {
 
   // ✅ Auto-set student ID from session
   const [offers, setOffers] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]); // ✅ Calendar Events
   const [error, setError] = useState("");
   const { showToast } = useToast();
 
@@ -19,6 +20,17 @@ export default function ApplyOD() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationDetails, setVerificationDetails] = useState(null);
   const [verificationSummary, setVerificationSummary] = useState("");
+
+  /* ================= LOAD CALENDAR EVENTS ================= */
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    axios
+      .get("http://localhost:3000/api/calendar", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then((res) => setCalendarEvents(res.data))
+      .catch((err) => console.error("Failed to fetch calendar", err));
+  }, []);
 
   const [form, setForm] = useState({
     studentId: user?.id || "", // ✅ Auto-fill
@@ -68,6 +80,29 @@ export default function ApplyOD() {
 
     setError("");
     return days;
+  };
+
+  /* ================= CHECK DATE CONFLICT ================= */
+  const checkDateConflict = (startTime, endTime) => {
+    if ((!startTime && !endTime) || !calendarEvents.length) return null;
+
+    const start = startTime ? new Date(startTime).setHours(0, 0, 0, 0) : null;
+    const end = endTime ? new Date(endTime).setHours(0, 0, 0, 0) : null;
+
+    return calendarEvents.find(ev => {
+      if (ev.type !== "EXAM") return false;
+      const evStart = new Date(ev.startDate).setHours(0, 0, 0, 0);
+      const evEnd = new Date(ev.endDate).setHours(0, 0, 0, 0);
+
+      // 1. Start inside event
+      if (start && start >= evStart && start <= evEnd) return true;
+      // 2. End inside event
+      if (end && end >= evStart && end <= evEnd) return true;
+      // 3. Event inside range (OD envelopes Exam)
+      if (start && end && start <= evStart && end >= evEnd) return true;
+
+      return false;
+    });
   };
 
   /* ================= SUBMIT ================= */
@@ -208,6 +243,13 @@ export default function ApplyOD() {
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               onChange={(e) => {
                 const start = e.target.value;
+                const conflict = checkDateConflict(start, form.endDate);
+                if (conflict) {
+                  setError(`Cannot apply during exam: ${conflict.title}.`);
+                } else {
+                  setError("");
+                }
+
                 setForm({
                   ...form,
                   startDate: start,
@@ -224,6 +266,13 @@ export default function ApplyOD() {
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               onChange={(e) => {
                 const end = e.target.value;
+                const conflict = checkDateConflict(form.startDate, end);
+                if (conflict) {
+                  setError(`Cannot apply during exam: ${conflict.title}.`);
+                } else {
+                  setError("");
+                }
+
                 setForm({
                   ...form,
                   endDate: end,

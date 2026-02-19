@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Header from "../components/Header";
+import SearchInput from "../components/SearchInput";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -39,6 +40,15 @@ export default function ManageCompanies() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchCompanySuggestions = async (query) => {
+        if (!query) return [];
+        return companies.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+    };
+
+    const handleSelectCompany = (c) => {
+        setCompanies([c]);
     };
 
     const handleToggleApproval = async (id, currentStatus) => {
@@ -94,9 +104,7 @@ export default function ManageCompanies() {
         }
     };
 
-    const filteredCompanies = companies.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase())
-    );
+
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -138,14 +146,23 @@ export default function ManageCompanies() {
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-                        <input
-                            type="text"
-                            placeholder="Search companies..."
-                            className="w-full max-w-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="w-full md:w-1/2">
+                            <SearchInput
+                                placeholder="Search Companies..."
+                                fetchSuggestions={fetchCompanySuggestions}
+                                onSelect={handleSelectCompany}
+                                renderSuggestion={(c) => (
+                                    <span className="font-bold text-slate-900 dark:text-white">{c.name}</span>
+                                )}
+                            />
+                        </div>
+                        <button
+                            onClick={fetchCompanies}
+                            className="text-blue-600 hover:underline text-sm font-semibold"
+                        >
+                            Show All
+                        </button>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -163,12 +180,12 @@ export default function ManageCompanies() {
                                     <tr>
                                         <td colSpan="4" className="px-6 py-10 text-center text-slate-500">Loading...</td>
                                     </tr>
-                                ) : filteredCompanies.length === 0 ? (
+                                ) : companies.length === 0 ? (
                                     <tr>
                                         <td colSpan="4" className="px-6 py-10 text-center text-slate-500">No companies found</td>
                                     </tr>
                                 ) : (
-                                    filteredCompanies.map((company) => (
+                                    companies.map((company) => (
                                         <tr key={company.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                                 {company.name}

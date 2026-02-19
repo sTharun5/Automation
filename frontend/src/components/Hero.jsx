@@ -110,11 +110,13 @@ export default function Hero({ student, dashboardData }) {
                   <h4 className="font-bold text-slate-900 dark:text-white truncate text-base">
                     {dashboardData.odStats.activeOD.type}
                   </h4>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${dashboardData.odStats.activeOD.status === 'APPROVED'
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${['APPROVED', 'MENTOR_APPROVED'].includes(dashboardData.odStats.activeOD.status)
                     ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30'
                     : 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30'
                     }`}>
-                    {dashboardData.odStats.activeOD.status === 'APPROVED' ? 'Active' : 'Pending'}
+                    {['APPROVED', 'MENTOR_APPROVED'].includes(dashboardData.odStats.activeOD.status)
+                      ? (new Date(dashboardData.odStats.activeOD.startDate) > new Date() ? 'Upcoming' : 'Active')
+                      : 'Pending'}
                   </span>
                 </div>
 
@@ -122,12 +124,12 @@ export default function Hero({ student, dashboardData }) {
                   const od = dashboardData.odStats.activeOD;
 
                   // CASE 1: NOT APPROVED YET (Show Approval Progress)
-                  if (od.status !== 'APPROVED') {
+                  // Treat MENTOR_APPROVED as FINAL APPROVED
+                  if (od.status !== 'APPROVED' && od.status !== 'MENTOR_APPROVED') {
                     let progress = 0;
                     let label = "Processing";
                     if (od.status === 'PENDING') { progress = 25; label = "AI Verification"; }
                     else if (od.status === 'DOCS_VERIFIED') { progress = 50; label = "Mentor Review"; }
-                    else if (od.status === 'MENTOR_APPROVED') { progress = 75; label = "Final Approval"; }
                     else if (od.status === 'REJECTED') { progress = 100; label = "Rejected"; }
 
                     return (
@@ -156,25 +158,31 @@ export default function Hero({ student, dashboardData }) {
                     );
                   }
 
-                  // CASE 2: APPROVED (Show Days Remaining)
+                  // CASE 2: APPROVED (Show Days Completed)
                   const start = new Date(od.startDate).getTime();
                   const end = new Date(od.endDate).getTime();
                   const now = new Date().getTime();
-                  const total = end - start;
-                  const elapsed = now - start;
 
-                  // Calculate Days Left
-                  const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-                  const percent = Math.min(100, Math.max(0, (elapsed / total) * 100));
+                  // Calculate Total Duration
+                  const oneDay = 1000 * 60 * 60 * 24;
+                  const totalDays = od.duration || (Math.ceil((end - start) / oneDay) + 1); // Inclusive
+
+                  let daysCompleted = Math.floor((now - start) / oneDay) + 1; // 1st day is Day 1
+
+                  // Clamping
+                  if (daysCompleted < 0) daysCompleted = 0; // Upcoming
+                  if (daysCompleted > totalDays) daysCompleted = totalDays; // Finished
+
+                  const percent = Math.min(100, Math.max(0, (daysCompleted / totalDays) * 100));
 
                   return (
                     <div>
                       <div className="flex items-end gap-1.5 mb-2">
                         <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
-                          {Math.max(0, daysLeft)}
+                          {daysCompleted}/{totalDays}
                         </span>
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
-                          days left
+                          days completed
                         </span>
                       </div>
 

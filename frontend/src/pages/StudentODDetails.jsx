@@ -39,9 +39,9 @@ export default function StudentODDetails() {
     if (!status) return 0;
 
     // CASE 1: NOT APPROVED (Show Approval Progress)
-    if (status !== "APPROVED") {
+    // Treat MENTOR_APPROVED as FINAL APPROVED
+    if (status !== "APPROVED" && status !== "MENTOR_APPROVED") {
       if (status === "REJECTED") return 100; // Full bar but red
-      if (status === "MENTOR_APPROVED") return 75;
       if (status === "DOCS_VERIFIED") return 50;
       if (status === "PENDING") return 25;
       return 0;
@@ -60,8 +60,7 @@ export default function StudentODDetails() {
   };
 
   const getProgressLabel = (status) => {
-    if (status === "APPROVED") return "OD Timeline";
-    if (status === "MENTOR_APPROVED") return "Final Approval";
+    if (status === "APPROVED" || status === "MENTOR_APPROVED") return "OD Timeline";
     if (status === "DOCS_VERIFIED") return "Mentor Review";
     if (status === "PENDING") return "AI Verification";
     if (status === "REJECTED") return "Rejected";
@@ -69,7 +68,7 @@ export default function StudentODDetails() {
   }
 
   const getElapsedDays = (startDate, endDate, status) => {
-    if (status !== "APPROVED") return "0"; // Don't show days if not approved
+    if (status !== "APPROVED" && status !== "MENTOR_APPROVED") return "0";
 
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -82,9 +81,9 @@ export default function StudentODDetails() {
 
   const getLiveStatus = (startDate, endDate, status) => {
     if (status === "REJECTED") return { label: "Rejected", color: "text-red-500 bg-red-50 border-red-100" };
-    if (status === "PENDING" || status === "MENTOR_APPROVED" || status === "DOCS_VERIFIED") return { label: "Approval Pending", color: "text-blue-600 bg-blue-50 border-blue-100" };
+    if (status === "PENDING" || status === "DOCS_VERIFIED") return { label: "Approval Pending", color: "text-blue-600 bg-blue-50 border-blue-100" };
 
-    // Approved Logic
+    // Approved Logic (Include MENTOR_APPROVED)
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -107,7 +106,7 @@ export default function StudentODDetails() {
 
   const statusText = od.status === "PENDING" ? "Initiated" : od.status;
   const progressPercent = calculateProgress(od.startDate, od.endDate, od.status);
-  const isApproved = od.status === "APPROVED";
+  const isApproved = od.status === "APPROVED" || od.status === "MENTOR_APPROVED";
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -154,8 +153,8 @@ export default function StudentODDetails() {
             <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' :
-                    isApproved ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
-                      'bg-gradient-to-r from-blue-500 to-indigo-500 relative'
+                  isApproved ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                    'bg-gradient-to-r from-blue-500 to-indigo-500 relative'
                   }`}
                 style={{ width: `${progressPercent}%` }}
               >
@@ -187,7 +186,7 @@ export default function StudentODDetails() {
                 {(od.timeline || []).map((step, idx) => (
                   <div key={idx} className="relative pl-10 animate-fadeIn" style={{ animationDelay: `${idx * 100}ms` }}>
                     <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 ${step.status === "REJECTED" ? "bg-red-500 border-red-100 dark:border-red-950" :
-                      idx === (od.timeline.length - 1) ? "bg-blue-600 border-blue-100 dark:border-blue-950 animate-pulse" :
+                      idx === (od.timeline.length - 1) && !isApproved ? "bg-blue-600 border-blue-100 dark:border-blue-950 animate-pulse" :
                         "bg-green-500 border-green-100 dark:border-green-950"
                       }`} />
                     <div>

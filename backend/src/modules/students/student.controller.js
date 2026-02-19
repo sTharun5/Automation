@@ -26,6 +26,13 @@ exports.searchStudents = async (req, res) => {
         email: true,
         department: true,
         semester: true,
+        placement_status: true,
+        offers: {
+          include: {
+            company: true
+          }
+        },
+        ods: true, // ✅ Added to calculate stats
         mentor: {
           select: {
             id: true,
@@ -37,7 +44,22 @@ exports.searchStudents = async (req, res) => {
       take: 10
     });
 
-    return res.json(students);
+    // Calculate Remaining Days for each student
+    const studentsWithStats = students.map(student => {
+      const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
+      const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
+      const remainingDays = 60 - totalOdDays;
+
+      return {
+        ...student,
+        odStats: {
+          usedDays: totalOdDays,
+          remainingDays: remainingDays
+        }
+      };
+    });
+
+    return res.json(studentsWithStats);
   } catch (error) {
     console.error("SEARCH ERROR:", error);
     return res.status(500).json({ message: "Search failed" });
@@ -70,85 +92,135 @@ exports.listStudents = async (req, res) => {
 exports.getDashboardData = async (req, res) => {
   try {
     const email = req.user.email;
-    const student = await prisma.student.findUnique({
-      where: { email },
-      include: {
-        offers: {
-          include: { company: true }
-        },
-        ods: true,
-        mentor: {
-          select: {
-            id: true,
-            name: true,
-            facultyId: true,
-            email: true,
-            department: true
-          }
-        }
-      }
-    });
-
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    // 1. Placement Status & All Offers (Sorted by LPA Descending)
-    const sortedOffers = [...student.offers].sort((a, b) => Number(b.lpa) - Number(a.lpa));
-    const latestOffer = sortedOffers.length > 0 ? sortedOffers[0] : null;
-
-    const placement = {
-      status: student.placement_status || (sortedOffers.length > 0 ? "PLACED" : "YET_TO_BE_PLACED"),
-      totalOffers: sortedOffers.length,
-      offers: sortedOffers.map(o => ({
-        id: o.id,
-        companyName: o.company.name,
-        lpa: o.lpa,
-        placedDate: o.placedDate
-      })),
-      // Keep companyName/lpa for backward compatibility if needed in UI
-      companyName: latestOffer?.company.name || null,
-      lpa: latestOffer?.lpa || null
-    };
-
-    // 2. Calculate OD Days (Approved only)
-    const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
-    const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
-
-    // 3. Current Active OD
-    const today = new Date();
-    // Normalize today to start of day for comparison if needed, but timestamps usually fine if range includes time.
-    // Logic: Today is between startDate and endDate
-    const activeOD = approvedODs.find(
-      (od) => new Date(od.startDate) <= today && new Date(od.endDate) >= today
-    );
-
-    return res.json({
-      student: {
-        name: student.name,
-        rollNo: student.rollNo,
-        department: student.department,
-        mentor: student.mentor
-      },
-      placement,
-      odStats: {
-        totalDaysLimit: 60,
-        usedDays: totalOdDays,
-        remainingDays: 60 - totalOdDays,
-        activeOD: activeOD ? {
-          id: activeOD.id,
-          type: activeOD.type,
-          startDate: activeOD.startDate,
-          endDate: activeOD.endDate
-        } : null
-      }
-    });
-
+    return await fetchStudentDashboardData(email, res);
   } catch (err) {
     console.error("DASHBOARD ERROR:", err);
     res.status(500).json({ message: "Failed to fetch dashboard data" });
   }
 };
+
+// ✅ ADMIN VIEW: FULL STUDENT DETAILS
+exports.getStudentFullDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Check permissions
+    if (req.user.role === "STUDENT") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const student = await prisma.student.findUnique({ where: { id: Number(id) } });
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    return await fetchStudentDashboardData(student.email, res);
+
+  } catch (err) {
+    console.error("ADMIN STUDENT DETAILS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch student details" });
+  }
+};
+
+
+// Helper function to reuse logic
+async function fetchStudentDashboardData(email, res) {
+  const student = await prisma.student.findUnique({
+    where: { email },
+    include: {
+      offers: {
+        include: { company: true }
+      },
+      ods: true,
+      mentor: {
+        select: {
+          id: true,
+          name: true,
+          facultyId: true,
+          email: true,
+          department: true
+        }
+      }
+    }
+  });
+
+  if (!student) {
+    return res.status(404).json({ message: "Student not found" });
+  }
+
+  // 1. Placement Status & All Offers (Sorted by LPA Descending)
+  const sortedOffers = [...student.offers].sort((a, b) => Number(b.lpa) - Number(a.lpa));
+  const latestOffer = sortedOffers.length > 0 ? sortedOffers[0] : null;
+
+  const placement = {
+    status: student.placement_status || (sortedOffers.length > 0 ? "PLACED" : "YET_TO_BE_PLACED"),
+    totalOffers: sortedOffers.length,
+    offers: sortedOffers.map(o => ({
+      id: o.id,
+      companyName: o.company.name,
+      lpa: o.lpa,
+      placedDate: o.placedDate
+    })),
+    companyName: latestOffer?.company.name || null,
+    lpa: latestOffer?.lpa || null
+  };
+
+  // 2. Calculate OD Days (Approved only)
+  const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
+  const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
+
+  // 3. Current Active OD Logic
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  let activeOD = null;
+
+  // A. Ongoing Approved
+  activeOD = student.ods.find(od =>
+    od.status === "APPROVED" &&
+    new Date(od.startDate) <= now &&
+    new Date(od.endDate) >= now
+  );
+
+  // B. Pending/Processing
+  if (!activeOD) {
+    activeOD = student.ods.find(od =>
+      ["PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED"].includes(od.status)
+    );
+  }
+
+  // C. Upcoming Approved
+  if (!activeOD) {
+    activeOD = student.ods.find(od =>
+      od.status === "APPROVED" &&
+      new Date(od.startDate) > now
+    );
+  }
+
+  return res.json({
+    student: {
+      id: student.id, // ✅ Added ID
+      name: student.name,
+      email: student.email, // ✅ Added Email
+      rollNo: student.rollNo,
+      department: student.department,
+      semester: student.semester, // ✅ Added Semester
+      mentor: student.mentor
+    },
+    placement,
+    odStats: {
+      totalDaysLimit: 60,
+      usedDays: totalOdDays,
+      remainingDays: 60 - totalOdDays,
+      activeOD: activeOD ? {
+        id: activeOD.id,
+        type: activeOD.type,
+        status: activeOD.status,
+        startDate: activeOD.startDate,
+        endDate: activeOD.endDate,
+        duration: activeOD.duration
+      } : null
+    },
+    history: student.ods
+  });
+}
 /* =====================================================
    GET STUDENT OFFERS
 ===================================================== */

@@ -13,6 +13,7 @@ import MenteeDetails from "./pages/MenteeDetails";
 import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
 import ManageCompanies from "./pages/ManageCompanies";
+import ManageODs from "./pages/ManageODs"; // ✅ Import ManageODs
 import ODHistory from "./pages/ODHistory";
 import Notifications from "./pages/Notifications";
 import ODStatus from "./pages/ODStatus";
@@ -51,6 +52,15 @@ const Layout = ({ children }) => {
   );
 };
 
+// Redirect /dashboard to role-specific path
+const DashboardRedirect = () => {
+  const role = sessionStorage.getItem("role");
+  if (role === "STUDENT") return <Navigate to="/student/dashboard" replace />;
+  if (role === "FACULTY") return <Navigate to="/faculty/dashboard" replace />;
+  if (role === "ADMIN") return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to="/" replace />;
+};
+
 export default function App() {
   return (
     <ThemeProvider>
@@ -63,6 +73,7 @@ export default function App() {
                   {/* ... routes ... */}
                   {/* I will use the actual routes below */}
                   <Route path="/" element={<Login />} />
+                  <Route path="/dashboard" element={<DashboardRedirect />} /> {/* ✅ Catch generic dashboard */}
                   <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Dashboard /></ProtectedRoute>} />
                   <Route path="/apply-od" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ApplyOD /></ProtectedRoute>} />
                   <Route path="/student/od/:odId" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentODDetails /></ProtectedRoute>} />
@@ -75,6 +86,7 @@ export default function App() {
                   <Route path="/admin/faculty" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageFaculty /></ProtectedRoute>} />
                   <Route path="/admin/students" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageStudents /></ProtectedRoute>} />
                   <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageCompanies /></ProtectedRoute>} />
+                  <Route path="/admin/manage-ods" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageODs /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                   <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
                   <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />

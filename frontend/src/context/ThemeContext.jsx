@@ -13,13 +13,18 @@ export const ThemeProvider = ({ children }) => {
 
   // Initialize State
   const [isManual, setIsManual] = useState(() => {
-    return sessionStorage.getItem("theme_override") === "true";
+    return localStorage.getItem("theme_override") === "true";
   });
 
   const [theme, setTheme] = useState(() => {
-    if (sessionStorage.getItem("theme_override") === "true") {
-      return localStorage.getItem("theme") || "light";
-    }
+    // 1. Check LocalStorage (User Preference)
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) return savedTheme;
+
+    // 2. Check System Preference
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+
+    // 3. Fallback to Time-based
     return getISTTheme();
   });
 
@@ -34,9 +39,9 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // Live Time Check (Every 1 Minute)
+  // Live Time Check (Only if NO manual override)
   useEffect(() => {
-    if (isManual) return; // Don't auto-switch if user manually toggled
+    if (isManual || localStorage.getItem("theme_override") === "true") return;
 
     const checkTime = () => {
       const neededTheme = getISTTheme();
@@ -46,16 +51,17 @@ export const ThemeProvider = ({ children }) => {
       });
     };
 
-    checkTime(); // Check immediately on mount in case logic missed
+    checkTime(); // Check immediately
     const interval = setInterval(checkTime, 60000); // Check every min
     return () => clearInterval(interval);
   }, [isManual]);
 
   const toggleTheme = () => {
     setIsManual(true);
-    sessionStorage.setItem("theme_override", "true");
+    localStorage.setItem("theme_override", "true");
     setTheme(prev => {
       const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", next);
       return next;
     });
   };

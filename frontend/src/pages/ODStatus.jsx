@@ -99,10 +99,11 @@ export default function ODStatus() {
                                         ></div>
                                     </div>
                                     <div className="flex justify-between pt-2">
-                                        <Step label="Applied" status={getStepStatus(od.status, 0)} />
-                                        <Step label="AI Verified" status={getStepStatus(od.status, 1)} />
-                                        <Step label="Mentor" status={getStepStatus(od.status, 2)} />
-                                        <Step label="Approved" status={getStepStatus(od.status, 3)} />
+                                        <div className="flex justify-between pt-2">
+                                            <Step label="Applied" status={getStepStatus(od.status, 0)} />
+                                            <Step label="AI Verified" status={getStepStatus(od.status, 1)} />
+                                            <Step label="Approved" status={getStepStatus(od.status, 2)} />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -149,18 +150,16 @@ export default function ODStatus() {
 
 function calculateProgress(status) {
     if (!status) return 0;
-    if (status === "REJECTED") return 0; // Or 100% red? Usually 0 or stopped.
-    if (status === "APPROVED") return 100;
-    if (status === "MENTOR_APPROVED") return 75;
-    if (status === "DOCS_VERIFIED") return 50;
-    if (status === "PENDING") return 25; // Applied
-    return 10;
+    if (status === "REJECTED") return 0;
+    if (status === "APPROVED" || status === "MENTOR_APPROVED") return 100;
+    if (status === "DOCS_VERIFIED") return 50; // Halfway
+    if (status === "PENDING") return 10; // Started
+    return 0;
 }
 
 function getProgressLabel(status) {
-    if (status === "APPROVED") return "Completed";
-    if (status === "MENTOR_APPROVED") return "Final Review";
-    if (status === "DOCS_VERIFIED") return "Mentor Review";
+    if (status === "APPROVED" || status === "MENTOR_APPROVED") return "Approved";
+    if (status === "DOCS_VERIFIED") return "Pending Approval";
     if (status === "PENDING") return "AI Verification";
     return "Processing";
 }
@@ -207,16 +206,20 @@ function getStepStatus(currentStatus, stepIndex) {
 
     // 0: Applied
     // 1: AI Verified
-    // 2: Mentor
-    // 3: Approved
+    // 2: Approved (Final)
 
-    const stages = ["PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED", "APPROVED"];
-    const currentIndex = stages.indexOf(currentStatus);
+    const stages = ["PENDING", "DOCS_VERIFIED", "APPROVED"];
 
-    if (currentIndex === -1) return "pending"; // Unknown state
+    // Treat MENTOR_APPROVED as APPROVED
+    let currentIndex = stages.indexOf(currentStatus);
+    if (currentStatus === "MENTOR_APPROVED") {
+        currentIndex = stages.indexOf("APPROVED");
+    }
 
-    if (stepIndex < currentIndex) return "completed";
-    if (stepIndex === currentIndex) return "current";
+    if (currentIndex === -1) return "pending";
+
+    if (stepIndex <= currentIndex) return "completed";
+    if (stepIndex === currentIndex + 1) return "current";
     return "waiting";
 }
 

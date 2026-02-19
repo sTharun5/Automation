@@ -3,6 +3,7 @@ const fs = require("fs");
 const pdf = require("pdf-parse");
 const prisma = new PrismaClient();
 const notificationService = require("../notification/notification.service");
+const sendEmail = require("../../utils/sendEmail");
 
 const generateTrackerId = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -20,13 +21,14 @@ const generateActivityId = () => {
 /* =====================================================
    HELPER: VERIFY PDF CONTENT (OCR)
 ===================================================== */
-async function verifyDocumentContent(filePath, studentName, companyName, startDateStr, endDateStr) {
+async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true }) {
   try {
     const { PDFParse } = pdf;
     const dataBuffer = fs.readFileSync(filePath);
     const parser = new PDFParse({ data: dataBuffer });
     const data = await parser.getText();
     const text = data.text.toLowerCase().replace(/\s+/g, " ");
+    console.log(`[AI VERIFY] Scanning ${options.docType || "Doc"} | Extracted Text (First 200 chars):`, text.substring(0, 200));
 
     // Initialize detailed results
     const verificationDetails = {
@@ -63,7 +65,30 @@ async function verifyDocumentContent(filePath, studentName, companyName, startDa
     verificationDetails.name.found = matchedParts.length >= Math.min(nameParts.length, 2);
 
     // 2. Verify Company Name
-    verificationDetails.company.found = text.includes(companyName.toLowerCase());
+    if (options.checkCompany) {
+      verificationDetails.company.found = text.includes(companyName.toLowerCase());
+    } else {
+      verificationDetails.company.found = true; // Skip check
+    }
+
+    // 2.1 Verify Roll Number (New) & Normalized
+    if (options.checkRollNo) {
+      const normalizedText = text.replace(/\s+/g, ""); // Remove all spaces
+      const normalizedRollNo = studentRollNo.toLowerCase().replace(/\s+/g, "");
+
+      const rollNoFound = normalizedText.includes(normalizedRollNo);
+      console.log(`[AI VERIFY] Searching for Roll No: ${normalizedRollNo} (Normalized) | Found: ${rollNoFound}`);
+
+      verificationDetails.rollNo = {
+        searched: studentRollNo,
+        found: rollNoFound
+      };
+    } else {
+      verificationDetails.rollNo = {
+        searched: studentRollNo,
+        found: true // Skip check
+      };
+    }
 
     // 3. Verify Dates
     const start = new Date(startDateStr);
@@ -90,13 +115,14 @@ async function verifyDocumentContent(filePath, studentName, companyName, startDa
 
     // Determine overall success
     const allPassed = verificationDetails.name.found &&
-      verificationDetails.company.found;
-    // verificationDetails.dates.found; // ⚠️ DISABLED BY ADMIN REQUEST
+      verificationDetails.company.found &&
+      verificationDetails.rollNo.found; // ✅ Check logic handled by flags
 
     // Build summary message
     let summary = [];
     summary.push(verificationDetails.name.found ? "✅ Name: Found" : "❌ Name: Not Found");
-    summary.push(verificationDetails.company.found ? "✅ Company: Found" : "❌ Company: Not Found");
+    if (options.checkRollNo) summary.push(verificationDetails.rollNo.found ? "✅ Roll No: Found" : "❌ Roll No: Not Found");
+    if (options.checkCompany) summary.push(verificationDetails.company.found ? "✅ Company: Found" : "❌ Company: Not Found");
     summary.push(verificationDetails.dates.found ? "✅ Joining Date: Found" : "⚠️ Joining Date: Not Found (Ignored)");
 
     return {
@@ -143,13 +169,52 @@ exports.applyOD = async (req, res) => {
       !offerId
     ) {
       return res.status(400).json({
-        message: "All required fields (including offer) must be filled"
+      });
+    }
+
+    /* ===== CHECK FOR EXAM CONFLICTS (New) ===== */
+    const overlapEvents = await prisma.calendarEvent.findMany({
+      where: {
+        type: "EXAM", // Only block Exams
+        OR: [
+          {
+            startDate: { lte: new Date(endDate) },
+            endDate: { gte: new Date(startDate) }
+          }
+        ]
+      }
+    });
+
+    if (overlapEvents.length > 0) {
+      const conflict = overlapEvents[0];
+      return res.status(400).json({
+        message: `Evaluation/Exam Conflict: "${conflict.title}". OD cannot be applied during this period.`
       });
     }
 
     if (!req.files?.aimFile || !req.files?.offerFile) {
       return res.status(400).json({
         message: "Both documents are required"
+      });
+    }
+
+    /* ===== DATE VALIDATION ===== */
+    const validationToday = new Date();
+    validationToday.setHours(0, 0, 0, 0);
+    const validationStart = new Date(startDate);
+
+    // Allow today, but not yesterday (Backdating prevented)
+    if (validationStart < validationToday) {
+      return res.status(400).json({
+        message: "OD Start Date cannot be in the past. It must be today or a future date."
+      });
+    }
+
+    // New Check: Start Date cannot be after End Date
+    const validationEnd = new Date(endDate);
+    if (validationStart > validationEnd) {
+      return res.status(400).json({
+        message: "OD Start Date cannot be after End Date."
       });
     }
 
@@ -183,7 +248,6 @@ exports.applyOD = async (req, res) => {
     // Use company name from the offer for OCR instead of the generic 'industry' dropdown
     const companyNameForOCR = offer.company.name;
 
-    /* ===== VALIDATE FILENAMES ===== */
     /* ===== VALIDATE FILENAMES & DETAILS ===== */
     const validationSteps = [];
 
@@ -200,56 +264,51 @@ exports.applyOD = async (req, res) => {
         ? originalName.slice(0, -4)
         : originalName;
 
+      // Strict Format: ROLL-TYPE-DD.MM.YYYY
       const regex = /^[A-Z0-9]+-(ITO|ITI)-\d{1,2}\.\d{1,2}\.\d{4}$/;
+
       if (!regex.test(nameWithoutExt)) {
-        addStep(`${expectedType} Filename Format`, false, `Invalid format. Expected: <ROLL>-${expectedType}-<DATE>`);
-        return false;
+        throw new Error(`Invalid filename format: ${originalName}. Expected: ${student.rollNo}-${expectedType}-DD.MM.YYYY.pdf`);
       }
-      addStep(`${expectedType} Filename Format`, true);
 
       const parts = nameWithoutExt.split("-");
       const fileRollNo = parts[0];
       const fileType = parts[1];
-      const fileDate = parts[2];
+      let fileDate = parts[2];
+
+      // Normalize date separator to dot
+      fileDate = fileDate.replace(/[\-\/]/g, ".");
 
       // Step 2: Roll Number
       if (fileRollNo !== student.rollNo) {
-        addStep(`${expectedType} Roll Number`, false, `Found ${fileRollNo}, expected ${student.rollNo}`);
-        return false;
+        throw new Error(`Filename Roll No mismatch: Found ${fileRollNo}, expected ${student.rollNo}`);
       }
-      addStep(`${expectedType} Roll Number`, true);
 
       // Step 3: Type check
       if (fileType !== expectedType) {
-        addStep(`${expectedType} Document Type`, false, `Found ${fileType}, expected ${expectedType}`);
-        return false;
+        throw new Error(`Filename Type mismatch: Found ${fileType}, expected ${expectedType} (Aim=ITI, Offer=ITO)`);
       }
 
       // Step 4: Date Check
-      const today = new Date();
-      const formatDate = (date) => {
-        const d = String(date.getDate()).padStart(2, '0');
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const y = date.getFullYear();
-        return `${d}.${m}.${y}`;
-      };
+      const checkToday = new Date();
+      checkToday.setHours(0, 0, 0, 0);
 
-      const todayString = formatDate(today);
-      const startString = formatDate(new Date(startDate));
+      const [day, month, year] = fileDate.split(".").map(Number);
+      const parsedFileDate = new Date(year, month - 1, day); // Month is 0-indexed
 
-      const normalizeDateString = (str) => {
-        const [d, m, y] = str.split(".");
-        return `${d.padStart(2, '0')}.${m.padStart(2, '0')}.${y}`;
-      };
+      if (parsedFileDate.getTime() !== checkToday.getTime()) {
+        const formatDate = (date) => {
+          const d = String(date.getDate()).padStart(2, '0');
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const y = date.getFullYear();
+          return `${d}.${m}.${y}`;
+        };
+        const todayStr = formatDate(checkToday);
 
-      const normalizedFileDate = normalizeDateString(fileDate);
-
-      if (normalizedFileDate !== todayString && normalizedFileDate !== startString) {
-        addStep(`${expectedType} Date Match`, false, `Date ${normalizedFileDate} must be Today (${todayString}) or Start Date (${startString})`);
-        return false;
+        throw new Error(`Filename date ${fileDate} must be strictly today (${todayStr}).`);
       }
-      addStep(`${expectedType} Date Match`, true);
 
+      // Validation Passed
       return true;
     };
 
@@ -336,44 +395,73 @@ exports.applyOD = async (req, res) => {
     const offerFilePath = req.files.offerFile[0].path;
 
     /* ===== SMART OCR VERIFICATION ===== */
-    const ocrResult = await verifyDocumentContent(
-      offerFilePath,
+    /* ===== SMART OCR VERIFICATION ===== */
+
+    // 1. Verify AIM/OBJECTIVE (ITI) -> Strict Roll No Check
+    const aimResult = await verifyDocumentContent(
+      aimFilePath,
       student.name,
-      companyNameForOCR, // ✅ Use specific company
+      student.rollNo,
+      companyNameForOCR,
       startDate,
-      endDate
+      endDate,
+      { checkRollNo: true, checkCompany: false, docType: "AIM/ITI" }
     );
 
-    if (!ocrResult.success) {
-      // Add OCR failure as a step
+    if (!aimResult.success) {
       const failedReasons = [];
-      if (!ocrResult.verificationDetails.name.found) failedReasons.push("Student Name");
-      if (!ocrResult.verificationDetails.company.found) failedReasons.push("Company Name");
-      if (!ocrResult.verificationDetails.dates.found) failedReasons.push("Joining Date");
+      if (!aimResult.verificationDetails.name.found) failedReasons.push("Student Name (in Aim File)");
+      if (!aimResult.verificationDetails.rollNo.found) failedReasons.push("Roll No (in Aim File)");
 
       validationSteps.push({
-        name: "AI Content Verification",
+        name: "AI Verification (Aim File)",
         success: false,
-        error: `Could not verify: ${failedReasons.join(", ")}`
+        error: `Failed: ${failedReasons.join(", ")}`
       });
 
-      // Delete uploaded files if verification fails to clean up
-      try {
-        fs.unlinkSync(aimFilePath);
-        fs.unlinkSync(offerFilePath);
-      } catch (e) {
-        console.error("Failed to delete invalid files:", e);
-      }
+      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { }
 
       return res.status(400).json({
-        message: "Document verification incomplete",
+        message: "Aim/Objective Document verification failed",
         steps: validationSteps,
-        verificationDetails: ocrResult.verificationDetails
+        verificationDetails: aimResult.verificationDetails
       });
     }
+    validationSteps.push({ name: "AI Verification (Aim File)", success: true });
 
-    // OCR Success Step
-    validationSteps.push({ name: "AI Content Verification", success: true });
+    // 2. Verify OFFER LETTER (ITO) -> Skip Roll No, Strict Company
+    const offerResult = await verifyDocumentContent(
+      offerFilePath,
+      student.name,
+      student.rollNo,
+      companyNameForOCR,
+      startDate,
+      endDate,
+      { checkRollNo: false, checkCompany: true, docType: "OFFER/ITO" }
+    );
+
+    if (!offerResult.success) {
+      const failedReasons = [];
+      if (!offerResult.verificationDetails.name.found) failedReasons.push("Student Name (in Offer Letter)");
+      if (!offerResult.verificationDetails.company.found) failedReasons.push("Company Name (in Offer Letter)");
+
+      validationSteps.push({
+        name: "AI Verification (Offer Letter)",
+        success: false,
+        error: `Failed: ${failedReasons.join(", ")}`
+      });
+
+      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { }
+
+      return res.status(400).json({
+        message: "Offer Letter verification failed",
+        steps: validationSteps,
+        verificationDetails: offerResult.verificationDetails
+      });
+    }
+    validationSteps.push({ name: "AI Verification (Offer Letter)", success: true });
+
+
 
     /* ===== SAVE OD ===== */
     const timeline = [
@@ -404,7 +492,10 @@ exports.applyOD = async (req, res) => {
         proofFile: aimFilePath,
         offerFile: offerFilePath,
         status: "DOCS_VERIFIED", // Skip PENDING if OCR passed
-        verificationDetails: ocrResult.verificationDetails,
+        verificationDetails: {
+          ...offerResult.verificationDetails,
+          rollNo: aimResult.verificationDetails.rollNo // Use strict check from Aim file
+        },
         timeline: timeline
       }
     });
@@ -482,7 +573,7 @@ exports.getOdById = async (req, res) => {
 exports.updateOdStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    let { status, remarks } = req.body; // ✅ Accepted remarks
     const email = req.user.email;
 
     if (!status) {
@@ -521,13 +612,39 @@ exports.updateOdStatus = async (req, res) => {
       }
     }
 
+    // SIMPLIFIED WORKFLOW: Mentor Approval = Final Approval
+    if (faculty && status === "MENTOR_APPROVED") {
+      status = "APPROVED"; // Auto-promote to Final Approved
+    }
+
+    // ✅ CONFLICT CHECK FOR APPROVAL (New)
+    if (status === "APPROVED") {
+      const overlapEvents = await prisma.calendarEvent.findMany({
+        where: {
+          type: "EXAM",
+          OR: [
+            {
+              startDate: { lte: od.endDate },
+              endDate: { gte: od.startDate }
+            }
+          ]
+        }
+      });
+
+      if (overlapEvents.length > 0) {
+        return res.status(400).json({
+          message: `Cannot approve OD. Conflict with Exam: "${overlapEvents[0].title}"`
+        });
+      }
+    }
+
     // Update Timeline
     const currentTimeline = Array.isArray(od.timeline) ? od.timeline : [];
     const newEvent = {
       status,
       label: status.replace("_", " ").toLowerCase(),
       time: new Date(),
-      description: `Status updated to ${status} by ${req.user.role}.`
+      description: `Status updated to ${status} by ${req.user.role}. ${remarks ? `Remarks: ${remarks}` : ""}`
     };
 
     // Update OD
@@ -539,14 +656,34 @@ exports.updateOdStatus = async (req, res) => {
       }
     });
 
-    // Notify Student
+    // Notify Student (Non-blocking)
     if (od.student) {
-      await notificationService.createNotification(
+      const statusText = status.replace("_", " ");
+      const remarksText = remarks ? `. Remarks: ${remarks}` : ".";
+
+      notificationService.createNotification(
         od.student.email,
         "OD Status Updated",
-        `Your OD request (${od.trackerId}) has been ${status.replace("_", " ").toLowerCase()}.`,
+        `Your OD request (${od.trackerId}) has been ${statusText}${remarksText}`,
         status.includes("APPROVED") ? "SUCCESS" : "ERROR"
-      );
+      ).catch(err => console.error("Notification Error:", err));
+
+      // ✅ Send Email for APPROVED / REJECTED (Non-blocking)
+      if (status === "APPROVED" || status === "REJECTED") {
+        sendEmail(
+          od.student.email,
+          `OD Request ${status}: ${od.companyName || "Application"}`,
+          `<div style="font-family: Arial, sans-serif; color: #333;">
+              <h2>OD Status Update</h2>
+              <p>Dear ${od.student.name},</p>
+              <p>Your OD request (Tracker: #${od.trackerId}) for <strong>${od.companyName || "Internship"}</strong> has been <strong>${status}</strong>.</p>
+              <br/>
+              <p><strong>Remarks:</strong> ${remarks || "No remarks provided."}</p>
+              <br/>
+              <p>System Auto-Generated Email</p>
+           </div>`
+        ).catch(err => console.error("Email Error:", err));
+      }
     }
 
     return res.status(200).json({
@@ -616,10 +753,23 @@ exports.getStudentODs = async (req, res) => {
 
     const ods = await prisma.od.findMany({
       where: { studentId: Number(studentId) },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
+      include: {
+        student: true,
+        offer: {
+          include: { company: true }
+        }
+      }
     });
 
-    return res.json(ods);
+    const mappedODs = ods.map(od => ({
+      ...od,
+      studentName: od.student.name,
+      studentRollNo: od.student.rollNo,
+      companyName: od.offer?.company?.name || "Unknown"
+    }));
+
+    return res.json(mappedODs);
 
   } catch (error) {
     console.error("GET STUDENT ODs ERROR:", error);
@@ -664,5 +814,200 @@ exports.getMyODs = async (req, res) => {
   } catch (error) {
     console.error("GET MY ODs ERROR:", error);
     return res.status(500).json({ message: "Failed to fetch ODs" });
+  }
+};
+
+/* =====================================================
+   GET ALL ODs (ADMIN SEARCH & FILTER)
+===================================================== */
+exports.getAllODs = async (req, res) => {
+  try {
+    const { company, rollNo, status, studentId } = req.query;
+    const email = req.user.email;
+
+    // Verify Admin OR Faculty
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+
+    if (!admin && !faculty) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const whereClause = {};
+
+    // Filter by Status
+    if (status) {
+      whereClause.status = status;
+    }
+
+    // Filter by Student ID
+    if (studentId) {
+      whereClause.studentId = Number(studentId);
+    }
+
+    // Filter by Student Roll No
+    if (rollNo) {
+      whereClause.student = {
+        rollNo: { contains: rollNo }
+      };
+    }
+
+    // Filter by Company Name
+    if (company) {
+      whereClause.offer = {
+        company: {
+          name: { contains: company }
+        }
+      };
+    }
+
+    const ods = await prisma.od.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      include: {
+        student: {
+          select: { id: true, name: true, rollNo: true, department: true }
+        },
+        offer: {
+          include: { company: { select: { name: true } } }
+        }
+      }
+    });
+
+    const mappedODs = ods.map(od => ({
+      id: od.id,
+      type: od.type,
+      startDate: od.startDate,
+      endDate: od.endDate,
+      duration: od.duration,
+      status: od.status,
+      appliedOn: od.createdAt,
+      studentName: od.student.name,
+      studentRollNo: od.student.rollNo,
+      companyName: od.offer?.company?.name || "Unknown",
+      studentId: od.student.id,
+      trackerId: od.trackerId
+    }));
+
+    return res.json(mappedODs);
+
+  } catch (error) {
+    console.error("GET ALL ODs ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch ODs" });
+  }
+};
+
+/* =====================================================
+   GET COMPANY STATS (SEARCH + SUMMARY)
+===================================================== */
+exports.getCompanyStats = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const email = req.user.email;
+
+    // Verify Admin OR Faculty
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+
+    if (!admin && !faculty) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (!query) {
+      return res.json([]);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const companies = await prisma.company.findMany({
+      where: {
+        name: { contains: query }
+      },
+      take: 10,
+      include: {
+        _count: {
+          select: { offers: true }
+        },
+        offers: {
+          select: {
+            ods: {
+              where: {
+                status: "APPROVED",
+                endDate: { gte: today }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const stats = companies.map(c => {
+      // Calculate active ODs by summing up valid ODs in all offers
+      const activeOdCount = c.offers.reduce((acc, offer) => acc + offer.ods.length, 0);
+
+      return {
+        id: c.id,
+        name: c.name,
+        placedCount: c._count.offers,
+        activeOdCount: activeOdCount
+      };
+    });
+
+    return res.json(stats);
+
+  } catch (error) {
+    console.error("GET COMPANY STATS ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch company stats" });
+  }
+};
+
+/* =====================================================
+   GET PLACED STUDENTS BY COMPANY
+===================================================== */
+exports.getCompanyPlacedStudents = async (req, res) => {
+  try {
+    const { company } = req.query;
+    const email = req.user.email;
+
+    // Verify Admin OR Faculty
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+
+    if (!admin && !faculty) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (!company) {
+      return res.status(400).json({ message: "Company name is required" });
+    }
+
+    const offers = await prisma.offer.findMany({
+      where: {
+        company: {
+          name: company
+        }
+      },
+      include: {
+        student: {
+          select: { id: true, name: true, rollNo: true, department: true }
+        }
+      },
+      orderBy: { placedDate: 'desc' }
+    });
+
+    const students = offers.map(offer => ({
+      id: offer.student.id,
+      name: offer.student.name,
+      rollNo: offer.student.rollNo,
+      department: offer.student.department,
+      placedDate: offer.placedDate
+    }));
+
+    return res.json(students);
+
+  } catch (error) {
+    console.error("GET PLACED STUDENTS ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch placed students" });
   }
 };

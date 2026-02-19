@@ -35,4 +35,10 @@ app.use("/api/notifications", notificationRoutes);
 const aiRoutes = require("./modules/ai/ai.routes");
 app.use("/api/ai", aiRoutes);
 
+const calendarRoutes = require("./modules/calendar/calendar.routes");
+app.use("/api/calendar", calendarRoutes);
+
+const supportRoutes = require("./modules/support/support.routes");
+app.use("/api/support", supportRoutes);
+
 module.exports = app;

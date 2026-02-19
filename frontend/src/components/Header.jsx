@@ -32,6 +32,13 @@ export default function Header() {
     }
   }, [mobileMenuOpen]);
 
+  const handleDashboardClick = () => {
+    if (role === "STUDENT") navigate("/student/dashboard");
+    else if (role === "FACULTY") navigate("/faculty/dashboard");
+    else if (role === "ADMIN") navigate("/admin/dashboard");
+    setMobileMenuOpen(false);
+  };
+
   if (!user) return null;
 
   return (
@@ -41,8 +48,11 @@ export default function Header() {
           <div className="flex items-center justify-between h-16 md:h-20">
 
             {/* Left: Branding */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transform transition-transform hover:scale-105">
+            <div
+              onClick={handleDashboardClick}
+              className="flex items-center gap-3 min-w-0 cursor-pointer group"
+            >
+              <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transform transition-transform group-hover:scale-105">
                 <img src={logo} alt="BIT" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 flex flex-col justify-center">
@@ -192,7 +202,7 @@ export default function Header() {
               {/* Navigation Links */}
               <nav className="space-y-2">
                 <button
-                  onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }}
+                  onClick={handleDashboardClick}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white font-medium active:scale-95 transition-all"
                 >
                   <span>🏠</span> Dashboard

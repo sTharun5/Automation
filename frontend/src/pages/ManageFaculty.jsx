@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
+import SearchInput from "../components/SearchInput";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -43,6 +44,18 @@ export default function ManageFaculty() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchFacultySuggestions = async (query) => {
+        if (!query) return [];
+        return faculty.filter(f =>
+            f.name.toLowerCase().includes(query.toLowerCase()) ||
+            f.facultyId.toLowerCase().includes(query.toLowerCase())
+        );
+    };
+
+    const handleSelectFaculty = (f) => {
+        setFaculty([f]);
     };
 
     const handleChange = (e) => {
@@ -105,6 +118,31 @@ export default function ManageFaculty() {
                         </button>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Manage Faculty</h1>
                     </div>
+                </div>
+
+
+                {/* Search Section */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="w-full md:w-1/2">
+                        <SearchInput
+                            placeholder="Search by Name or Faculty ID..."
+                            fetchSuggestions={fetchFacultySuggestions}
+                            onSelect={handleSelectFaculty}
+                            renderSuggestion={(f) => (
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-slate-900 dark:text-white">{f.name}</span>
+                                    <span className="text-xs text-slate-500">{f.facultyId} • {f.department}</span>
+                                </div>
+                            )}
+                        />
+                    </div>
+                    <button
+                        onClick={fetchFaculty}
+                        className="text-blue-600 hover:underline text-sm font-semibold"
+                    >
+                        Show All Faculty
+                    </button>
+                    <div className="w-full md:w-auto"></div>
                 </div>
 
                 {/* Add Faculty Form */}
@@ -227,12 +265,12 @@ export default function ManageFaculty() {
                         </table>
                     </div>
                 </div>
-            </main>
+            </main >
             <ConfirmationModal
                 {...confirmModal}
                 onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
             />
             <Footer />
-        </div>
+        </div >
     );
 }

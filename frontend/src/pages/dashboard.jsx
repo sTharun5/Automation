@@ -7,6 +7,8 @@ import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import ActionCard from "../components/ActionCard";
 import ProfileCard from "../components/ProfileCard";
+import ODAnalytics from "../components/ODAnalytics"; // ✅ New
+import ODCalendar from "../components/ODCalendar"; // ✅ New
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -132,6 +134,9 @@ export default function Dashboard() {
               </div>
             </section>
 
+            {/* Analytics Section */}
+            <ODAnalytics history={dashboardData?.history} />
+
             {/* AI Command Center Feature */}
             <section className="animate-fadeIn mt-6 group relative overflow-hidden rounded-xl bg-slate-900 text-slate-300 border border-slate-800 p-0.5">
               <div className="relative z-10 bg-slate-950/50 rounded-[10px] p-6 md:p-8 backdrop-blur-sm">
@@ -205,11 +210,32 @@ export default function Dashboard() {
             <div className="space-y-8">
               <ProfileCard student={{ ...student, mentor: dashboardData?.student?.mentor }} />
 
+              <ODCalendar history={dashboardData?.history} />
+
               <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl relative overflow-hidden group border border-slate-800">
                 <div className="relative z-10">
                   <h4 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">Support</h4>
-                  <p className="text-xs text-slate-300 leading-relaxed mb-4">Facing issues with your application? Contact your mentor or the administrator.</p>
-                  <button onClick={() => navigate("/notifications")} className="text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors">View Notifications →</button>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                    Facing issues with your application? Contact your mentor or the administrator directly.
+                  </p>
+
+                  {dashboardData?.student?.mentor ? (
+                    <a
+                      href={`mailto:${dashboardData.student.mentor.email}`}
+                      className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      Contact Mentor
+                    </a>
+                  ) : (
+                    <a
+                      href="mailto:admin@college.edu"
+                      className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      Contact Admin
+                    </a>
+                  )}
                 </div>
                 <div className="absolute -bottom-4 -right-4 h-16 w-16 bg-blue-500/10 rounded-full blur-xl group-hover:scale-110 transition-transform" />
               </div>

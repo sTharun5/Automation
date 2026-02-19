@@ -151,3 +151,21 @@ enum od_status {
   APPROVED
   REJECTED
 }
+
+/// *
+/// * ================= CALENDAR EVENT =================
+model CalendarEvent {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  type        EventType @default(EVENT)
+  createdAt   DateTime @default(now())
+}
+
+enum EventType {
+  EXAM
+  HOLIDAY
+  EVENT
+}

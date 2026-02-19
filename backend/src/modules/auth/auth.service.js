@@ -1,17 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
-const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../../utils/sendEmail");
 
 const prisma = new PrismaClient();
-
-/* Gmail Transporter */
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
 
 /* ===============================
    SEND OTP
@@ -38,11 +29,10 @@ exports.sendOTP = async (email) => {
   });
 
   // send email
-  await transporter.sendMail({
-    from: "SMART OD <" + process.env.MAIL_USER + ">",
-    to: email,
-    subject: "Your SMART OD Login OTP",
-    html: `
+  await sendEmail(
+    email,
+    "Your SMART OD Login OTP",
+    `
       <div style="font-family:Arial">
         <h2>SMART OD Login</h2>
         <p>Your OTP is:</p>
@@ -50,7 +40,7 @@ exports.sendOTP = async (email) => {
         <p>This OTP is valid for 5 minutes.</p>
       </div>
     `
-  });
+  );
 };
 
 /* ===============================

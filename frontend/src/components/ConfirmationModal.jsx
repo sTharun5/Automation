@@ -8,7 +8,11 @@ export default function ConfirmationModal({
     message,
     confirmText = "Confirm",
     cancelText = "Cancel",
-    isDanger = false
+    isDanger = false,
+    showInput = false,
+    inputValue = "",
+    onInputChange = () => { },
+    inputPlaceholder = ""
 }) {
     useEffect(() => {
         const handleEscape = (e) => {
@@ -40,8 +44,8 @@ export default function ConfirmationModal({
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-3">
                         <span className={`flex h-10 w-10 items-center justify-center rounded-full text-lg ${isDanger
-                                ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                             }`}>
                             {isDanger ? "⚠️" : "ℹ️"}
                         </span>
@@ -51,10 +55,19 @@ export default function ConfirmationModal({
                     </div>
                 </div>
 
-                <div className="px-6 py-4">
+                <div className="px-6 py-4 space-y-3">
                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                         {message}
                     </p>
+                    {showInput && (
+                        <textarea
+                            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:text-white"
+                            placeholder={inputPlaceholder || "Add optional remarks..."}
+                            rows="3"
+                            value={inputValue}
+                            onChange={(e) => onInputChange(e.target.value)}
+                        />
+                    )}
                 </div>
 
                 <div className="flex gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl">
@@ -65,10 +78,10 @@ export default function ConfirmationModal({
                         {cancelText}
                     </button>
                     <button
-                        onClick={onConfirm}
+                        onClick={() => onConfirm(inputValue)}
                         className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${isDanger
-                                ? "bg-red-600 hover:bg-red-500 shadow-red-500/20"
-                                : "bg-blue-600 hover:bg-blue-500 shadow-blue-500/20"
+                            ? "bg-red-600 hover:bg-red-500 shadow-red-500/20"
+                            : "bg-blue-600 hover:bg-blue-500 shadow-blue-500/20"
                             } shadow-lg`}
                     >
                         {confirmText}
