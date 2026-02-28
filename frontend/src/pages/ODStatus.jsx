@@ -16,7 +16,7 @@ export default function ODStatus() {
                 const active = ods.filter(od =>
                     od.status && (
                         ["PENDING", "MENTOR_APPROVED", "DOCS_VERIFIED"].includes(od.status) ||
-                        (od.status === "APPROVED" && od.endDate && new Date(od.endDate) > new Date())
+                        (od.status === "APPROVED" && od.endDate && new Date(od.endDate).setHours(16, 20, 0, 0) > new Date().getTime())
                     )
                 );
                 setActiveODs(active);

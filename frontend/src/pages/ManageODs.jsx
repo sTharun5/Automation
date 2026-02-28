@@ -95,6 +95,41 @@ export default function ManageODs() {
         }
     };
 
+    const handlePlacedStatsClick = async (companyName) => {
+        setLoading(true);
+        try {
+            const res = await api.get(`/od/admin/company-placed`, {
+                params: { company: companyName }
+            });
+            setPlacedStudents(res.data);
+            setListType('placed');
+            setViewMode('list');
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to fetch placed students", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCompanyStatsClick = async (companyName) => {
+        setLoading(true);
+        try {
+            const res = await api.get(`/od/admin/all`, {
+                params: { company: companyName }
+            });
+            setODs(res.data);
+            setListType('ods');
+            setStatusFilter('active');
+            setViewMode('list');
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to fetch company ODs", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     /* ================= STUDENT ACTIONS ================= */
     const handleStudentHistoryClick = () => {
         setStatusFilter('history');
@@ -122,15 +157,13 @@ export default function ManageODs() {
                 remarks: remarks
             });
             showToast("OD Cancelled Successfully", "success");
-            // Refresh list - re-fetch based on current search
-            if (selectedItem) {
-                handleSelect(selectedItem);
-            } else if (searchType === 'company') {
-                // If we were just searching by company without a specific item selected (if we allowed that)
-                // For now handleSelect handles list population.
-                // If we are in 'company' mode and selectedItem is null (maybe raw search), we might need to re-fetch suggestions?
-                // But handleSelect sets ods. So just re-run handleSelect if we have an item.
-            }
+
+            // Update local state directly to instantly reflect cancellation
+            setODs(prevODs => prevODs.map(od =>
+                od.id === odId
+                    ? { ...od, status: "REJECTED" }
+                    : od
+            ));
         } catch (err) {
             showToast("Failed to cancel OD", "error");
         } finally {
@@ -152,6 +185,27 @@ export default function ManageODs() {
         });
     };
 
+    /* ================= MANUAL ERP SYNC ================= */
+    const handleErpSync = async (odId) => {
+        try {
+            const res = await api.post(`/od/${odId}/sync-erp`);
+            if (res.data.erpSyncStatus === 'FAILED') {
+                showToast(res.data.message || "Failed to trigger ERP Sync", "error");
+            } else {
+                showToast(res.data.message || "ERP Sync Triggered", "success");
+            }
+
+            // Update local state directly to ensure immediate UI feedback
+            setODs(prevODs => prevODs.map(od =>
+                od.id === odId
+                    ? { ...od, erpSyncStatus: res.data.erpSyncStatus }
+                    : od
+            ));
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to trigger ERP Sync", "error");
+        }
+    };
+
     /* ================= FILTER LOGIC ================= */
     const getFilteredODs = () => {
         if (statusFilter === 'history') return ods;
@@ -161,11 +215,20 @@ export default function ManageODs() {
 
         return ods.filter(od => {
             const isRejected = od.status === 'REJECTED';
-            const isExpired = new Date(od.endDate) < today && od.status === 'APPROVED';
+            const isExpired = new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime() && (od.status === 'APPROVED' || od.status === 'MENTOR_APPROVED');
             // Show if NOT rejected AND NOT expired (so pending, approved future, etc.)
             return !isRejected && !isExpired;
         });
     }
+
+    const isPastApproved = (od) => {
+        return (od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime();
+    };
+
+    const getDerivedStatus = (od) => {
+        if (isPastApproved(od)) return "COMPLETED";
+        return od.status;
+    };
 
     const filteredODs = getFilteredODs();
 
@@ -455,6 +518,7 @@ export default function ManageODs() {
                                             {searchType !== 'company' && <th className="px-6 py-4">Company</th>}
                                             <th className="px-6 py-4">Dates</th>
                                             <th className="px-6 py-4">Status</th>
+                                            <th className="px-6 py-4">ERP Sync</th>
                                             <th className="px-6 py-4">Action</th>
                                         </tr>
                                     </thead>
@@ -463,38 +527,57 @@ export default function ManageODs() {
                                             <tr key={od.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 {searchType !== 'student' && (
                                                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                                        {od.studentName} <br /> <span className="text-xs text-slate-400 font-normal">{od.studentRollNo}</span>
+                                                        {od.studentName || od.student?.name} <br /> <span className="text-xs text-slate-400 font-normal">{od.studentRollNo || od.student?.rollNo}</span>
                                                     </td>
                                                 )}
                                                 {searchType !== 'company' && (
-                                                    <td className="px-6 py-4">{od.companyName}</td>
+                                                    <td className="px-6 py-4">{od.companyName || od.company?.name || "N/A"}</td>
                                                 )}
                                                 <td className="px-6 py-4">
                                                     {new Date(od.startDate).toLocaleDateString()} - {new Date(od.endDate).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${od.status === 'APPROVED' ? 'bg-green-100 text-green-600' :
-                                                        od.status === 'REJECTED' ? 'bg-red-100 text-red-600' :
-                                                            'bg-amber-100 text-amber-600'
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getDerivedStatus(od) === 'COMPLETED' ? 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
+                                                        (od.status === 'APPROVED' || od.status === 'MENTOR_APPROVED') ? 'bg-green-100 text-green-600' :
+                                                            od.status === 'REJECTED' ? 'bg-red-100 text-red-600' :
+                                                                'bg-amber-100 text-amber-600'
                                                         }`}>
-                                                        {od.status}
+                                                        {getDerivedStatus(od)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {od.status !== 'REJECTED' && (
+                                                    {['APPROVED', 'MENTOR_APPROVED', 'COMPLETED'].includes(getDerivedStatus(od)) && (
+                                                        <div className="flex items-center gap-2">
+                                                            {od.erpSyncStatus === 'SYNCED' ? (
+                                                                <span className="text-green-600 bg-green-50 px-2 py-1 rounded text-[10px] font-bold">✓ SYNCED</span>
+                                                            ) : od.erpSyncStatus === 'FAILED' ? (
+                                                                <span className="text-red-600 bg-red-50 px-2 py-1 rounded text-[10px] font-bold">❌ FAILED</span>
+                                                            ) : (
+                                                                <span className="text-amber-600 bg-amber-50 px-2 py-1 rounded text-[10px] font-bold">⏳ PENDING</span>
+                                                            )}
+                                                            {od.erpSyncStatus !== 'SYNCED' && (
+                                                                <button onClick={() => handleErpSync(od.id)} className="text-[10px] text-blue-600 hover:underline">Retry</button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {getDerivedStatus(od) !== 'REJECTED' && getDerivedStatus(od) !== 'COMPLETED' ? (
                                                         <button
                                                             onClick={() => handleCancelOD(od.id)}
                                                             className="text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors"
                                                         >
                                                             Cancel
                                                         </button>
+                                                    ) : (
+                                                        <span className="text-slate-400 text-xs italic">N/A</span>
                                                     )}
                                                 </td>
                                             </tr>
                                         ))}
                                         {filteredODs.length === 0 && (
                                             <tr>
-                                                <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
+                                                <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
                                                     {searchType === 'company'
                                                         ? "No one is currently in OD for this company."
                                                         : "No ODs found in this category."}

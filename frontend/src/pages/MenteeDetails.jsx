@@ -172,11 +172,12 @@ export default function MenteeDetails() {
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${od.status === "APPROVED" ? "bg-green-100 text-green-700" :
-                                                        od.status === "REJECTED" ? "bg-red-100 text-red-700" :
-                                                            "bg-blue-100 text-blue-700"
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${(od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime() ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300" :
+                                                        (od.status === "APPROVED" || od.status === "MENTOR_APPROVED") ? "bg-green-100 text-green-700" :
+                                                            od.status === "REJECTED" ? "bg-red-100 text-red-700" :
+                                                                "bg-amber-100 text-amber-700 mx-1"
                                                         }`}>
-                                                        {od.status.replace("_", " ")}
+                                                        {((od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime() ? "COMPLETED" : od.status).replace("_", " ")}
                                                     </span>
                                                     <h3 className="font-bold text-slate-900 dark:text-white mt-1">{od.type} OD</h3>
                                                 </div>

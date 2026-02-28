@@ -4,6 +4,7 @@ const pdf = require("pdf-parse");
 const prisma = new PrismaClient();
 const notificationService = require("../notification/notification.service");
 const sendEmail = require("../../utils/sendEmail");
+const { syncAttendanceToErp } = require("../erp/erp.service");
 
 const generateTrackerId = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -157,6 +158,35 @@ exports.applyOD = async (req, res) => {
       duration,
       offerId // ✅ New
     } = req.body;
+
+    /* ===== CHECK INTERNSHIP REPORT REQUIREMENT ===== */
+    // 1. Find Completed ODs that do NOT have an APPROVED report
+    const today = new Date();
+    const pendingReports = await prisma.od.findMany({
+      where: {
+        studentId: Number(studentId),
+        status: "APPROVED",
+        endDate: { lt: today }, // Completed
+        OR: [
+          { report: { is: null } },
+          { report: { status: { not: "APPROVED" } } }
+        ]
+      },
+      select: {
+        id: true,
+        trackerId: true,
+        endDate: true,
+        offer: { select: { company: { select: { name: true } } } }
+      }
+    });
+
+    if (pendingReports.length > 0) {
+      return res.status(403).json({
+        message: "Internship Report Required",
+        details: "You have completed OD(s) that require an Internship Report. Please submit reports for the following before applying for a new OD.",
+        pendingODs: pendingReports // Send list to frontend
+      });
+    }
 
     /* ===== BASIC VALIDATION ===== */
     if (
@@ -339,14 +369,14 @@ exports.applyOD = async (req, res) => {
     }
 
     // Check for an Active OD (Approved and currently ongoing)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayActive = new Date();
+    todayActive.setHours(0, 0, 0, 0);
 
     const activeOD = await prisma.od.findFirst({
       where: {
         studentId: Number(studentId),
         status: "APPROVED",
-        endDate: { gte: today } // End Date is in the future or today
+        endDate: { gte: todayActive } // End Date is in the future or today
       }
     });
 
@@ -544,6 +574,7 @@ exports.getOdById = async (req, res) => {
       where: { id: Number(id) },
       include: {
         student: true,
+        report: true,
         offer: {
           include: {
             company: true
@@ -653,8 +684,30 @@ exports.updateOdStatus = async (req, res) => {
       data: {
         status,
         timeline: [...currentTimeline, newEvent]
-      }
+      },
+      include: { student: true }
     });
+
+    // Handle ERP Sync asynchronously if Approved
+    if (status === "APPROVED") {
+      // Fire and forget ERP sync attempt
+      syncAttendanceToErp(
+        updatedOd.student.rollNo,
+        updatedOd.startDate,
+        updatedOd.endDate,
+        updatedOd.trackerId
+      ).then(async (result) => {
+        try {
+          await prisma.od.update({
+            where: { id: updatedOd.id },
+            data: { erpSyncStatus: result.success ? "SYNCED" : "FAILED" }
+          });
+          console.log(`[DB] ERP Sync status updated to ${result.success ? 'SYNCED' : 'FAILED'} for OD ID ${updatedOd.id}`);
+        } catch (dbErr) {
+          console.error("Failed to update ERP Sync Status in DB:", dbErr);
+        }
+      });
+    }
 
     // Notify Student (Non-blocking)
     if (od.student) {
@@ -780,9 +833,6 @@ exports.getStudentODs = async (req, res) => {
 /* =====================================================
    GET MY ODs (STUDENT)
  ===================================================== */
-/* =====================================================
-   GET MY ODs (STUDENT)
- ===================================================== */
 exports.getMyODs = async (req, res) => {
   try {
     const email = req.user.email;
@@ -881,6 +931,7 @@ exports.getAllODs = async (req, res) => {
       endDate: od.endDate,
       duration: od.duration,
       status: od.status,
+      erpSyncStatus: od.erpSyncStatus,
       appliedOn: od.createdAt,
       studentName: od.student.name,
       studentRollNo: od.student.rollNo,
@@ -1009,5 +1060,57 @@ exports.getCompanyPlacedStudents = async (req, res) => {
   } catch (error) {
     console.error("GET PLACED STUDENTS ERROR:", error);
     return res.status(500).json({ message: "Failed to fetch placed students" });
+  }
+};
+/* =====================================================
+   MANUAL ERP SYNC (ADMIN ONLY)
+===================================================== */
+exports.manualErpSync = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const email = req.user.email;
+
+    // Verify Admin OR Faculty
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+
+    if (!admin && !faculty) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const od = await prisma.od.findUnique({
+      where: { id: Number(id) },
+      include: { student: true }
+    });
+
+    if (!od) {
+      return res.status(404).json({ message: "OD not found" });
+    }
+
+    // "COMPLETED" is not a DB status, it's just APPROVED with a past end date.
+    if (od.status !== "APPROVED" && od.status !== "MENTOR_APPROVED") {
+      return res.status(400).json({ message: `Only approved ODs can be synced to ERP. Current status is ${od.status}` });
+    }
+
+    const result = await syncAttendanceToErp(
+      od.student.rollNo,
+      od.startDate,
+      od.endDate,
+      od.trackerId
+    );
+
+    const updatedOd = await prisma.od.update({
+      where: { id: Number(id) },
+      data: { erpSyncStatus: result.success ? "SYNCED" : "FAILED" }
+    });
+
+    return res.status(200).json({
+      message: result.message,
+      erpSyncStatus: updatedOd.erpSyncStatus
+    });
+
+  } catch (error) {
+    console.error("MANUAL ERP SYNC ERROR:", error);
+    return res.status(500).json({ message: "Failed to trigger ERP sync" });
   }
 };

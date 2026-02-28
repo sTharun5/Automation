@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { addFaculty, addStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty } = require("./admin.controller");
+const { addFaculty, addStudent, updateStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty } = require("./admin.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 const { isAdmin } = require("../../middlewares/isAdmin.middleware");
 
@@ -18,6 +18,13 @@ router.post(
   verifyToken,
   isAdmin,
   addStudent
+);
+
+router.put(
+  "/update-student/:id",
+  verifyToken,
+  isAdmin,
+  updateStudent
 );
 
 router.get(

@@ -9,6 +9,7 @@ import ActionCard from "../components/ActionCard";
 import ProfileCard from "../components/ProfileCard";
 import ODAnalytics from "../components/ODAnalytics"; // ✅ New
 import ODCalendar from "../components/ODCalendar"; // ✅ New
+import InternshipReportModal from "../components/InternshipReportModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [student, setStudent] = useState(null);
   const [dashboardData, setDashboardData] = useState(null); // ✅ New State
   const [loading, setLoading] = useState(true);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   /* ================= LOAD AUTH ================= */
   /* ================= LOAD AUTH & DATA ================= */
@@ -78,6 +80,27 @@ export default function Dashboard() {
           <div className="lg:col-span-8 space-y-10 md:space-y-14">
             <Hero student={student} dashboardData={dashboardData} />
 
+            {/* Pending Reports Alert Banner */}
+            {dashboardData?.odStats?.pendingReports?.length > 0 && (
+              <div className="animate-fadeIn mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <span className="text-3xl">⚠️</span>
+                  <div>
+                    <h3 className="font-bold text-amber-900 dark:text-amber-100 text-lg">Internship Report Required</h3>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                      You have {dashboardData.odStats.pendingReports.length} completed OD(s) requiring an internship report submission. You cannot apply for new ODs until these are reviewed and approved.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="whitespace-nowrap bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-6 rounded-lg transition-transform hover:scale-105 shadow-md flex-shrink-0"
+                >
+                  Submit Report
+                </button>
+              </div>
+            )}
+
             {/* Professional Quick Actions */}
             <section className="animate-fadeIn">
               <div className="flex items-center justify-between mb-6">
@@ -86,7 +109,7 @@ export default function Dashboard() {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Apply OD */}
                 <button
                   onClick={() => navigate("/apply-od")}
@@ -99,6 +122,21 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Submit a request for Internship or On-Duty leave.</p>
                   <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:gap-2 transition-all">
                     Start Application <span aria-hidden>→</span>
+                  </span>
+                </button>
+
+                {/* Submit Report */}
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500/50 hover:shadow-md transition-all duration-300 text-left"
+                >
+                  <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-400 mb-4 group-hover:scale-110 transition-transform">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Submit Report</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Upload internship reports for completed requests.</p>
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Upload File <span aria-hidden>→</span>
                   </span>
                 </button>
 
@@ -245,6 +283,18 @@ export default function Dashboard() {
       </main>
 
       <Footer />
+      {dashboardData?.odStats && (
+        <InternshipReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          pendingODs={dashboardData.odStats.pendingReports || []}
+          onUploadSuccess={() => {
+            setShowReportModal(false);
+            // Refresh dashboard data
+            api.get("/students/dashboard").then(res => setDashboardData(res.data)).catch(console.error);
+          }}
+        />
+      )}
     </div>
   );
 }

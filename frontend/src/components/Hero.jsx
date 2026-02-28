@@ -159,27 +159,34 @@ export default function Hero({ student, dashboardData }) {
                   }
 
                   // CASE 2: APPROVED (Show Days Completed)
-                  const start = new Date(od.startDate).getTime();
-                  const end = new Date(od.endDate).getTime();
-                  const now = new Date().getTime();
+                  const start = new Date(od.startDate);
+                  start.setHours(8, 45, 0, 0);
+                  const end = new Date(od.endDate);
+                  end.setHours(16, 20, 0, 0);
+                  const now = new Date();
 
                   // Calculate Total Duration
-                  const oneDay = 1000 * 60 * 60 * 24;
-                  const totalDays = od.duration || (Math.ceil((end - start) / oneDay) + 1); // Inclusive
+                  const totalDays = od.duration || Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-                  let daysCompleted = Math.floor((now - start) / oneDay) + 1; // 1st day is Day 1
+                  let daysCompleted = 0.0;
+                  if (now < start) {
+                    daysCompleted = 0.0;
+                  } else if (now > end) {
+                    daysCompleted = totalDays;
+                  } else {
+                    const totalMs = end.getTime() - start.getTime();
+                    const elapsedMs = now.getTime() - start.getTime();
+                    daysCompleted = totalMs > 0 ? (totalDays * (elapsedMs / totalMs)) : totalDays;
+                  }
 
-                  // Clamping
-                  if (daysCompleted < 0) daysCompleted = 0; // Upcoming
-                  if (daysCompleted > totalDays) daysCompleted = totalDays; // Finished
-
-                  const percent = Math.min(100, Math.max(0, (daysCompleted / totalDays) * 100));
+                  const percent = totalDays > 0 ? Math.min(100, Math.max(0, (daysCompleted / totalDays) * 100)) : 100;
+                  const displayDays = daysCompleted.toFixed(1);
 
                   return (
                     <div>
                       <div className="flex items-end gap-1.5 mb-2">
                         <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
-                          {daysCompleted}/{totalDays}
+                          {displayDays}/{totalDays}
                         </span>
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
                           days completed

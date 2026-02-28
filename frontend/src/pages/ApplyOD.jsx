@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import VerificationResultModal from "../components/VerificationResultModal";
+import InternshipReportModal from "../components/InternshipReportModal"; // ✅ Import Modal
 import { useToast } from "../context/ToastContext";
 
 export default function ApplyOD() {
@@ -20,6 +21,10 @@ export default function ApplyOD() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationDetails, setVerificationDetails] = useState(null);
   const [verificationSummary, setVerificationSummary] = useState("");
+
+  // ✅ Internship Report Modal State
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [pendingODs, setPendingODs] = useState([]); // ✅ Store pending ODs
 
   /* ================= LOAD CALENDAR EVENTS ================= */
   useEffect(() => {
@@ -141,6 +146,10 @@ export default function ApplyOD() {
         setVerificationDetails(errorData.verificationDetails);
         setVerificationSummary(errorData.summary);
         setShowVerificationModal(true);
+      } else if (err.response?.status === 403 && errorData?.message === "Internship Report Required") {
+        // Pass pending ODs to modal
+        setPendingODs(errorData.pendingODs || []);
+        setShowReportModal(true);
       } else {
         showToast(errorData?.message || "Failed to apply OD", "error");
       }
@@ -381,6 +390,15 @@ export default function ApplyOD() {
         onClose={() => setShowVerificationModal(false)}
         verificationDetails={verificationDetails}
         summary={verificationSummary}
+      />
+      <InternshipReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        pendingODs={pendingODs}
+        onUploadSuccess={() => {
+          showToast("Report submitted for review. Please wait for approval.", "success");
+          // Optionally, you could disable the form or redirect
+        }}
       />
     </div >
   );

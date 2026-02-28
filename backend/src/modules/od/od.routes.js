@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs, getMyODs, getAllODs, getCompanyStats, getCompanyPlacedStudents } = require("./od.controller");
+const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs, getMyODs, getAllODs, getCompanyStats, getCompanyPlacedStudents, manualErpSync } = require("./od.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
 
@@ -49,6 +49,7 @@ router.get("/my-ods", verifyToken, getMyODs); // ✅ New Route
 router.get("/:id", verifyToken, getOdById);
 
 router.put("/update-status/:id", verifyToken, updateOdStatus);
+router.post("/:id/sync-erp", verifyToken, manualErpSync);
 
 // 👮‍♂️ Admin / Faculty routes
 router.get("/mentor/pending", verifyToken, getMentorODs);

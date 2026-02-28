@@ -41,4 +41,7 @@ app.use("/api/calendar", calendarRoutes);
 const supportRoutes = require("./modules/support/support.routes");
 app.use("/api/support", supportRoutes);
 
+const reportRoutes = require("./modules/reports/report.routes");
+app.use("/api/reports", reportRoutes);
+
 module.exports = app;

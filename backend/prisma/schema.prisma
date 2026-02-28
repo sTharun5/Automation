@@ -79,9 +79,11 @@ model od {
   timeline            Json?
   verificationDetails Json?
   offerId             Int?
+  erpSyncStatus       ErpSyncStatus @default(PENDING)
   event               event?    @relation(fields: [eventId], references: [id])
-  offer               offer?    @relation(fields: [offerId], references: [id])
-  student             student   @relation(fields: [studentId], references: [id])
+  offer               offer?            @relation(fields: [offerId], references: [id])
+  student             student           @relation(fields: [studentId], references: [id])
+  report              InternshipReport?
 
   @@index([studentId])
   @@index([eventId])
@@ -95,11 +97,13 @@ model student {
   email            String   @unique
   department       String
   semester         Int
+  parentPhone      String?
   createdAt        DateTime @default(now())
   mentorId         Int?
   placement_status String?
   ods              od[]
   offers           offer[]
+  reports          InternshipReport[]
   mentor           faculty? @relation("StudentMentor", fields: [mentorId], references: [id])
 
   @@index([mentorId])
@@ -168,4 +172,36 @@ enum EventType {
   EXAM
   HOLIDAY
   EVENT
+}
+
+/// *
+/// * ================= INTERNSHIP REPORT =================
+model InternshipReport {
+  id        Int          @id @default(autoincrement())
+  studentId Int
+  odId      Int          @unique // ✅ Link to specific OD
+  fileUrl   String
+  status    ReportStatus @default(PENDING)
+  remarks   String?      @db.Text
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  student   student      @relation(fields: [studentId], references: [id])
+  od        od           @relation(fields: [odId], references: [id])
+
+  @@index([studentId])
+  @@index([odId])
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// *
+/// * ================= ERP SYNC =================
+enum ErpSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
 }

@@ -80,3 +80,35 @@ exports.getMenteeDetails = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch student details" });
     }
 };
+
+/* =====================================================
+   GET PENDING REPORTS (MENTOR)
+===================================================== */
+exports.getPendingReports = async (req, res) => {
+    try {
+        const email = req.user.email;
+        const faculty = await prisma.faculty.findUnique({ where: { email } });
+
+        if (!faculty) {
+            return res.status(404).json({ message: "Faculty not found" });
+        }
+
+        const reports = await prisma.internshipReport.findMany({
+            where: {
+                status: "PENDING",
+                student: {
+                    mentorId: faculty.id
+                }
+            },
+            include: {
+                student: true
+            },
+            orderBy: { createdAt: "desc" }
+        });
+
+        res.json(reports);
+    } catch (error) {
+        console.error("GET PENDING REPORTS ERROR:", error);
+        res.status(500).json({ message: "Failed to fetch pending reports" });
+    }
+};

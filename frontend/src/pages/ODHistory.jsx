@@ -24,9 +24,18 @@ export default function ODHistory() {
         }
     };
 
+    const isPastApproved = (od) => {
+        return (od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime();
+    };
+
+    const getDerivedStatus = (od) => {
+        if (isPastApproved(od)) return "COMPLETED";
+        return od.status;
+    };
+
     const filteredODs = filter === "ALL"
         ? ods
-        : ods.filter(od => od.status === filter);
+        : ods.filter(od => getDerivedStatus(od) === filter);
 
     // Stats Calculation
     const totalODs = ods.length;
@@ -77,7 +86,7 @@ export default function ODHistory() {
 
                 {/* Filters */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                    {["ALL", "APPROVED", "REJECTED", "PENDING"].map((s) => (
+                    {["ALL", "APPROVED", "COMPLETED", "REJECTED", "PENDING"].map((s) => (
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
@@ -123,7 +132,7 @@ export default function ODHistory() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <StatusBadge status={od.status} />
+                                                <StatusBadge status={getDerivedStatus(od)} />
                                             </td>
                                             <td className="px-6 py-4 font-mono text-xs">
                                                 {od.activityId ? (
@@ -174,6 +183,7 @@ function StatCard({ label, value, icon, color }) {
 function StatusBadge({ status }) {
     let style = "bg-slate-100 text-slate-600 border-slate-200";
     if (status === "APPROVED" || status === "MENTOR_APPROVED") style = "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-900";
+    if (status === "COMPLETED") style = "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
     if (status === "REJECTED") style = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900";
     if (["PENDING", "DOCS_VERIFIED"].includes(status)) style = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-900";
 

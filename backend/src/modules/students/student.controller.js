@@ -128,7 +128,9 @@ async function fetchStudentDashboardData(email, res) {
       offers: {
         include: { company: true }
       },
-      ods: true,
+      ods: {
+        include: { report: true }
+      },
       mentor: {
         select: {
           id: true,
@@ -166,17 +168,30 @@ async function fetchStudentDashboardData(email, res) {
   const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
   const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
 
-  // 3. Current Active OD Logic
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-
+  // Initialize variables
+  const rightNow = new Date();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
   let activeOD = null;
 
+  // 2.5 Identify Pending Reports
+  const pendingReports = student.ods.filter((od) =>
+    od.status === "APPROVED" &&
+    new Date(od.endDate) < rightNow &&
+    (!od.report || od.report.status !== "APPROVED")
+  ).map((od) => ({
+    id: od.id,
+    trackerId: od.trackerId,
+    endDate: od.endDate,
+    offer: od.offer
+  }));
+
+  // 3. Current Active OD Logic
   // A. Ongoing Approved
   activeOD = student.ods.find(od =>
     od.status === "APPROVED" &&
-    new Date(od.startDate) <= now &&
-    new Date(od.endDate) >= now
+    new Date(od.startDate) <= todayStart &&
+    new Date(od.endDate) >= todayStart
   );
 
   // B. Pending/Processing
@@ -190,7 +205,7 @@ async function fetchStudentDashboardData(email, res) {
   if (!activeOD) {
     activeOD = student.ods.find(od =>
       od.status === "APPROVED" &&
-      new Date(od.startDate) > now
+      new Date(od.startDate) > todayStart
     );
   }
 
@@ -209,6 +224,7 @@ async function fetchStudentDashboardData(email, res) {
       totalDaysLimit: 60,
       usedDays: totalOdDays,
       remainingDays: 60 - totalOdDays,
+      pendingReports: pendingReports,
       activeOD: activeOD ? {
         id: activeOD.id,
         type: activeOD.type,

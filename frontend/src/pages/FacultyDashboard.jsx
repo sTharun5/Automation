@@ -61,6 +61,13 @@ export default function FacultyDashboard() {
                   <span>📋 Update Placement</span>
                   <span>→</span>
                 </button>
+                <button
+                  onClick={() => navigate("/faculty/reports")}
+                  className="w-full flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-900 dark:text-purple-100 transition-all font-semibold"
+                >
+                  <span>📄 Review Reports</span>
+                  <span>→</span>
+                </button>
               </div>
             </div>
 

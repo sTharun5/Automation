@@ -107,6 +107,56 @@ exports.addStudent = async (req, res) => {
 };
 
 /* =====================================================
+   UPDATE STUDENT (ADMIN ONLY)
+===================================================== */
+exports.updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, rollNo, email, department, semester, parentPhone } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Student ID missing" });
+    }
+
+    // Check duplicate rollNo or email if they are changed
+    const existing = await prisma.student.findFirst({
+      where: {
+        id: { not: Number(id) },
+        OR: [
+          { rollNo },
+          { email }
+        ]
+      }
+    });
+
+    if (existing) {
+      return res.status(409).json({ message: "Roll No or Email is already taken by another student" });
+    }
+
+    const updatedStudent = await prisma.student.update({
+      where: { id: Number(id) },
+      data: {
+        name,
+        rollNo,
+        email,
+        department,
+        semester: Number(semester),
+        parentPhone
+      }
+    });
+
+    res.json({
+      message: "Student updated successfully",
+      student: updatedStudent
+    });
+
+  } catch (error) {
+    console.error("UPDATE STUDENT ERROR:", error);
+    res.status(500).json({ message: "Failed to update student details" });
+  }
+};
+
+/* =====================================================
    SEARCH FACULTY (ADMIN ONLY)
 ===================================================== */
 exports.searchFaculty = async (req, res) => {

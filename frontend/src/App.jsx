@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/AdminDashBoard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import UpdatePlacementStatus from "./pages/UpdatePlacementStatus";
 import FacultyApproval from "./pages/FacultyApproval";
+import FacultyReportReview from "./pages/FacultyReportReview"; // ✅ Import Report Review
 import MentorAssignment from "./pages/MentorAssignment";
 import MenteeDetails from "./pages/MenteeDetails";
 import ManageFaculty from "./pages/ManageFaculty";
@@ -89,6 +90,7 @@ export default function App() {
                   <Route path="/admin/manage-ods" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageODs /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                   <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
+                  <Route path="/faculty/reports" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyReportReview /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />
                   <Route path="/help" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}><HelpSupport /></ProtectedRoute>} />
                 </Routes>

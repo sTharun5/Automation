@@ -3,11 +3,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { getOdById } from "../services/odService";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import InternshipReportModal from "../components/InternshipReportModal";
 
 export default function StudentODDetails() {
   const { odId } = useParams();
   const navigate = useNavigate();
   const [od, setOd] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     fetchOD();
@@ -48,14 +50,19 @@ export default function StudentODDetails() {
     }
 
     // CASE 2: APPROVED (Show Timeline Progress)
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
+    const start = new Date(startDate);
+    start.setHours(8, 45, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(16, 20, 0, 0);
     const now = new Date().getTime();
-    if (now < start) return 0;
-    if (now > end) return 100;
-    const total = end - start;
-    const elapsed = now - start;
-    if (total === 0) return 100;
+
+    if (now < start.getTime()) return 0;
+    if (now > end.getTime()) return 100;
+
+    const total = end.getTime() - start.getTime();
+    const elapsed = now - start.getTime();
+    if (total <= 0) return 100;
+
     return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
   };
 
@@ -67,16 +74,24 @@ export default function StudentODDetails() {
     return "Processing";
   }
 
-  const getElapsedDays = (startDate, endDate, status) => {
+  const getElapsedDays = (startDate, endDate, status, duration) => {
     if (status !== "APPROVED" && status !== "MENTOR_APPROVED") return "0";
 
     const start = new Date(startDate);
+    start.setHours(8, 45, 0, 0);
     const end = new Date(endDate);
+    end.setHours(16, 20, 0, 0);
     const now = new Date();
-    if (now < start) return 0;
-    if (now > end) return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    const diff = now - start;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    if (now < start) return "0.0";
+    if (now > end) return duration.toString();
+
+    const totalMs = end.getTime() - start.getTime();
+    const elapsedMs = now.getTime() - start.getTime();
+    if (totalMs <= 0) return duration.toString();
+
+    const fractional = duration * (elapsedMs / totalMs);
+    return fractional.toFixed(1);
   };
 
   const getLiveStatus = (startDate, endDate, status) => {
@@ -86,7 +101,10 @@ export default function StudentODDetails() {
     // Approved Logic (Include MENTOR_APPROVED)
     const now = new Date();
     const start = new Date(startDate);
+    start.setHours(8, 45, 0, 0);
     const end = new Date(endDate);
+    end.setHours(16, 20, 0, 0);
+
     if (now < start) return { label: "Scheduled", color: "text-amber-600 bg-amber-50 border-amber-100" };
     if (now > end) return { label: "Completed", color: "text-slate-600 bg-slate-100 border-slate-200" };
     return { label: "Active Now", color: "text-emerald-600 bg-emerald-50 border-emerald-100 animate-pulse" };
@@ -104,9 +122,14 @@ export default function StudentODDetails() {
     );
   }
 
-  const statusText = od.status === "PENDING" ? "Initiated" : od.status;
-  const progressPercent = calculateProgress(od.startDate, od.endDate, od.status);
   const isApproved = od.status === "APPROVED" || od.status === "MENTOR_APPROVED";
+  const isCompleted = isApproved && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime();
+
+  const statusText = od.status === "PENDING" ? "Initiated" : (isCompleted ? "COMPLETED" : od.status);
+  const progressPercent = calculateProgress(od.startDate, od.endDate, od.status);
+
+  // Logic for report requirement prompt
+  const needsReport = isCompleted && (!od.report || od.report.status !== "APPROVED");
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -119,6 +142,30 @@ export default function StudentODDetails() {
         >
           <span>←</span> Back
         </button>
+
+        {needsReport && (
+          <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <h3 className="font-bold text-amber-900 dark:text-amber-100">Internship Report Required</h3>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  {od.report?.status === "PENDING"
+                    ? "Your report is currently under review."
+                    : "You must submit an internship report for this completed OD to apply for future ODs."}
+                </p>
+              </div>
+            </div>
+            {(!od.report || od.report.status !== "PENDING") && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="whitespace-nowrap bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-sm"
+              >
+                Submit Report
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
           <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
@@ -141,7 +188,7 @@ export default function StudentODDetails() {
               <div className="text-right">
                 {isApproved ? (
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    {getElapsedDays(od.startDate, od.endDate, od.status)} / {od.duration} Days
+                    {getElapsedDays(od.startDate, od.endDate, od.status, od.duration)} / {od.duration} Days
                   </span>
                 ) : (
                   <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
@@ -220,6 +267,15 @@ export default function StudentODDetails() {
               <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.duration} days)`} />
               <FileRow label="Aim & Objective" filePath={od.proofFile} />
               <FileRow label="Offer Letter" filePath={od.offerFile} />
+              {od.report?.fileUrl && (
+                <FileRow label="Internship Report" filePath={od.report.fileUrl} />
+              )}
+              {od.report?.status && (
+                <Row label="Report Status" value={od.report.status} status />
+              )}
+              {od.report?.remarks && (
+                <Row label="Report Remarks" value={od.report.remarks} danger />
+              )}
               <Row label="Current Status" value={statusText} status />
               {od.remarks && <Row label="Mentor Remarks" value={od.remarks} danger />}
             </div>
@@ -227,6 +283,16 @@ export default function StudentODDetails() {
         </div>
       </main>
       <Footer />
+
+      <InternshipReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        pendingODs={[od]}
+        onUploadSuccess={() => {
+          setShowReportModal(false);
+          fetchOD(); // Refresh data to show report status
+        }}
+      />
     </div>
   );
 }
