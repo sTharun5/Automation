@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { addFaculty, addStudent, updateStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty } = require("./admin.controller");
+const { addFaculty, addStudent, updateStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty, getPlacementMapData, updateCompany } = require("./admin.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 const { isAdmin } = require("../../middlewares/isAdmin.middleware");
 
@@ -64,7 +64,9 @@ router.put("/update-student-status", verifyToken, updateStudentStatus);
 ========================= */
 router.get("/companies", verifyToken, listCompanies);
 router.post("/companies", verifyToken, createCompany);
+router.put("/companies/:id", verifyToken, isAdmin, updateCompany);
 router.post("/toggle-company-approval", verifyToken, isAdmin, toggleCompanyApproval);
 router.delete("/companies/:id", verifyToken, isAdmin, deleteCompany);
+router.get("/placement-map-data", verifyToken, isAdmin, getPlacementMapData);
 
 module.exports = router;

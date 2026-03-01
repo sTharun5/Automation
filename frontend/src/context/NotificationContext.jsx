@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
 
@@ -65,6 +66,7 @@ export const NotificationProvider = ({ children }) => {
 
     // Poll every 15 seconds
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchNotifications(); // Initial fetch
         const interval = setInterval(fetchNotifications, 15000);
         return () => clearInterval(interval);

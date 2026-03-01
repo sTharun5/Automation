@@ -59,11 +59,11 @@ exports.addFaculty = async (req, res) => {
 ===================================================== */
 exports.addStudent = async (req, res) => {
   try {
-    const { rollNo, name, email, department, semester } = req.body;
+    const { rollNo, name, email, department, semester, parentPhone } = req.body;
 
-    if (!rollNo || !name || !email) {
+    if (!rollNo || !name || !email || !parentPhone) {
       return res.status(400).json({
-        message: "Roll No, Name and Email are required"
+        message: "Roll No, Name, Email, and Parent Phone are strictly required"
       });
     }
 
@@ -89,7 +89,8 @@ exports.addStudent = async (req, res) => {
         name,
         email,
         department: department || "CS", // Default fallback
-        semester: semester ? Number(semester) : 1
+        semester: semester ? Number(semester) : 1,
+        parentPhone
       }
     });
 
@@ -116,6 +117,10 @@ exports.updateStudent = async (req, res) => {
 
     if (!id) {
       return res.status(400).json({ message: "Student ID missing" });
+    }
+
+    if (!parentPhone) {
+      return res.status(400).json({ message: "Parent Phone is strictly required" });
     }
 
     // Check duplicate rollNo or email if they are changed
@@ -334,10 +339,10 @@ exports.listCompanies = async (req, res) => {
 ===================================================== */
 exports.createCompany = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, location } = req.body;
     if (!name) return res.status(400).json({ message: "Company name is required" });
 
-    const company = await companyService.getOrCreateCompany(name);
+    const company = await companyService.getOrCreateCompany(name, location);
     res.status(201).json(company);
   } catch (error) {
     console.error("CREATE COMPANY ERROR:", error);
@@ -358,6 +363,28 @@ exports.toggleCompanyApproval = async (req, res) => {
   } catch (error) {
     console.error("TOGGLE COMPANY ERROR:", error);
     res.status(500).json({ message: "Failed to toggle company approval" });
+  }
+};
+
+/* =====================================================
+   UPDATE COMPANY (ADMIN ONLY)
+===================================================== */
+exports.updateCompany = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, location } = req.body;
+
+    if (!id) return res.status(400).json({ message: "Company ID is required" });
+    if (!name) return res.status(400).json({ message: "Company name is required" });
+
+    const company = await companyService.updateCompany(id, { name, location });
+    res.json({ message: "Company updated successfully", company });
+  } catch (error) {
+    if (error.code === 'P2002') { // Prisma unique constraint error
+      return res.status(400).json({ message: "A company with this name already exists" });
+    }
+    console.error("UPDATE COMPANY ERROR:", error);
+    res.status(500).json({ message: "Failed to update company" });
   }
 };
 
@@ -436,5 +463,52 @@ exports.deleteFaculty = async (req, res) => {
   } catch (error) {
     console.error("DELETE FACULTY ERROR:", error);
     res.status(500).json({ message: "Failed to delete faculty" });
+  }
+};
+
+/* =====================================================
+   GET PLACEMENT MAP DATA (ADMIN ONLY)
+===================================================== */
+exports.getPlacementMapData = async (req, res) => {
+  try {
+    // Get all companies with their placement offers
+    const companies = await prisma.company.findMany({
+      include: {
+        offers: true
+      }
+    });
+
+    const locationCounts = {};
+
+    companies.forEach(company => {
+      const loc = company.location;
+      if (loc) {
+        // Normalize location strictly for consistent grouping
+        const normalizedLoc = loc.trim().toLowerCase();
+        const displayLoc = loc.trim();
+
+        if (!locationCounts[normalizedLoc]) {
+          locationCounts[normalizedLoc] = {
+            location: displayLoc,
+            students: 0,
+            companies: new Set()
+          };
+        }
+        locationCounts[normalizedLoc].students += company.offers ? company.offers.length : 0;
+        locationCounts[normalizedLoc].companies.add(company.name);
+      }
+    });
+
+    // Convert to array of distinct locations with coordinates mapped (handled on frontend or geo-service)
+    const mapData = Object.values(locationCounts).map(data => ({
+      location: data.location,
+      students: data.students,
+      companies: Array.from(data.companies)
+    }));
+
+    res.json(mapData);
+  } catch (error) {
+    console.error("GET MAP DATA ERROR:", error);
+    res.status(500).json({ message: "Failed to aggregate map data" });
   }
 };

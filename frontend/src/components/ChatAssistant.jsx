@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+
 import api from "../api/axios";
 import { useChat } from "../context/ChatContext"; // ✅ Import Hook
 
 export default function ChatAssistant() {
-    const { isOpen, setIsOpen, openChat, closeChat } = useChat(); // ✅ Use Context
+    const { isOpen, openChat, closeChat } = useChat(); // ✅ Use Context
     // const [isOpen, setIsOpen] = useState(false); // ❌ Remove local state
     const [isExpanded, setIsExpanded] = useState(false); // Full screen toggle
     const [messages, setMessages] = useState([
@@ -13,7 +13,6 @@ export default function ChatAssistant() {
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
-    const location = useLocation();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,6 +81,7 @@ export default function ChatAssistant() {
         }
     };
 
+    // eslint-disable-next-line no-unused-vars
     const findBestResponse = (query) => {
         const lower = query.toLowerCase();
         if (lower.includes("procedure") || lower.includes("process")) {
@@ -143,7 +143,7 @@ export default function ChatAssistant() {
         companySection = companySection.replace(dateRegex, "").trim();
 
         // Remove known keywords to isolate company name
-        const keywordsToRemove = [industry, campusType, "to", startDate, endDate];
+
         // Also remove "add", "apply", "od" just in case they leaked in (defensive)
 
         // Strategy: Truncate company name at the *first* occurrence of a keyword
@@ -197,7 +197,6 @@ export default function ChatAssistant() {
 
         try {
             // 1. Fetch Offers to find ID
-            const token = sessionStorage.getItem("token");
             const offersRes = await api.get(`/students/${user.id}/offers`);
             const offers = offersRes.data;
 

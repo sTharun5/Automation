@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import api from '../api/axios';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import 'react-calendar/dist/Calendar.css';
 import './ODCalendar.css'; // Custom styles for dark mode
 
@@ -33,6 +33,7 @@ export default function ODCalendar({ history = [] }) {
                 const checkDate = format(date, 'yyyy-MM-dd');
                 return checkDate >= start && checkDate <= end;
             } catch (e) {
+                console.error(e);
                 return false;
             }
         });
@@ -60,6 +61,7 @@ export default function ODCalendar({ history = [] }) {
                 const end = format(parseISO(e.endDate), 'yyyy-MM-dd');
                 return checkDate >= start && checkDate <= end;
             } catch (err) {
+                console.error(err);
                 return false;
             }
         });

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import SearchInput from "../components/SearchInput";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { useToast } from "../context/ToastContext";
@@ -17,6 +18,7 @@ export default function ManageODs() {
     const [viewMode, setViewMode] = useState("list"); // 'list' | 'stats'
     const [listType, setListType] = useState('ods'); // 'ods' | 'placed'
     const [statusFilter, setStatusFilter] = useState("active"); // 'active' | 'history'
+    // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(false);
     const { showToast } = useToast();
 
@@ -165,6 +167,7 @@ export default function ManageODs() {
                     : od
             ));
         } catch (err) {
+            console.error(err);
             showToast("Failed to cancel OD", "error");
         } finally {
             setConfirmModal({ ...confirmModal, isOpen: false, remarks: "" });

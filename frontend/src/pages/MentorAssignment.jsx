@@ -40,7 +40,6 @@ export default function MentorAssignment() {
     const [isSearchingStudent, setIsSearchingStudent] = useState(false);
 
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
     const { showToast } = useToast();
 
     // Modal State
@@ -62,6 +61,7 @@ export default function MentorAssignment() {
             }
         }, 500);
         return () => clearTimeout(delayDebounceFn);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [facultyQuery]);
 
     // Real-time Student Search
@@ -74,6 +74,7 @@ export default function MentorAssignment() {
             }
         }, 500);
         return () => clearTimeout(delayDebounceFn);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [studentQuery]);
 
     /* ================= SEARCH FACULTY ================= */
@@ -119,6 +120,7 @@ export default function MentorAssignment() {
             showToast("Mentor removed successfully", "success");
             handleStudentSearch(); // Refresh list
         } catch (err) {
+            console.error(err);
             showToast("Removal failed", "error");
         } finally {
             setLoading(false);
@@ -195,12 +197,6 @@ export default function MentorAssignment() {
                         <span>←</span> Back
                     </button>
                 </div>
-
-                {message && (
-                    <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-700 rounded-xl animate-fadeIn">
-                        ✅ {message}
-                    </div>
-                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 

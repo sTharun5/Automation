@@ -19,6 +19,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
             const res = await api.get("/calendar");
             setEvents(res.data);
         } catch (err) {
+            console.error(err);
             showToast("Failed to fetch events", "error");
         } finally {
             setLoading(false);
@@ -29,6 +30,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
         if (isOpen) {
             fetchEvents();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const handleAddEvent = async (e) => {
@@ -55,6 +57,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
             showToast("Event deleted successfully", "success");
             fetchEvents();
         } catch (err) {
+            console.error(err);
             showToast("Failed to delete event", "error");
         }
     };
@@ -123,7 +126,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                                     <div key={event.id} className="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
                                         <div className="flex items-start gap-3">
                                             <div className={`mt-1 h-3 w-3 rounded-full flex-shrink-0 ${event.type === 'EXAM' ? 'bg-red-500' :
-                                                    event.type === 'HOLIDAY' ? 'bg-blue-500' : 'bg-green-500'
+                                                event.type === 'HOLIDAY' ? 'bg-blue-500' : 'bg-green-500'
                                                 }`} />
                                             <div>
                                                 <h4 className="font-bold text-slate-900 dark:text-white">{event.title}</h4>

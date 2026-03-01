@@ -11,25 +11,26 @@ export default function StudentODDetails() {
   const [od, setOd] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  useEffect(() => {
-    fetchOD();
-    const interval = setInterval(fetchOD, 10000); // Poll every 10s
-    return () => clearInterval(interval);
-  }, [odId]);
-
-  // Live Ticker
-  useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   const fetchOD = () => {
     getOdById(odId)
       .then((res) => setOd(res.data))
       .catch((err) => console.error(err));
   };
 
-  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    fetchOD();
+    const interval = setInterval(fetchOD, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [odId]);
+
+  const [, setTick] = useState(0);
+
+  // Live Ticker
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   /* =========================================
      ⏱️ HELPERS

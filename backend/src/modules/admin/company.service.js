@@ -14,11 +14,11 @@ exports.listCompanies = async (filter = {}) => {
 /**
  * Create or get company by name
  */
-exports.getOrCreateCompany = async (name) => {
+exports.getOrCreateCompany = async (name, location = null) => {
     return prisma.company.upsert({
         where: { name },
-        update: {},
-        create: { name }
+        update: location ? { location } : {},
+        create: { name, location }
     });
 };
 
@@ -40,4 +40,14 @@ exports.isCompanyApproved = async (companyId) => {
         where: { id: Number(companyId) }
     });
     return company?.isApproved || false;
+};
+
+/**
+ * Update an existing company
+ */
+exports.updateCompany = async (id, data) => {
+    return prisma.company.update({
+        where: { id: Number(id) },
+        data
+    });
 };

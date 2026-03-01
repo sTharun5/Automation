@@ -281,10 +281,6 @@ exports.applyOD = async (req, res) => {
     /* ===== VALIDATE FILENAMES & DETAILS ===== */
     const validationSteps = [];
 
-    const addStep = (name, success, error = null) => {
-      validationSteps.push({ name, success, error });
-    };
-
 
     const validateDocument = (file, expectedType) => {
       let originalName = file.originalname.trim();
@@ -307,7 +303,7 @@ exports.applyOD = async (req, res) => {
       let fileDate = parts[2];
 
       // Normalize date separator to dot
-      fileDate = fileDate.replace(/[\-\/]/g, ".");
+      fileDate = fileDate.replace(/[-/]/g, ".");
 
       // Step 2: Roll Number
       if (fileRollNo !== student.rollNo) {
@@ -449,7 +445,7 @@ exports.applyOD = async (req, res) => {
         error: `Failed: ${failedReasons.join(", ")}`
       });
 
-      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { }
+      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { console.error("Could not delete files", e); }
 
       return res.status(400).json({
         message: "Aim/Objective Document verification failed",
@@ -481,7 +477,7 @@ exports.applyOD = async (req, res) => {
         error: `Failed: ${failedReasons.join(", ")}`
       });
 
-      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { }
+      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { console.error("Could not delete files", e); }
 
       return res.status(400).json({
         message: "Offer Letter verification failed",

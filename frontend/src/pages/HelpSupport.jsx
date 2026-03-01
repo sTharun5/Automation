@@ -8,8 +8,6 @@ import { useToast } from "../context/ToastContext";
 export default function HelpSupport() {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    const role = sessionStorage.getItem("role");
 
     const [form, setForm] = useState({
         subject: "",

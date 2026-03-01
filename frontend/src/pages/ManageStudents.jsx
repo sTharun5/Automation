@@ -28,6 +28,7 @@ export default function ManageStudents() {
 
     useEffect(() => {
         fetchStudents();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchStudents = async () => {
@@ -36,6 +37,7 @@ export default function ManageStudents() {
             const res = await api.get("/admin/all-students");
             setStudents(res.data);
         } catch (err) {
+            console.error(err);
             showToast("Failed to fetch student list", "error");
         } finally {
             setLoading(false);
@@ -57,6 +59,7 @@ export default function ManageStudents() {
             showToast("Mentor removed successfully", "success");
             fetchStudents(); // Refresh list
         } catch (err) {
+            console.error(err);
             showToast("Removal failed", "error");
         } finally {
             setConfirmModal({ ...confirmModal, isOpen: false });
@@ -219,9 +222,10 @@ export default function ManageStudents() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone (Optional)</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone <span className="text-red-500">*</span></label>
                                     <input
                                         type="tel"
+                                        required
                                         className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         value={newStudent.parentPhone || ""}
                                         onChange={e => setNewStudent({ ...newStudent, parentPhone: e.target.value })}
@@ -313,9 +317,10 @@ export default function ManageStudents() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone (Optional)</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone <span className="text-red-500">*</span></label>
                                     <input
                                         type="tel"
+                                        required
                                         className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
                                         value={editingStudent.parentPhone || ""}
                                         onChange={e => setEditingStudent({ ...editingStudent, parentPhone: e.target.value })}

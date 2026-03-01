@@ -36,6 +36,7 @@ model event {
 model company {
   id         Int      @id @default(autoincrement())
   name       String   @unique
+  location   String?
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())
   offers     offer[]

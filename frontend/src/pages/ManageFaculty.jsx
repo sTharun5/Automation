@@ -33,6 +33,7 @@ export default function ManageFaculty() {
 
     useEffect(() => {
         fetchFaculty();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchFaculty = async () => {
@@ -40,6 +41,7 @@ export default function ManageFaculty() {
             const res = await api.get("/admin/all-faculty");
             setFaculty(res.data);
         } catch (err) {
+            console.error(err);
             showToast("Failed to fetch faculty list", "error");
         } finally {
             setLoading(false);
@@ -87,6 +89,7 @@ export default function ManageFaculty() {
             showToast("Faculty deleted successfully. Students unassigned.", "success");
             fetchFaculty();
         } catch (err) {
+            console.error(err);
             showToast("Failed to delete faculty", "error");
         } finally {
             setConfirmModal({ ...confirmModal, isOpen: false });

@@ -40,6 +40,7 @@ export default function MenteeDetails() {
             showToast("Offer removed successfully", "success");
             fetchDetails(); // Refresh
         } catch (err) {
+            console.error(err);
             showToast("Failed to remove offer", "error");
         } finally {
             setConfirmModal({ ...confirmModal, isOpen: false });
@@ -59,6 +60,7 @@ export default function MenteeDetails() {
 
     useEffect(() => {
         fetchDetails();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [studentId]);
 
     if (loading) return (
@@ -151,6 +153,16 @@ export default function MenteeDetails() {
                                 <p className="text-sm">
                                     <span className="text-slate-500 block">Semester</span>
                                     <span className="text-slate-900 dark:text-white">{student.semester}</span>
+                                </p>
+                                <p className="text-sm">
+                                    <span className="text-slate-500 block">Parent Phone</span>
+                                    {student.parentPhone ? (
+                                        <a href={`tel:${student.parentPhone}`} className="text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1">
+                                            📞 {student.parentPhone}
+                                        </a>
+                                    ) : (
+                                        <span className="text-slate-400 italic">Not Provided</span>
+                                    )}
                                 </p>
                             </div>
                         </div>

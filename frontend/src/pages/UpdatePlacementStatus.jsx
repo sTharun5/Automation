@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { updatePlacementStatus } from "../api/placementStatus"; // ✅ Import helper
 import api from "../api/axios"; // ✅ Import centralized axios
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -10,7 +9,6 @@ import ConfirmationModal from "../components/ConfirmationModal";
 export default function UpdatePlacementStatus() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const faculty = JSON.parse(sessionStorage.getItem("user"));
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [companies, setCompanies] = useState([]);
@@ -51,6 +49,7 @@ export default function UpdatePlacementStatus() {
       .get("/admin/companies?approvedOnly=true")
       .then((res) => setCompanies(res.data))
       .catch(() => showToast("Failed to load approved companies", "error"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ================= FORMAT DATE ================= */
@@ -106,6 +105,7 @@ export default function UpdatePlacementStatus() {
         setSelectedStudent(res.data);
       }
     } catch (err) {
+      console.error(err);
       showToast("Failed to remove offer", "error");
     } finally {
       setConfirmModal({ ...confirmModal, isOpen: false });

@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProfileCard from "../components/ProfileCard";
-import { useToast } from "../context/ToastContext";
-import ConfirmationModal from "../components/ConfirmationModal";
 
+import ConfirmationModal from "../components/ConfirmationModal";
 import CalendarManagementModal from "../components/CalendarManagementModal";
+import PlacementMapWidget from "../components/PlacementMapWidget";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
-  const { showToast } = useToast();
 
   const [showCalendarModal, setShowCalendarModal] = useState(false);
 
@@ -129,6 +127,14 @@ export default function AdminDashboard() {
                   <span className="text-xs font-bold text-blue-400">Connected</span>
                 </div>
               </div>
+            </div>
+
+            {/* Interactive Placement Hotspot Map */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm transition-colors mt-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                🌍 Global Placement Footprint
+              </h3>
+              <PlacementMapWidget />
             </div>
           </aside>
         </div>

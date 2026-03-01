@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Header from "../components/Header";
 import SearchInput from "../components/SearchInput";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -10,11 +11,17 @@ import ConfirmationModal from "../components/ConfirmationModal";
 export default function ManageCompanies() {
     const navigate = useNavigate();
     const [companies, setCompanies] = useState([]);
-    const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [newCompanyName, setNewCompanyName] = useState("");
+    const [newCompanyLocation, setNewCompanyLocation] = useState("");
     const [adding, setAdding] = useState(false);
     const { showToast } = useToast();
+
+    // Edit Modal State
+    const [editingCompany, setEditingCompany] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({ name: "", location: "" });
+    const [updating, setUpdating] = useState(false);
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -27,6 +34,7 @@ export default function ManageCompanies() {
 
     useEffect(() => {
         fetchCompanies();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchCompanies = async () => {
@@ -60,6 +68,7 @@ export default function ManageCompanies() {
             fetchCompanies(); // Refresh list
             showToast("Company status updated", "success");
         } catch (err) {
+            console.error(err);
             showToast("Failed to update status", "error");
         }
     };
@@ -93,8 +102,12 @@ export default function ManageCompanies() {
 
         try {
             setAdding(true);
-            await api.post("/admin/companies", { name: newCompanyName.trim() });
+            await api.post("/admin/companies", {
+                name: newCompanyName.trim(),
+                location: newCompanyLocation.trim() || null
+            });
             setNewCompanyName("");
+            setNewCompanyLocation("");
             fetchCompanies();
             showToast("Company added successfully", "success");
         } catch (err) {
@@ -104,7 +117,32 @@ export default function ManageCompanies() {
         }
     };
 
+    const handleEditClick = (company) => {
+        setEditingCompany(company);
+        setEditForm({ name: company.name, location: company.location || "" });
+        setShowEditModal(true);
+    };
 
+    const handleUpdateCompany = async (e) => {
+        e.preventDefault();
+        if (!editForm.name.trim()) return;
+
+        try {
+            setUpdating(true);
+            await api.put(`/admin/companies/${editingCompany.id}`, {
+                name: editForm.name.trim(),
+                location: editForm.location.trim() || null
+            });
+            setShowEditModal(false);
+            setEditingCompany(null);
+            fetchCompanies();
+            showToast("Company updated successfully", "success");
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to update company", "error");
+        } finally {
+            setUpdating(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -127,14 +165,21 @@ export default function ManageCompanies() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 transition-colors">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add New Company</h3>
                     <form onSubmit={handleAddCompany} className="flex flex-col sm:flex-row gap-4">
-                        <input
-                            type="text"
-                            placeholder="Enter company name (e.g. Google, Microsoft)"
-                            value={newCompanyName}
-                            onChange={(e) => setNewCompanyName(e.target.value)}
-                            className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            required
-                        />
+                        <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                            <input
+                                type="text"
+                                placeholder="Enter company name (e.g. Google, Microsoft)"
+                                value={newCompanyName}
+                                onChange={(e) => setNewCompanyName(e.target.value)}
+                                className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                required
+                            />
+                            <LocationAutocomplete
+                                value={newCompanyLocation}
+                                onChange={setNewCompanyLocation}
+                                placeholder="City / Location (e.g. Bangalore)"
+                            />
+                        </div>
                         <button
                             type="submit"
                             disabled={adding}
@@ -170,7 +215,7 @@ export default function ManageCompanies() {
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
                                     <th className="px-6 py-4 font-semibold">Company Name</th>
-                                    <th className="px-6 py-4 font-semibold">Created At</th>
+                                    <th className="px-6 py-4 font-semibold">Location</th>
                                     <th className="px-6 py-4 font-semibold text-center">Status</th>
                                     <th className="px-6 py-4 font-semibold text-right">Actions</th>
                                 </tr>
@@ -191,7 +236,7 @@ export default function ManageCompanies() {
                                                 {company.name}
                                             </td>
                                             <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">
-                                                {new Date(company.createdAt).toLocaleDateString()}
+                                                {company.location || <span className="italic opacity-50">Unknown</span>}
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${company.isApproved
@@ -203,6 +248,13 @@ export default function ManageCompanies() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-3">
+                                                    <button
+                                                        onClick={() => handleEditClick(company)}
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                        title="Edit Company"
+                                                    >
+                                                        ✏️
+                                                    </button>
                                                     <button
                                                         onClick={() => handleToggleApproval(company.id, company.isApproved)}
                                                         className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${company.isApproved
@@ -229,6 +281,66 @@ export default function ManageCompanies() {
                     </div>
                 </div>
             </main>
+
+            {/* Edit Company Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+                        onClick={() => setShowEditModal(false)}
+                    />
+                    <div className="relative bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-slideUp">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                            <h2 className="text-xl font-bold border-l-4 border-indigo-500 pl-3">Edit Company</h2>
+                            <button
+                                onClick={() => setShowEditModal(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdateCompany} className="p-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Company Name <span className="text-red-500">*</span></label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                        value={editForm.name}
+                                        onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Location / City</label>
+                                    <LocationAutocomplete
+                                        value={editForm.location}
+                                        onChange={(val) => setEditForm(prev => ({ ...prev, location: val }))}
+                                        placeholder="City / Location (e.g. Bangalore)"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-8 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="px-4 py-2 font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={updating}
+                                    className="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 rounded-lg shadow-lg shadow-indigo-500/30 transition-all"
+                                >
+                                    {updating ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <ConfirmationModal
                 {...confirmModal}
                 onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}

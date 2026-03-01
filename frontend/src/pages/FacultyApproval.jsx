@@ -36,6 +36,7 @@ export default function FacultyApproval() {
             fetchPendingODs();
             showToast("Status updated successfully", "success");
         } catch (err) {
+            console.error(err);
             showToast("Failed to update status", "error");
         }
     };
