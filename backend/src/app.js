@@ -1,10 +1,32 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
 const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
 
-app.use(cors());
+// Allow dynamic origins for local dev (5173, 5174, etc)
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || origin.startsWith("http://localhost:")) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true // Crucial for cookies
+}));
+
+app.use(cookieParser());
+
+// Apply a generic rate limit to all requests
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5000,
+    message: { message: "Too many requests, please try again later." }
+});
+app.use(globalLimiter);
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
@@ -43,5 +65,8 @@ app.use("/api/support", supportRoutes);
 
 const reportRoutes = require("./modules/reports/report.routes");
 app.use("/api/reports", reportRoutes);
+
+const eventRoutes = require("./modules/events/event.routes");
+app.use("/api/events", eventRoutes);
 
 module.exports = app;

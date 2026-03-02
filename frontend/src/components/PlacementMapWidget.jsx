@@ -165,9 +165,9 @@ export default function PlacementMapWidget() {
                 </div>
             ) : (
                 <div className="relative w-full h-full">
-                    <div className="absolute top-4 left-6 right-4 flex justify-between items-start z-[1000] pointer-events-none">
-                        <h3 className="font-black text-slate-900 bg-white/80 dark:bg-slate-900/80 px-4 py-2 rounded-xl backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-slate-800/50 dark:text-white text-xl flex items-center gap-2 pointer-events-auto">
-                            <span>🗺️</span> Global Placement Hotspots
+                    <div className="absolute top-4 left-4 right-4 lg:left-6 flex justify-between items-start z-[1000] pointer-events-none">
+                        <h3 className="font-black text-slate-900 bg-white/80 dark:bg-slate-900/80 px-3 py-1.5 lg:px-4 lg:py-2 rounded-xl backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-slate-800/50 dark:text-white text-sm sm:text-base lg:text-xl flex items-center gap-1.5 lg:gap-2 pointer-events-auto">
+                            <span>🗺️</span> <span className="hidden sm:inline">Global Placement</span> Hotspots
                         </h3>
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
@@ -280,27 +280,27 @@ export default function PlacementMapWidget() {
     return (
         <>
             {/* Standard Dashboard Card View */}
-            <div className={`relative w-full h-[400px] bg-[#f8fafc] dark:bg-[#0f172a] rounded-xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 isolate transition-all ${isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className={`relative w-full h-[300px] md:h-[400px] bg-[#f8fafc] dark:bg-[#0f172a] rounded-xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 isolate transition-all ${isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {mapContent}
             </div>
 
             {/* Expanded Modal View */}
             {isExpanded && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 lg:p-12 animate-fadeIn">
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 lg:p-12 animate-fadeIn">
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md cursor-pointer"
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md cursor-pointer"
                         onClick={() => setIsExpanded(false)}
                     />
 
                     {/* Modal Content */}
-                    <div className="relative w-full h-full max-w-[1600px] bg-[#f8fafc] dark:bg-[#0f172a] rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 isolate animate-slideUp flex">
-                        <div className="flex-1 relative h-full">
+                    <div className="relative w-full h-full max-w-[1600px] bg-[#f8fafc] dark:bg-[#0f172a] rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 isolate animate-slideUp flex flex-col lg:flex-row">
+                        <div className="flex-[1_1_55%] lg:flex-1 relative min-h-[45vh] lg:min-h-0 lg:h-full">
                             {mapContent}
                         </div>
 
                         {/* Location List Sidebar */}
-                        <div className="w-80 h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col z-[1000]">
+                        <div className="w-full lg:w-80 h-[45vh] lg:h-full bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 flex flex-col z-[1000] flex-[1_1_45%] lg:flex-none">
                             <div className="p-6 border-b border-slate-200 dark:border-slate-800">
                                 <h4 className="text-lg font-black text-slate-800 dark:text-white mb-1 uppercase tracking-tight">Location Index</h4>
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{mapData.length} active placement regions</p>

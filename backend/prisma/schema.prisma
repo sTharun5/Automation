@@ -25,10 +25,13 @@ model event {
   id        Int          @id @default(autoincrement())
   eventId   String       @unique
   name      String
-  startDate DateTime
-  endDate   DateTime
-  status    event_status @default(ACTIVE)
-  ods       od[]
+  startDate      DateTime
+  endDate        DateTime
+  isInternal     Boolean      @default(true)
+  allocatedHours Int          @default(0)
+  qrSecretKey    String?
+  status         event_status @default(ACTIVE)
+  ods            od[]
 }
 
 /// *
@@ -99,9 +102,10 @@ model student {
   department       String
   semester         Int
   parentPhone      String?
-  createdAt        DateTime @default(now())
-  mentorId         Int?
-  placement_status String?
+  createdAt                 DateTime @default(now())
+  mentorId                  Int?
+  placement_status          String?
+  internalHoursUsed         Int      @default(0)
   ods              od[]
   offers           offer[]
   reports          InternshipReport[]

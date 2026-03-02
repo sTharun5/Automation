@@ -13,6 +13,7 @@
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.2",
+    "html5-qrcode": "^2.3.8",
     "leaflet": "^1.9.4",
     "prop-types": "^15.8.1",
     "react": "^19.2.0",

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { addFaculty, addStudent, updateStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty, getPlacementMapData, updateCompany } = require("./admin.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 const { isAdmin } = require("../../middlewares/isAdmin.middleware");
+const { exportODsToExcel } = require("./export.controller");
 
 /* =========================
    ADMIN: ADD USER (FACULTY/STUDENT)
@@ -58,6 +59,7 @@ router.delete(
 router.get("/all-faculty", verifyToken, isAdmin, getAllFaculty);
 router.get("/all-students", verifyToken, isAdmin, getAllStudents);
 router.put("/update-student-status", verifyToken, updateStudentStatus);
+router.get("/export-ods", verifyToken, isAdmin, exportODsToExcel);
 
 /* =========================
    ADMIN / FACULTY: COMPANY MGMT

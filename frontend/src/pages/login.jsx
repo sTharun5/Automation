@@ -80,9 +80,9 @@ export default function Login() {
       console.log("ROLE RECEIVED:", res.data.role);
 
       /* ================= STORE AUTH ================= */
-      sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("role", res.data.role);
       sessionStorage.setItem("user", JSON.stringify(res.data.user));
+      sessionStorage.setItem("token", res.data.token);
 
       setSuccess(true);
 

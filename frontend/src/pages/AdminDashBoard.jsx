@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProfileCard from "../components/ProfileCard";
@@ -13,6 +14,29 @@ export default function AdminDashboard() {
   const user = JSON.parse(sessionStorage.getItem("user"));
 
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportExcel = async () => {
+    try {
+      setExporting(true);
+      const res = await api.get("/admin/export-ods", {
+        responseType: 'blob' // Important for downloading files
+      });
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'smart-od-records.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Failed to export Excel", error);
+      alert("Failed to export OD records.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -46,6 +70,13 @@ export default function AdminDashboard() {
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20"
             >
               <span>🤝</span> Manage Mentors
+            </button>
+            <button
+              onClick={handleExportExcel}
+              disabled={exporting}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg text-white ${exporting ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'}`}
+            >
+              <span>{exporting ? '⏳' : '📊'}</span> {exporting ? 'Exporting...' : 'Export Excel'}
             </button>
           </div>
         </div>
@@ -109,6 +140,20 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage OD Requests</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Search, View and Cancel Student ODs.</p>
                 <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition-colors" />
+              </div>
+
+              {/* ✅ New Internal Events Manager Card */}
+              <div
+                onClick={() => navigate("/admin/internal-events")}
+                className="group bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-3xl shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden text-white"
+              >
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <span className="text-3xl bg-white/20 backdrop-blur-sm p-2 rounded-xl">🎭</span>
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1 relative z-10">Internal Events</h3>
+                <p className="text-sm text-indigo-100 relative z-10">Create auto-approved internal events and project Live QRs.</p>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
               </div>
             </div>
           </div>

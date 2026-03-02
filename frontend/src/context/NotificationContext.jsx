@@ -10,9 +10,8 @@ export const NotificationProvider = ({ children }) => {
 
     const fetchNotifications = async () => {
         try {
-            // Only fetch if user is logged in
-            const token = sessionStorage.getItem("token");
-            if (!token) {
+            const role = sessionStorage.getItem("role");
+            if (!role) {
                 setNotifications([]);
                 setUnreadCount(0);
                 return;

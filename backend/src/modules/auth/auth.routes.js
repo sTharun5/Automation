@@ -3,8 +3,16 @@ const otp = require("./otp.controller");
 const { getMe } = require("./auth.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
-router.post("/send-otp", otp.sendOTP);
-router.post("/verify-otp", otp.verifyOTP);
+const rateLimit = require("express-rate-limit");
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { message: "Too many login attempts, please try again later." }
+});
+
+router.post("/send-otp", authLimiter, otp.sendOTP);
+router.post("/verify-otp", authLimiter, otp.verifyOTP);
 router.get("/me", verifyToken, getMe);
 
 module.exports = router;

@@ -5,6 +5,9 @@ const prisma = new PrismaClient();
 const notificationService = require("../notification/notification.service");
 const sendEmail = require("../../utils/sendEmail");
 const { syncAttendanceToErp } = require("../erp/erp.service");
+const { authenticator } = require('otplib'); // Add this for QR Verification
+
+authenticator.options = { step: 30 };
 
 const generateTrackerId = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -145,7 +148,140 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
 }
 
 /* =====================================================
-   APPLY OD
+   SCAN INTERNAL OD (QR CODE Auto-Approval)
+===================================================== */
+exports.scanInternalOD = async (req, res) => {
+  try {
+    const { studentId, qrPayload } = req.body;
+
+    if (!studentId || !qrPayload) {
+      return res.status(400).json({ message: "Student ID and QR data required." });
+    }
+
+    // Payload Format: SMART_OD_QR::eventId::token
+    const parts = qrPayload.split("::");
+    if (parts.length !== 3 || parts[0] !== "SMART_OD_QR") {
+      return res.status(400).json({ message: "Invalid QR Code format. Please scan a valid Smart OD Internal Event code." });
+    }
+
+    const eventId = parseInt(parts[1], 10);
+    const token = parts[2];
+
+    // 1. Fetch Event & Validate active status
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event || !event.isInternal) {
+      return res.status(404).json({ message: "Internal Event not found." });
+    }
+
+    if (event.status !== "ACTIVE") {
+      return res.status(400).json({ message: "This event is no longer active." });
+    }
+
+    // Validate Event Dates (ensure it hasn't expired)
+    const now = new Date();
+    if (now > event.endDate) {
+      return res.status(400).json({ message: "This event has already concluded." });
+    }
+
+    // 2. Cryptographic Token Verification (Temporal Security constraint)
+    const isValidToken = authenticator.verify({ token, secret: event.qrSecretKey });
+    if (!isValidToken) {
+      return res.status(400).json({
+        message: "QR Code expired or invalid. Please scan the live screen again."
+      });
+    }
+
+    // 3. Prevent Duplicate Scans for same event
+    const existingOD = await prisma.od.findFirst({
+      where: {
+        studentId: Number(studentId),
+        eventId: event.id
+      }
+    });
+
+    if (existingOD) {
+      return res.status(400).json({ message: "You have already registered attendance for this event." });
+    }
+
+    // 4. Check Internal Hours Limit
+    const student = await prisma.student.findUnique({ where: { id: Number(studentId) } });
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    // Assuming a 40-hour limit per semester for internal events
+    const INTERNAL_HOURS_LIMIT = 40;
+    if (student.internalHoursUsed + event.allocatedHours > INTERNAL_HOURS_LIMIT) {
+      return res.status(400).json({
+        message: `Applying would exceed internal OD limit. You have ${INTERNAL_HOURS_LIMIT - student.internalHoursUsed} hours remaining, but this event requires ${event.allocatedHours} hours.`
+      });
+    }
+
+    // 5. Instantly Auto-Approve the OD
+    const trackerId = generateTrackerId();
+    const activityId = generateActivityId();
+
+    const timeline = [
+      {
+        status: "APPROVED",
+        label: "Auto-Approved",
+        time: new Date(),
+        description: `Attendance successfully verified via rolling QR scan. Deducted ${event.allocatedHours} hours from Internal Bank.`
+      }
+    ];
+
+    const od = await prisma.$transaction(async (tx) => {
+      // Deduct hours
+      await tx.student.update({
+        where: { id: student.id },
+        data: { internalHoursUsed: student.internalHoursUsed + event.allocatedHours }
+      });
+
+      // Create OD
+      return await tx.od.create({
+        data: {
+          trackerId,
+          activityId,
+          studentId: student.id,
+          eventId: event.id,
+          type: "INTERNAL",
+          startDate: event.startDate,
+          endDate: event.endDate,
+          duration: Math.ceil((event.endDate - event.startDate) / (1000 * 60 * 60 * 24)) || 1, // days
+          status: "APPROVED", // Straight to Final Approved!
+          timeline: timeline,
+          erpSyncStatus: "PENDING",
+          remarks: `Attended Internal Event: ${event.name}`
+        }
+      });
+    });
+
+    // Notify Student
+    await notificationService.createNotification(
+      student.email,
+      "Internal OD Approved",
+      `Attendance verified for ${event.name}. OD (${od.trackerId}) auto-approved.`,
+      "SUCCESS"
+    );
+
+    // Sync to ERP async
+    syncAttendanceToErp(student.rollNo, od.startDate, od.endDate, od.trackerId)
+      .then(async (result) => {
+        if (result.success) await prisma.od.update({ where: { id: od.id }, data: { erpSyncStatus: "SYNCED" } });
+      }).catch(e => console.error("ERP sync fail", e));
+
+
+    return res.status(201).json({
+      message: "Attendance verified and OD approved successfully!",
+      od
+    });
+
+  } catch (error) {
+    console.error("SCAN INTERNAL ERROR:", error);
+    return res.status(500).json({ message: "Failed to process QR Code scan." });
+  }
+};
+
+/* =====================================================
+   APPLY OD (External Internships)
 ===================================================== */
 exports.applyOD = async (req, res) => {
   try {

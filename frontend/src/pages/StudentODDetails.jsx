@@ -130,7 +130,7 @@ export default function StudentODDetails() {
   const progressPercent = calculateProgress(od.startDate, od.endDate, od.status);
 
   // Logic for report requirement prompt
-  const needsReport = isCompleted && (!od.report || od.report.status !== "APPROVED");
+  const needsReport = od.type !== 'INTERNAL' && isCompleted && (!od.report || od.report.status !== "APPROVED");
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -264,18 +264,23 @@ export default function StudentODDetails() {
 
             {/* Standard Info */}
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              <Row label="Industry" value={od.offer?.company?.name || od.verificationDetails?.company?.searched || "—"} />
-              <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.duration} days)`} />
-              <FileRow label="Aim & Objective" filePath={od.proofFile} />
-              <FileRow label="Offer Letter" filePath={od.offerFile} />
-              {od.report?.fileUrl && (
-                <FileRow label="Internship Report" filePath={od.report.fileUrl} />
-              )}
-              {od.report?.status && (
-                <Row label="Report Status" value={od.report.status} status />
-              )}
-              {od.report?.remarks && (
-                <Row label="Report Remarks" value={od.report.remarks} danger />
+              <Row label={od.type === 'INTERNAL' ? "Event Name" : "Industry"} value={od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || od.verificationDetails?.company?.searched || "—")} />
+              <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.type === 'INTERNAL' ? `${od.allocatedHours || 2} Hours` : `${od.duration} days`})`} />
+
+              {od.type !== 'INTERNAL' && (
+                <>
+                  <FileRow label="Aim & Objective" filePath={od.proofFile} />
+                  <FileRow label="Offer Letter" filePath={od.offerFile} />
+                  {od.report?.fileUrl && (
+                    <FileRow label="Internship Report" filePath={od.report.fileUrl} />
+                  )}
+                  {od.report?.status && (
+                    <Row label="Report Status" value={od.report.status} status />
+                  )}
+                  {od.report?.remarks && (
+                    <Row label="Report Remarks" value={od.report.remarks} danger />
+                  )}
+                </>
               )}
               <Row label="Current Status" value={statusText} status />
               {od.remarks && <Row label="Mentor Remarks" value={od.remarks} danger />}

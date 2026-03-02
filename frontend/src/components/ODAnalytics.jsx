@@ -57,8 +57,8 @@ export default function ODAnalytics({ history = [] }) {
                 <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-6 uppercase tracking-wider">
                     Monthly Activity
                 </h3>
-                <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="w-full h-64">
+                    <ResponsiveContainer width="99%" height={256}>
                         <BarChart data={monthlyData}>
                             <XAxis
                                 dataKey="name"
@@ -89,8 +89,8 @@ export default function ODAnalytics({ history = [] }) {
                 <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-6 uppercase tracking-wider">
                     Status Overview
                 </h3>
-                <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="w-full h-64">
+                    <ResponsiveContainer width="99%" height={256}>
                         <PieChart>
                             <Pie
                                 data={statusData}

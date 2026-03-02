@@ -71,7 +71,7 @@ export default function ODStatus() {
                                             </span>
                                         </div>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            {od.offer?.company?.name || "Company OD"} • {od.duration} Days
+                                            {od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Company OD")} • {od.type === 'INTERNAL' ? `${od.allocatedHours || Math.max(1, Math.round((new Date(od.endDate) - new Date(od.startDate)) / (1000 * 60 * 60)))} Hours` : `${od.duration} Days`}
                                         </p>
                                     </div>
                                     <Link

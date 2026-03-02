@@ -123,7 +123,7 @@ export default function ODHistory() {
                                             <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">#{od.trackerId}</td>
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-slate-900 dark:text-white capitalize">{(od.type || "OD").toLowerCase()} OD</div>
-                                                <div className="text-xs">{od.offer?.company?.name || "Company OD"}</div>
+                                                <div className="text-xs">{od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Company OD")}</div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col text-xs">

@@ -15,6 +15,7 @@ import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
 import ManageCompanies from "./pages/ManageCompanies";
 import ManageODs from "./pages/ManageODs"; // ✅ Import ManageODs
+import ManageInternalEvents from "./pages/ManageInternalEvents";
 import ODHistory from "./pages/ODHistory";
 import Notifications from "./pages/Notifications";
 import ODStatus from "./pages/ODStatus";
@@ -28,11 +29,13 @@ import ChatAssistant from "./components/ChatAssistant";
 /* ===============================
    PROTECTED ROUTE
 ================================ */
-const ProtectedRoute = ({ allowedRoles, children }) => {
-  const token = sessionStorage.getItem("token");
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const role = sessionStorage.getItem("role");
+  const token = sessionStorage.getItem("token"); // Enforce new token storage
 
-  if (!token || !allowedRoles.includes(role)) {
+  // Check if role exists and is allowed, and token is present
+  if (!role || !allowedRoles.includes(role) || !token) {
+    sessionStorage.clear(); // Clear potentially corrupted state
     return <Navigate to="/" replace />;
   }
 
@@ -88,6 +91,7 @@ export default function App() {
                   <Route path="/admin/students" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageStudents /></ProtectedRoute>} />
                   <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageCompanies /></ProtectedRoute>} />
                   <Route path="/admin/manage-ods" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageODs /></ProtectedRoute>} /> {/* ✅ New Route */}
+                  <Route path="/admin/internal-events" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageInternalEvents /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                   <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
                   <Route path="/faculty/reports" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyReportReview /></ProtectedRoute>} /> {/* ✅ New Route */}

@@ -129,7 +129,7 @@ async function fetchStudentDashboardData(email, res) {
         include: { company: true }
       },
       ods: {
-        include: { report: true }
+        include: { report: true, event: true }
       },
       mentor: {
         select: {
@@ -143,7 +143,9 @@ async function fetchStudentDashboardData(email, res) {
     }
   });
 
+  console.log("Fetching dashboard for email:", email);
   if (!student) {
+    console.log("Student not found for email:", email);
     return res.status(404).json({ message: "Student not found" });
   }
 
@@ -231,7 +233,8 @@ async function fetchStudentDashboardData(email, res) {
         status: activeOD.status,
         startDate: activeOD.startDate,
         endDate: activeOD.endDate,
-        duration: activeOD.duration
+        duration: activeOD.duration,
+        allocatedHours: activeOD.event?.allocatedHours || 0
       } : null
     },
     history: student.ods

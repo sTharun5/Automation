@@ -28,11 +28,8 @@ export default function ApplyOD() {
 
   /* ================= LOAD CALENDAR EVENTS ================= */
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
     axios
-      .get("http://localhost:3000/api/calendar", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      .get("http://localhost:3000/api/calendar")
       .then((res) => setCalendarEvents(res.data))
       .catch((err) => console.error("Failed to fetch calendar", err));
   }, []);
@@ -54,13 +51,8 @@ export default function ApplyOD() {
   useEffect(() => {
     if (!form.studentId) return;
 
-    const token = sessionStorage.getItem("token");
     axios
-      .get(`http://localhost:3000/api/students/${form.studentId}/offers`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      .get(`http://localhost:3000/api/students/${form.studentId}/offers`)
       .then((res) => setOffers(res.data))
       .catch((err) => {
         console.error("Failed to fetch offers", err);
@@ -118,8 +110,6 @@ export default function ApplyOD() {
         return;
       }
 
-      const token = sessionStorage.getItem("token");
-
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
         if (value) formData.append(key, value);
@@ -129,9 +119,7 @@ export default function ApplyOD() {
         "http://localhost:3000/api/od/apply",
         formData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { "Content-Type": "multipart/form-data" }
         }
       );
 

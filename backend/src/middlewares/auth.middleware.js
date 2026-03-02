@@ -1,19 +1,11 @@
 const jwt = require("jsonwebtoken");
 
 exports.verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({
-      message: "Authorization token required"
-    });
-  }
-
-  const token = authHeader.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;
 
   if (!token) {
     return res.status(401).json({
-      message: "Invalid authorization format"
+      message: "Authorization token required"
     });
   }
 

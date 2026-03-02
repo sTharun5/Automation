@@ -45,6 +45,8 @@ router.post(
   applyOD
 );
 
+router.post("/scan-internal", verifyToken, require("./od.controller").scanInternalOD);
+
 router.get("/my-ods", verifyToken, getMyODs); // ✅ New Route
 router.get("/:id", verifyToken, getOdById);
 

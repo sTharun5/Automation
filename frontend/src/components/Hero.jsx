@@ -158,50 +158,86 @@ export default function Hero({ student, dashboardData }) {
                     );
                   }
 
-                  // CASE 2: APPROVED (Show Days Completed)
+                  // CASE 2: APPROVED (Show Days / Hours Completed)
                   const start = new Date(od.startDate);
-                  start.setHours(8, 45, 0, 0);
                   const end = new Date(od.endDate);
-                  end.setHours(16, 20, 0, 0);
                   const now = new Date();
 
-                  // Calculate Total Duration
-                  const totalDays = od.duration || Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                  if (od.type !== "INTERNAL") {
+                    // INTERNSHIP: Force 8:45 AM to 4:20 PM bounds
+                    start.setHours(8, 45, 0, 0);
+                    end.setHours(16, 20, 0, 0);
 
-                  let daysCompleted = 0.0;
-                  if (now < start) {
-                    daysCompleted = 0.0;
-                  } else if (now > end) {
-                    daysCompleted = totalDays;
+                    const totalDays = od.duration || Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                    let daysCompleted = 0.0;
+
+                    if (now < start) daysCompleted = 0.0;
+                    else if (now > end) daysCompleted = totalDays;
+                    else {
+                      const totalMs = end.getTime() - start.getTime();
+                      const elapsedMs = now.getTime() - start.getTime();
+                      daysCompleted = totalMs > 0 ? (totalDays * (elapsedMs / totalMs)) : totalDays;
+                    }
+
+                    const percent = totalDays > 0 ? Math.min(100, Math.max(0, (daysCompleted / totalDays) * 100)) : 100;
+
+                    return (
+                      <div>
+                        <div className="flex items-end gap-1.5 mb-2">
+                          <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
+                            {daysCompleted.toFixed(1)}/{totalDays}
+                          </span>
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                            days completed
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
+                          <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                        </div>
+
+                        <div className="flex justify-between text-[10px] font-medium text-slate-400">
+                          <span>Ends: {new Date(od.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                        </div>
+                      </div>
+                    );
                   } else {
-                    const totalMs = end.getTime() - start.getTime();
-                    const elapsedMs = now.getTime() - start.getTime();
-                    daysCompleted = totalMs > 0 ? (totalDays * (elapsedMs / totalMs)) : totalDays;
+                    // INTERNAL EVENT: Track exact hour ranges 
+                    const totalHours = od.allocatedHours || Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60)));
+                    let hoursCompleted = 0.0;
+
+                    if (now < start) hoursCompleted = 0.0;
+                    else if (now > end) hoursCompleted = totalHours;
+                    else {
+                      const totalMs = end.getTime() - start.getTime();
+                      const elapsedMs = now.getTime() - start.getTime();
+                      hoursCompleted = totalMs > 0 ? (totalHours * (elapsedMs / totalMs)) : totalHours;
+                    }
+
+                    const percent = totalHours > 0 ? Math.min(100, Math.max(0, (hoursCompleted / totalHours) * 100)) : 100;
+                    const isPerfectHour = Math.abs(hoursCompleted - Math.round(hoursCompleted)) < 0.01;
+
+                    return (
+                      <div>
+                        <div className="flex items-end gap-1.5 mb-2">
+                          <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
+                            {isPerfectHour ? Math.round(hoursCompleted) : hoursCompleted.toFixed(1)}/{totalHours}
+                          </span>
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                            hours completed
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
+                          <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                        </div>
+
+                        <div className="flex justify-between text-[10px] font-medium text-slate-400">
+                          <span>Ends: {new Date(od.endDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} on {new Date(od.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                        </div>
+                      </div>
+                    );
                   }
-
-                  const percent = totalDays > 0 ? Math.min(100, Math.max(0, (daysCompleted / totalDays) * 100)) : 100;
-                  const displayDays = daysCompleted.toFixed(1);
-
-                  return (
-                    <div>
-                      <div className="flex items-end gap-1.5 mb-2">
-                        <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
-                          {displayDays}/{totalDays}
-                        </span>
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
-                          days completed
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
-                      </div>
-
-                      <div className="flex justify-between text-[10px] font-medium text-slate-400">
-                        <span>Ends: {new Date(od.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
-                      </div>
-                    </div>
-                  )
                 })()}
               </>
             ) : (
