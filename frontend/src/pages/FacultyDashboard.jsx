@@ -4,12 +4,14 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProfileCard from "../components/ProfileCard";
+import GatePassScannerModal from "../components/GatePassScannerModal"; // ✅ Added Gate Pass Scanner
 
 export default function FacultyDashboard() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
   const [mentees, setMentees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showScannerModal, setShowScannerModal] = useState(false); // ✅ Added Modal State
 
   useEffect(() => {
     const fetchMentees = async () => {
@@ -47,6 +49,26 @@ export default function FacultyDashboard() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="space-y-3">
+                {/* Scan Gate Pass (Most common real-time action) */}
+                <button
+                  onClick={() => setShowScannerModal(true)}
+                  className="w-full flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100 transition-all font-bold shadow-sm hover:shadow-emerald-500/20"
+                >
+                  <span className="flex items-center tracking-tight">
+                    <svg className="w-5 h-5 mr-2 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                    Scan Gate Pass
+                  </span>
+                  <span className="opacity-60">→</span>
+                </button>
+
+                <button
+                  onClick={() => navigate("/faculty/events")}
+                  className="w-full flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 transition-all font-semibold"
+                >
+                  <span>📅 Manage Events</span>
+                  <span>→</span>
+                </button>
+
                 <button
                   onClick={() => navigate("/faculty/approvals")}
                   className="w-full flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-900 dark:text-blue-100 transition-all font-semibold"
@@ -105,9 +127,12 @@ export default function FacultyDashboard() {
                           <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300">
                             {student.name.charAt(0).toUpperCase()}
                           </div>
+                          {student._count?.coordinatedEvents > 0 && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 uppercase">Coordinator</span>
+                          )}
                           {student.placement_status === "NIP" ? (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
-                          ) : (student.offers && student.offers.length > 0) || student.placement_status === "PLACED" ? (
+                          ) : ((student.offers && student.offers.length > 0) || student.placement_status === "PLACED") ? (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
                           ) : (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
@@ -133,6 +158,12 @@ export default function FacultyDashboard() {
         </div>
       </main>
       <Footer />
+
+      {/* Internal OD Scanner */}
+      <GatePassScannerModal
+        isOpen={showScannerModal}
+        onClose={() => setShowScannerModal(false)}
+      />
     </div>
   );
 }

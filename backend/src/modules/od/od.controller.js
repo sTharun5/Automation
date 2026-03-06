@@ -152,29 +152,56 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
 ===================================================== */
 exports.scanInternalOD = async (req, res) => {
   try {
-    const { studentId, qrPayload } = req.body;
+    const { studentId, qrPayload, otp } = req.body;
 
-    if (!studentId || !qrPayload) {
-      return res.status(400).json({ message: "Student ID and QR data required." });
+    if (!studentId || (!qrPayload && !otp)) {
+      return res.status(400).json({ message: "Student ID and either QR data or OTP required." });
     }
 
-    // Payload Format: SMART_OD_QR::eventId::token
-    const parts = qrPayload.split("::");
-    if (parts.length !== 3 || parts[0] !== "SMART_OD_QR") {
-      return res.status(400).json({ message: "Invalid QR Code format. Please scan a valid Smart OD Internal Event code." });
+    let event = null;
+    let eventId = null;
+    let isValidToken = false;
+
+    // --- Path A: QR Payload Provided ---
+    if (qrPayload) {
+      // Payload Format: SMART_OD_QR::eventId::token
+      const parts = qrPayload.split("::");
+      if (parts.length !== 3 || parts[0] !== "SMART_OD_QR") {
+        return res.status(400).json({ message: "Invalid QR Code format. Please scan a valid Smart OD Internal Event code." });
+      }
+
+      eventId = parseInt(parts[1], 10);
+      const token = parts[2];
+
+      event = await prisma.event.findUnique({ where: { id: eventId } });
+      if (!event || !event.isInternal || event.status !== "ACTIVE") {
+        return res.status(404).json({ message: "Active Internal Event not found for this QR." });
+      }
+
+      isValidToken = authenticator.verify({ token, secret: event.qrSecretKey });
     }
+    // --- Path B: OTP Provided (Sweeping logic) ---
+    else if (otp) {
+      if (otp.length !== 6) return res.status(400).json({ message: "Invalid OTP format." });
 
-    const eventId = parseInt(parts[1], 10);
-    const token = parts[2];
+      // Find all active internal events
+      const activeEvents = await prisma.event.findMany({
+        where: { isInternal: true, status: "ACTIVE" }
+      });
 
-    // 1. Fetch Event & Validate active status
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-    if (!event || !event.isInternal) {
-      return res.status(404).json({ message: "Internal Event not found." });
-    }
+      // Test the OTP against each secret until we find the event
+      for (const ev of activeEvents) {
+        if (authenticator.verify({ token: otp, secret: ev.qrSecretKey })) {
+          event = ev;
+          eventId = ev.id;
+          isValidToken = true;
+          break;
+        }
+      }
 
-    if (event.status !== "ACTIVE") {
-      return res.status(400).json({ message: "This event is no longer active." });
+      if (!event) {
+        return res.status(400).json({ message: "Invalid or expired Venue Code." });
+      }
     }
 
     // Validate Event Dates (ensure it hasn't expired)
@@ -183,15 +210,14 @@ exports.scanInternalOD = async (req, res) => {
       return res.status(400).json({ message: "This event has already concluded." });
     }
 
-    // 2. Cryptographic Token Verification (Temporal Security constraint)
-    const isValidToken = authenticator.verify({ token, secret: event.qrSecretKey });
+    // Temporal Security constraint check from auth (QR or OTP)
     if (!isValidToken) {
       return res.status(400).json({
-        message: "QR Code expired or invalid. Please scan the live screen again."
+        message: "Code expired or invalid. Please scan or enter the live code again."
       });
     }
 
-    // 3. Prevent Duplicate Scans for same event
+    // 3. Prevent unauthorized scanning (Enforce PROVISIONAL mapping)
     const existingOD = await prisma.od.findFirst({
       where: {
         studentId: Number(studentId),
@@ -199,8 +225,18 @@ exports.scanInternalOD = async (req, res) => {
       }
     });
 
-    if (existingOD) {
+    if (!existingOD) {
+      return res.status(403).json({
+        message: "Unauthorized. You are not on the pre-approved roster for this event. Please contact the coordinator."
+      });
+    }
+
+    if (existingOD.status === "APPROVED") {
       return res.status(400).json({ message: "You have already registered attendance for this event." });
+    }
+
+    if (existingOD.status !== "PROVISIONAL") {
+      return res.status(400).json({ message: `Cannot authorize check-in. Current status is ${existingOD.status}.` });
     }
 
     // 4. Check Internal Hours Limit
@@ -215,18 +251,13 @@ exports.scanInternalOD = async (req, res) => {
       });
     }
 
-    // 5. Instantly Auto-Approve the OD
-    const trackerId = generateTrackerId();
-    const activityId = generateActivityId();
-
-    const timeline = [
-      {
-        status: "APPROVED",
-        label: "Auto-Approved",
-        time: new Date(),
-        description: `Attendance successfully verified via rolling QR scan. Deducted ${event.allocatedHours} hours from Internal Bank.`
-      }
-    ];
+    // 5. Upgrade PROVISIONAL to APPROVED
+    const updatedTimeline = [...(existingOD.timeline || []), {
+      status: "APPROVED",
+      label: "Venue Verified",
+      time: new Date(),
+      description: `Student successfully scanned Live QR/OTP at the venue. Deducted ${event.allocatedHours} hours.`
+    }];
 
     const od = await prisma.$transaction(async (tx) => {
       // Deduct hours
@@ -235,21 +266,14 @@ exports.scanInternalOD = async (req, res) => {
         data: { internalHoursUsed: student.internalHoursUsed + event.allocatedHours }
       });
 
-      // Create OD
-      return await tx.od.create({
+      // Update existing OD record
+      return await tx.od.update({
+        where: { id: existingOD.id },
         data: {
-          trackerId,
-          activityId,
-          studentId: student.id,
-          eventId: event.id,
-          type: "INTERNAL",
-          startDate: event.startDate,
-          endDate: event.endDate,
-          duration: Math.ceil((event.endDate - event.startDate) / (1000 * 60 * 60 * 24)) || 1, // days
-          status: "APPROVED", // Straight to Final Approved!
-          timeline: timeline,
+          status: "APPROVED",
+          timeline: updatedTimeline,
           erpSyncStatus: "PENDING",
-          remarks: `Attended Internal Event: ${event.name}`
+          remarks: `Attended Internal Event: ${event.name} (Verified Hybrid)`
         }
       });
     });
@@ -679,6 +703,31 @@ exports.applyOD = async (req, res) => {
           `Student ${student.name} (${student.rollNo}) has applied for OD. Review required.`,
           "INFO"
         );
+
+        // Send Email Notification to Mentor
+        try {
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <h2 style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px;">New OD Approval Request</h2>
+              <p>Dear Faculty,</p>
+              <p>Your mentee <strong>${student.name}</strong> (${student.rollNo}) has submitted an OD application that has successfully passed initial Document AI Verification.</p>
+              <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
+                <p style="margin: 0 0 8px 0;"><strong>Company:</strong> ${companyNameForOCR}</p>
+                <p style="margin: 0 0 8px 0;"><strong>Duration:</strong> ${duration} Days</p>
+                <p style="margin: 0;"><strong>Activity ID:</strong> ${od.activityId}</p>
+              </div>
+              <p>Please log in to the SMART OD Portal to review and approve this application.</p>
+              <p style="font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px;">This is an automated message from the BIP SMART OD Automation System.</p>
+            </div>
+          `;
+          await sendEmail(
+            mentor.email,
+            "Action Required: New Student OD Application",
+            emailHtml
+          );
+        } catch (emailErr) {
+          console.error("Failed to send mentor email:", emailErr);
+        }
       }
     }
 
@@ -727,6 +776,113 @@ exports.getOdById = async (req, res) => {
     return res.status(500).json({
       message: "Failed to fetch OD"
     });
+  }
+};
+
+/* =====================================================
+   VERIFY DIGITAL GATE PASS (SUBJECT TEACHER SCAN)
+===================================================== */
+exports.verifyGatePass = async (req, res) => {
+  try {
+    const { odId } = req.body;
+    const facultyEmail = req.user.email; // Scanned by a faculty member
+
+    if (!odId) {
+      return res.status(400).json({ message: "Scan Error: Missing OD Payload." });
+    }
+
+    // 1. Authenticate Scanner
+    const faculty = await prisma.faculty.findUnique({ where: { email: facultyEmail } });
+    if (!faculty) {
+      return res.status(403).json({ message: "Access Denied: Only Staff can verify Gate Passes." });
+    }
+
+    // 2. Fetch the OD
+    const od = await prisma.od.findUnique({
+      where: { id: parseInt(odId) },
+      include: { student: true, event: true }
+    });
+
+    if (!od) {
+      return res.status(404).json({ message: "OD Record not found from this Pass." });
+    }
+
+    // 3. Verify it is actually an Internal Event Gate Pass
+    if (od.type !== "INTERNAL" || !od.eventId) {
+      return res.status(400).json({ message: "Invalid Pass: Not an Internal Event OD." });
+    }
+
+    // 3.5. Expiry Check: Has the event ended?
+    const now = new Date();
+    if (now > new Date(od.event.endDate)) {
+      const timeline = od.timeline || [];
+      timeline.push({
+        status: "REJECTED",
+        label: "Gate Pass Expired",
+        time: new Date(),
+        description: "Event ended without venue check-in. Pass auto-cancelled."
+      });
+
+      // Refund hours & reject the OD
+      await prisma.$transaction([
+        prisma.od.update({
+          where: { id: od.id },
+          data: { status: "REJECTED", timeline }
+        }),
+        prisma.student.update({
+          where: { id: od.studentId },
+          data: {
+            internalHoursUsed: Math.max(0, od.student.internalHoursUsed - od.event.allocatedHours)
+          }
+        })
+      ]);
+
+      return res.status(400).json({
+        message: "Pass Expired: The event has already concluded. This Gate Pass is no longer valid."
+      });
+    }
+
+    // 4. Validate State (Must be PROVISIONAL)
+    if (od.status !== "PROVISIONAL") {
+      return res.status(400).json({
+        message: `Pass Invalid: Current status is ${od.status}. Student is either already checked in or not registered.`
+      });
+    }
+
+    // 5. Check if already authorized by THIS specific teacher to prevent duplicate scans by same person
+    const timeline = od.timeline || [];
+    const scannerId = faculty.facultyId;
+    const alreadyAuthorizedByMe = timeline.some(t =>
+      t.label === "Gate Pass Authorized" &&
+      t.description.includes(`(${scannerId})`)
+    );
+
+    if (alreadyAuthorizedByMe) {
+      return res.status(400).json({ message: `You have already authorized this pass for ${od.student.name}.` });
+    }
+
+    // 6. Log the Authorization
+    timeline.push({
+      status: "PROVISIONAL",
+      label: "Gate Pass Authorized",
+      time: new Date(),
+      description: `Class exit authorized by Prof. ${faculty.name} (${faculty.facultyId})`
+    });
+
+    await prisma.od.update({
+      where: { id: od.id },
+      data: { timeline } // It stays PROVISIONAL until the final venue scan!
+    });
+
+    res.status(200).json({
+      message: "Gate Pass Verified. Student is authorized to leave for the event.",
+      student: { name: od.student.name, rollNo: od.student.rollNo },
+      event: { name: od.event.name }
+    });
+
+  } catch (error) {
+    console.error("Gate Pass Verification Error:", error);
+    res.status(500).json({ message: "Failed to verify Digital Gate Pass." });
   }
 };
 

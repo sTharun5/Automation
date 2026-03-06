@@ -9,7 +9,7 @@ authenticator.options = { step: 30 };
 
 exports.createInternalEvent = async (req, res) => {
     try {
-        const { name, startDate, endDate, allocatedHours } = req.body;
+        const { name, startDate, endDate, allocatedHours, maxParticipants, staffCoordinatorId } = req.body;
 
         if (!name || !startDate || !endDate || !allocatedHours) {
             return res.status(400).json({ message: "Missing required fields" });
@@ -20,6 +20,12 @@ exports.createInternalEvent = async (req, res) => {
         // Generate a random ID e.g., EVT-4938
         const eventId = `EVT-${Math.floor(1000 + Math.random() * 9000)}`;
 
+        let facultyExists = false;
+        if (staffCoordinatorId) {
+            const fac = await prisma.faculty.findUnique({ where: { id: parseInt(staffCoordinatorId) } });
+            if (!fac) return res.status(400).json({ message: "Staff Coordinator Faculty ID not found" });
+        }
+
         const newEvent = await prisma.event.create({
             data: {
                 eventId,
@@ -27,9 +33,11 @@ exports.createInternalEvent = async (req, res) => {
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
                 isInternal: true,
-                allocatedHours: parseInt(allocatedHours),
+                allocatedHours: Math.max(1.0, parseFloat(allocatedHours) || 1.0),
                 qrSecretKey,
-                status: 'ACTIVE'
+                status: 'ACTIVE',
+                maxParticipants: maxParticipants ? parseInt(maxParticipants) : 0,
+                staffCoordinatorId: staffCoordinatorId ? parseInt(staffCoordinatorId) : null
             }
         });
 
@@ -40,6 +48,65 @@ exports.createInternalEvent = async (req, res) => {
     } catch (error) {
         console.error("Error creating internal event:", error);
         res.status(500).json({ message: "Failed to create event" });
+    }
+};
+
+exports.editInternalEvent = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { name, startDate, endDate, maxParticipants, staffCoordinatorId } = req.body;
+
+        const event = await prisma.event.findUnique({
+            where: { id: parseInt(eventId) }
+        });
+
+        if (!event || !event.isInternal) {
+            return res.status(404).json({ message: "Internal event not found" });
+        }
+
+        if (staffCoordinatorId) {
+            const fac = await prisma.faculty.findUnique({ where: { id: parseInt(staffCoordinatorId) } });
+            if (!fac) return res.status(400).json({ message: "Staff Coordinator Faculty ID not found" });
+        }
+
+        const dataToUpdate = {};
+        if (name) dataToUpdate.name = name;
+        if (startDate) dataToUpdate.startDate = new Date(startDate);
+        if (endDate) dataToUpdate.endDate = new Date(endDate);
+
+        if (maxParticipants !== undefined) {
+            const parsedMax = parseInt(maxParticipants);
+            dataToUpdate.maxParticipants = isNaN(parsedMax) ? 0 : parsedMax;
+        }
+
+        if (staffCoordinatorId !== undefined) {
+            if (!staffCoordinatorId || staffCoordinatorId === "") {
+                dataToUpdate.staffCoordinatorId = null;
+            } else {
+                const parsedStaffId = parseInt(staffCoordinatorId);
+                dataToUpdate.staffCoordinatorId = isNaN(parsedStaffId) ? null : parsedStaffId;
+            }
+        }
+
+        if (req.body.allocatedHours !== undefined) {
+            const parsedHours = parseFloat(req.body.allocatedHours);
+            if (!isNaN(parsedHours)) {
+                dataToUpdate.allocatedHours = Math.max(1.0, parsedHours);
+            }
+        }
+
+        const updatedEvent = await prisma.event.update({
+            where: { id: parseInt(eventId) },
+            data: dataToUpdate
+        });
+
+        res.json({
+            message: "Event updated successfully",
+            event: updatedEvent
+        });
+    } catch (error) {
+        console.error("Error updating event:", error);
+        res.status(500).json({ message: "Failed to update event" });
     }
 };
 
@@ -90,12 +157,13 @@ exports.getLiveEventQR = async (req, res) => {
 
 exports.getActiveEvents = async (req, res) => {
     try {
-        // Find all active, internal events whose end date hasn't passed
-        const events = await prisma.event.findMany({
+        const { showPast } = req.query;
+
+        // Find all active, internal events
+        const query = {
             where: {
                 status: 'ACTIVE',
-                isInternal: true,
-                endDate: { gte: new Date() }
+                isInternal: true
             },
             select: {
                 id: true,
@@ -103,10 +171,23 @@ exports.getActiveEvents = async (req, res) => {
                 name: true,
                 startDate: true,
                 endDate: true,
-                allocatedHours: true
+                allocatedHours: true,
+                maxParticipants: true,
+                staffCoordinatorId: true,
+                staffCoordinator: { select: { name: true, department: true } },
+                isRosterSubmitted: true,
+                isRosterApproved: true,
+                timeline: true
             },
-            orderBy: { startDate: 'asc' }
-        });
+            orderBy: { startDate: 'desc' } // Changed to desc for better history visibility
+        };
+
+        // If not showing past, filter by end date
+        if (showPast !== 'true') {
+            query.where.endDate = { gte: new Date() };
+        }
+
+        const events = await prisma.event.findMany(query);
 
         res.json(events);
     } catch (error) {
@@ -130,7 +211,12 @@ exports.getEventAttendance = async (req, res) => {
         // Fetch all ODs linked to this event, including student details
         const attendanceRecords = await prisma.od.findMany({
             where: { eventId: event.id },
-            include: {
+            select: {
+                id: true,
+                trackerId: true,
+                status: true,
+                timeline: true,
+                createdAt: true,
                 student: {
                     select: {
                         id: true,
@@ -149,6 +235,8 @@ exports.getEventAttendance = async (req, res) => {
         const formattedAttendance = attendanceRecords.map(record => ({
             odId: record.id,
             trackerId: record.trackerId,
+            status: record.status,
+            timeline: record.timeline,
             scanTime: record.createdAt,
             student: record.student
         }));
@@ -256,5 +344,48 @@ exports.deleteAllInternalEvents = async (req, res) => {
     } catch (error) {
         console.error("Error deleting all events:", error);
         res.status(500).json({ message: "Failed to delete all events." });
+    }
+};
+
+/* =====================================================
+   FETCH ASSIGNED EVENTS FOR FACULTY / STUDENT
+===================================================== */
+exports.getMyAssignedEvents = async (req, res) => {
+    try {
+        const { email, role } = req.user;
+
+        let events = [];
+
+        if (role === 'FACULTY') {
+            const faculty = await prisma.faculty.findUnique({ where: { email } });
+            if (!faculty) return res.status(404).json({ message: "Faculty not found" });
+
+            events = await prisma.event.findMany({
+                where: {
+                    staffCoordinatorId: faculty.id,
+                    endDate: { gte: new Date() }
+                },
+                include: { studentCoordinator: { select: { name: true, rollNo: true } } },
+                orderBy: { startDate: 'desc' }
+            });
+        } else if (role === 'STUDENT') {
+            const student = await prisma.student.findUnique({ where: { email } });
+            if (!student) return res.status(404).json({ message: "Student not found" });
+
+            events = await prisma.event.findMany({
+                where: {
+                    studentCoordinatorId: student.id,
+                    endDate: { gte: new Date() }
+                },
+                include: { staffCoordinator: { select: { name: true, department: true } } },
+                orderBy: { startDate: 'desc' }
+            });
+        }
+
+        res.status(200).json(events);
+
+    } catch (error) {
+        console.error("Get Assigned Events Error:", error);
+        res.status(500).json({ message: "Failed to fetch assigned events" });
     }
 };

@@ -71,7 +71,16 @@ export default function ODStatus() {
                                             </span>
                                         </div>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            {od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Company OD")} • {od.type === 'INTERNAL' ? `${od.allocatedHours || Math.max(1, Math.round((new Date(od.endDate) - new Date(od.startDate)) / (1000 * 60 * 60)))} Hours` : `${od.duration} Days`}
+                                            {od.type === 'INTERNAL' ? (
+                                                <>
+                                                    {od.event?.name || "Internal Event"} • {(() => {
+                                                        const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
+                                                        const h = Math.floor(hrs);
+                                                        const m = Math.round((hrs % 1) * 60);
+                                                        return m > 0 ? `${h}h ${m}m` : `${h} Hours`;
+                                                    })()}
+                                                </>
+                                            ) : (od.offer?.company?.name || "Company OD")} • {od.type !== 'INTERNAL' && `${od.duration} Days`}
                                         </p>
                                     </div>
                                     <Link

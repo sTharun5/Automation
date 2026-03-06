@@ -13,6 +13,7 @@ model emailotp {
   id        Int      @id @default(autoincrement())
   email     String
   otp       String
+  attempts  Int      @default(0)
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -22,16 +23,28 @@ model emailotp {
 /// *
 /// * ================= EVENT =================
 model event {
-  id        Int          @id @default(autoincrement())
-  eventId   String       @unique
-  name      String
-  startDate      DateTime
-  endDate        DateTime
-  isInternal     Boolean      @default(true)
-  allocatedHours Int          @default(0)
-  qrSecretKey    String?
-  status         event_status @default(ACTIVE)
-  ods            od[]
+  id                    Int          @id @default(autoincrement())
+  eventId               String       @unique
+  name                  String
+  startDate             DateTime
+  endDate               DateTime
+  isInternal            Boolean      @default(true)
+  allocatedHours        Float        @default(0)
+  qrSecretKey           String?
+  status                event_status @default(ACTIVE)
+  maxParticipants       Int          @default(0) // Ceiling for roster
+  isRosterSubmitted     Boolean      @default(false) // True when Student Coordinator submits draft
+  isRosterApproved      Boolean      @default(false) // True when Staff locks the roster
+  staffCoordinatorId    Int?         // The Faculty member in charge
+  studentCoordinatorId  Int?         // The Delegate Student
+  timeline              Json?        // Audit trail for administrative changes
+  ods                   od[]
+
+  staffCoordinator      faculty?     @relation("StaffCoordinator", fields: [staffCoordinatorId], references: [id])
+  studentCoordinator    student?     @relation("StudentCoordinator", fields: [studentCoordinatorId], references: [id])
+
+  @@index([staffCoordinatorId])
+  @@index([studentCoordinatorId])
 }
 
 /// *
@@ -105,10 +118,11 @@ model student {
   createdAt                 DateTime @default(now())
   mentorId                  Int?
   placement_status          String?
-  internalHoursUsed         Int      @default(0)
+  internalHoursUsed         Float    @default(0)
   ods              od[]
   offers           offer[]
   reports          InternshipReport[]
+  coordinatedEvents event[]  @relation("StudentCoordinator")
   mentor           faculty? @relation("StudentMentor", fields: [mentorId], references: [id])
 
   @@index([mentorId])
@@ -122,6 +136,7 @@ model faculty {
   createdAt  DateTime  @default(now())
   facultyId  String    @unique
   students   student[] @relation("StudentMentor")
+  coordinatedEvents event[] @relation("StaffCoordinator")
 }
 
 model admin {
@@ -154,6 +169,7 @@ enum event_status {
 }
 
 enum od_status {
+  PROVISIONAL
   PENDING
   DOCS_VERIFIED
   MENTOR_APPROVED

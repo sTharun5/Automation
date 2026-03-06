@@ -66,6 +66,9 @@ app.use("/api/support", supportRoutes);
 const reportRoutes = require("./modules/reports/report.routes");
 app.use("/api/reports", reportRoutes);
 
+const coordinatorRoutes = require("./modules/events/coordinator.routes");
+app.use("/api", coordinatorRoutes); // Using raw /api because the routes define /events/:eventId/... internally
+
 const eventRoutes = require("./modules/events/event.routes");
 app.use("/api/events", eventRoutes);
 

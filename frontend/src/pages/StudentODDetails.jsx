@@ -265,7 +265,12 @@ export default function StudentODDetails() {
             {/* Standard Info */}
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               <Row label={od.type === 'INTERNAL' ? "Event Name" : "Industry"} value={od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || od.verificationDetails?.company?.searched || "—")} />
-              <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.type === 'INTERNAL' ? `${od.allocatedHours || 2} Hours` : `${od.duration} days`})`} />
+              <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.type === 'INTERNAL' ? (() => {
+                const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
+                const h = Math.floor(hrs);
+                const m = Math.round((hrs % 1) * 60);
+                return m > 0 ? `${h}h ${m}m` : `${h} Hours`;
+              })() : `${od.duration} days`})`} />
 
               {od.type !== 'INTERNAL' && (
                 <>

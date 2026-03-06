@@ -8,9 +8,11 @@ import AdminDashboard from "./pages/AdminDashBoard";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import UpdatePlacementStatus from "./pages/UpdatePlacementStatus";
 import FacultyApproval from "./pages/FacultyApproval";
+import FacultyEvents from "./pages/FacultyEvents"; // ✅ New Import
 import FacultyReportReview from "./pages/FacultyReportReview"; // ✅ Import Report Review
 import MentorAssignment from "./pages/MentorAssignment";
 import MenteeDetails from "./pages/MenteeDetails";
+import StudentEvents from "./pages/StudentEvents"; // ✅ New Import
 import ManageFaculty from "./pages/ManageFaculty";
 import ManageStudents from "./pages/ManageStudents";
 import ManageCompanies from "./pages/ManageCompanies";
@@ -79,6 +81,7 @@ export default function App() {
                   <Route path="/" element={<Login />} />
                   <Route path="/dashboard" element={<DashboardRedirect />} /> {/* ✅ Catch generic dashboard */}
                   <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Dashboard /></ProtectedRoute>} />
+                  <Route path="/student/events" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentEvents /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/apply-od" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ApplyOD /></ProtectedRoute>} />
                   <Route path="/student/od/:odId" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentODDetails /></ProtectedRoute>} />
                   <Route path="/od-history" element={<ProtectedRoute allowedRoles={["STUDENT"]}><ODHistory /></ProtectedRoute>} />
@@ -94,6 +97,7 @@ export default function App() {
                   <Route path="/admin/internal-events" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageInternalEvents /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                   <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
+                  <Route path="/faculty/events" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyEvents /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/faculty/reports" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyReportReview /></ProtectedRoute>} /> {/* ✅ New Route */}
                   <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />
                   <Route path="/help" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}><HelpSupport /></ProtectedRoute>} />

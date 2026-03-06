@@ -90,18 +90,46 @@ export default function Hero({ student, dashboardData }) {
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-[0_2px_10px_-4px_rgba(6,81,237,0.1)] hover:border-emerald-500/30 transition-all duration-300 group relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
 
-          <div className="flex justify-between items-start mb-4 relative z-10">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Current Status</p>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active OD</h3>
-            </div>
-            {dashboardData?.odStats?.activeOD && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[10px] font-bold uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Live
+          {(() => {
+            const od = dashboardData?.odStats?.activeOD;
+            if (!od) return (
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Current Status</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active OD</h3>
+                </div>
               </div>
-            )}
-          </div>
+            );
+
+            const now = new Date();
+            const start = new Date(od.startDate);
+            const end = new Date(od.endDate);
+            const isApproved = ['APPROVED', 'MENTOR_APPROVED'].includes(od.status);
+            const isLive = isApproved && now >= start && now <= end;
+            const isUpcoming = isApproved && now < start;
+
+            return (
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Current Status</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    {isUpcoming ? (
+                      <span className="flex flex-col">
+                        <span className="text-sm opacity-70">Upcoming Session</span>
+                        <span>Starts {start.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </span>
+                    ) : isLive ? "Active OD" : "Application Pending"}
+                  </h3>
+                </div>
+                {isLive && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[10px] font-bold uppercase tracking-wider border border-emerald-100 dark:border-emerald-900/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="mt-2 relative z-10">
             {dashboardData?.odStats?.activeOD ? (

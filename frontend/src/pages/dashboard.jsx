@@ -11,6 +11,8 @@ import ODAnalytics from "../components/ODAnalytics"; // ✅ New
 import ODCalendar from "../components/ODCalendar"; // ✅ New
 import InternshipReportModal from "../components/InternshipReportModal";
 import ScannerModal from "../components/ScannerModal"; // ✅ Internal OD Scanner
+import GatePassModal from "../components/GatePassModal"; // ✅ Digital Gate Pass
+import OtpCheckInModal from "../components/OtpCheckInModal"; // ✅ Hybrid OTP Check-in
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,6 +22,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showGatePassModal, setShowGatePassModal] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false); // ✅ OTP Modal State
+  const [provisionalOds, setProvisionalOds] = useState([]);
+  const [assignedEvents, setAssignedEvents] = useState([]); // ✅ Events assigned to this student
 
   /* ================= LOAD AUTH ================= */
   /* ================= LOAD AUTH & DATA ================= */
@@ -49,8 +55,26 @@ export default function Dashboard() {
 
     const fetchDashboardData = async () => {
       try {
-        const res = await api.get("/students/dashboard");
-        setDashboardData(res.data);
+        const [dashRes, odsRes, eventsRes] = await Promise.all([
+          api.get("/students/dashboard"),
+          api.get("/od/my-ods"),
+          api.get("/events/internal/my-assigned")
+        ]);
+        setDashboardData(dashRes.data);
+        setAssignedEvents(eventsRes.data);
+
+        // Filter for PROVISIONAL ODs which act as the Digital Gate Pass
+        const now = new Date();
+        const provisional = odsRes.data.filter(od => {
+          if (od.status !== "PROVISIONAL") return false;
+          // Hide the gate pass if the event has already ended
+          if (od.event && od.event.endDate) {
+            if (now > new Date(od.event.endDate)) return false;
+          }
+          return true;
+        });
+        setProvisionalOds(provisional);
+
       } catch (err) {
         console.error("Dashboard Fetch Error:", err);
       } finally {
@@ -118,6 +142,39 @@ export default function Dashboard() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Digital Gate Pass (Conditionally Rendered) */}
+                {provisionalOds.length > 0 && (
+                  <button
+                    onClick={() => setShowGatePassModal(true)}
+                    className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-amber-50 dark:from-amber-900/20 to-orange-50 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800/50 shadow-sm hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-amber-400/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-950 animate-pulse"
+                  >
+                    <div className="p-2.5 bg-amber-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-amber-500/30 relative z-10">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                    </div>
+                    <h3 className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1 relative z-10">Show Gate Pass</h3>
+                    <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mb-4 h-8 relative z-10">Present to your teacher to leave class for the event.</p>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
+                      Open Ticket <span aria-hidden>→</span>
+                    </span>
+                    <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-colors"></div>
+                  </button>
+                )}
+
+                {/* Coordinator Portal */}
+                <button
+                  onClick={() => navigate("/student/events")}
+                  className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm hover:border-indigo-400 hover:shadow-lg transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-400/30"
+                >
+                  <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1">Coordinator Portal</h3>
+                  <p className="text-xs text-indigo-700/80 dark:text-indigo-300/80 mb-4 h-8">Manage rosters for your assigned events.</p>
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Manage Events <span aria-hidden>→</span>
+                  </span>
+                </button>
+
                 {/* Apply OD */}
                 <button
                   onClick={() => navigate("/apply-od")}
@@ -159,12 +216,28 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1 relative z-10">Scan Internal QR</h3>
-                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mb-4 h-8 relative z-10">Get instant OD approval for college events.</p>
+                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mb-4 h-8 relative z-10">Use camera to scan venue attendance.</p>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
                     Open Camera <span aria-hidden>→</span>
                   </span>
                   {/* Decorative element */}
                   <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors"></div>
+                </button>
+
+                {/* Enter OTP Code */}
+                <button
+                  onClick={() => setShowOtpModal(true)}
+                  className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-violet-50 dark:from-violet-900/20 to-fuchsia-50 dark:to-fuchsia-900/10 rounded-xl border border-violet-100 dark:border-violet-800/30 shadow-sm hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300 text-left overflow-hidden"
+                >
+                  <div className="p-2.5 bg-violet-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-violet-500/30">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  </div>
+                  <h3 className="text-sm font-bold text-violet-900 dark:text-violet-100 mb-1 relative z-10">Enter Venue Code</h3>
+                  <p className="text-xs text-violet-700/70 dark:text-violet-300/70 mb-4 h-8 relative z-10">Type 6-digit code to log attendance.</p>
+                  <span className="text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
+                    Enter Code <span aria-hidden>→</span>
+                  </span>
+                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-violet-500/5 rounded-full blur-xl group-hover:bg-violet-500/10 transition-colors"></div>
                 </button>
 
                 {/* OD Status */}
@@ -324,6 +397,12 @@ export default function Dashboard() {
       )}
 
       {/* Internal QR Scanner Modal */}
+      <GatePassModal
+        isOpen={showGatePassModal}
+        onClose={() => setShowGatePassModal(false)}
+        provisionalOds={provisionalOds}
+      />
+
       <ScannerModal
         isOpen={showScannerModal}
         onClose={() => setShowScannerModal(false)}
@@ -332,6 +411,11 @@ export default function Dashboard() {
           // Refresh dashboard data instantly when OD is approved
           api.get("/students/dashboard").then(res => setDashboardData(res.data)).catch(console.error);
         }}
+      />
+
+      <OtpCheckInModal
+        isOpen={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
       />
     </div>
   );

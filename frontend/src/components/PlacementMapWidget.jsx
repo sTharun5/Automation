@@ -165,22 +165,32 @@ export default function PlacementMapWidget() {
                 </div>
             ) : (
                 <div className="relative w-full h-full">
-                    <div className="absolute top-4 left-4 right-4 lg:left-6 flex justify-between items-start z-[1000] pointer-events-none">
-                        <h3 className="font-black text-slate-900 bg-white/80 dark:bg-slate-900/80 px-3 py-1.5 lg:px-4 lg:py-2 rounded-xl backdrop-blur-md shadow-sm border border-slate-200/50 dark:border-slate-800/50 dark:text-white text-sm sm:text-base lg:text-xl flex items-center gap-1.5 lg:gap-2 pointer-events-auto">
-                            <span>🗺️</span> <span className="hidden sm:inline">Global Placement</span> Hotspots
-                        </h3>
+                    {/* Header Controls Container */}
+                    <div className="absolute top-3 inset-x-3 sm:top-4 sm:inset-x-4 z-[1000] pointer-events-none flex items-start justify-between gap-2 sm:gap-4">
+                        {/* Premium Header Pill */}
+                        <div className="pointer-events-auto flex items-center gap-2 sm:gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-[14px] sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/60 dark:border-slate-700/60 min-w-0 transition-all">
+                            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0 border border-indigo-100 dark:border-indigo-500/30">
+                                <span className="text-base sm:text-xl drop-shadow-md">🗺️</span>
+                            </div>
+                            <div className="flex flex-col min-w-0 pr-1 sm:pr-2">
+                                <h3 className="font-black text-slate-900 dark:text-white text-[10px] sm:text-sm lg:text-base leading-none tracking-tight truncate">Global Placements</h3>
+                                <p className="text-[7.5px] sm:text-[10px] lg:text-[11px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest leading-none mt-1 sm:mt-1.5 truncate">Hotspots Explorer</p>
+                            </div>
+                        </div>
+
+                        {/* Expand/Collapse Button */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="p-2.5 bg-white/90 dark:bg-slate-800/90 hover:bg-indigo-50 dark:hover:bg-slate-700 backdrop-blur-md rounded-xl text-slate-600 dark:text-slate-300 shadow-lg border border-slate-200/50 dark:border-slate-700/50 pointer-events-auto group transition-all"
+                            className="pointer-events-auto p-2 sm:p-3 lg:p-3.5 bg-white/95 dark:bg-slate-900/95 hover:bg-slate-50 dark:hover:bg-slate-800 backdrop-blur-xl rounded-[14px] sm:rounded-2xl text-slate-600 dark:text-slate-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/60 dark:border-slate-700/60 transition-all shrink-0 flex items-center justify-center"
                             title={isExpanded ? "Collapse Map" : "Expand Fullscreen"}
                         >
                             {isExpanded ? (
-                                <svg className="w-5 h-5 group-hover:scale-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-rose-500 transition-transform hover:scale-95" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             ) : (
-                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-indigo-600 dark:text-indigo-400 transition-transform hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                                 </svg>
                             )}
                         </button>
@@ -194,7 +204,7 @@ export default function PlacementMapWidget() {
                         className="bg-[#f8fafc] dark:bg-[#0f172a]"
                         ref={setMapInstance}
                     >
-                        <ZoomControl position="bottomright" />
+                        <ZoomControl position="bottomleft" />
                         <TileLayer
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"

@@ -98,9 +98,19 @@ export default function Login() {
       }, 900);
 
     } catch (err) {
-      triggerShake(err.response?.data?.message || "Invalid OTP");
+      const errorMsg = err.response?.data?.message || "Invalid OTP";
+      triggerShake(errorMsg);
       setOtp(Array(6).fill(""));
-      otpRefs.current[0]?.focus();
+
+      if (errorMsg.includes("Maximum attempts reached")) {
+        // Kick them back to email entry step after a delay to read the message
+        setTimeout(() => {
+          setStep(1);
+          setEmail("");
+        }, 3000);
+      } else {
+        otpRefs.current[0]?.focus();
+      }
     } finally {
       setLoading(false);
     }

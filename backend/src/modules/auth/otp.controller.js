@@ -81,6 +81,15 @@ exports.sendOTP = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
+    // Check if email exists in any of the authorized roles
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = !admin ? await prisma.faculty.findUnique({ where: { email } }) : null;
+    const student = (!admin && !faculty) ? await prisma.student.findUnique({ where: { email } }) : null;
+
+    if (!admin && !faculty && !student) {
+      return res.status(403).json({ message: "Email not registered in the system." });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     await transporter.sendMail({
@@ -120,14 +129,29 @@ exports.verifyOTP = async (req, res) => {
       orderBy: { createdAt: "desc" }
     });
 
-    if (!record || record.otp !== otp) {
-      return res.status(401).json({ message: "Incorrect OTP" });
+    if (!record || record.expiresAt < new Date()) {
+      return res.status(401).json({ message: "OTP expired or invalid" });
     }
 
-    if (record.expiresAt < new Date()) {
-      return res.status(401).json({ message: "OTP expired" });
+    if (record.otp !== otp) {
+      // Increment attempts
+      const newAttempts = record.attempts + 1;
+
+      if (newAttempts >= 3) {
+        // Max attempts reached, delete the OTP to prevent brute force
+        await prisma.emailotp.deleteMany({ where: { email } });
+        return res.status(401).json({ message: "Maximum attempts reached. Please request a new OTP." });
+      } else {
+        // Save the failed attempt count
+        await prisma.emailotp.update({
+          where: { id: record.id },
+          data: { attempts: newAttempts }
+        });
+        return res.status(401).json({ message: `Incorrect OTP. ${3 - newAttempts} attempts remaining.` });
+      }
     }
 
+    // Success! Clear the OTP
     await prisma.emailotp.deleteMany({ where: { email } });
 
     let role = null;

@@ -26,6 +26,9 @@ exports.getMentees = async (req, res) => {
                 placement_status: true,
                 offers: {
                     include: { company: true }
+                },
+                _count: {
+                    select: { coordinatedEvents: true }
                 }
             },
             orderBy: { rollNo: "asc" }
@@ -60,7 +63,18 @@ exports.getMenteeDetails = async (req, res) => {
                     include: { company: true }
                 },
                 ods: {
+                    include: { event: true, offer: { include: { company: true } } },
                     orderBy: { createdAt: "desc" }
+                },
+                coordinatedEvents: {
+                    select: {
+                        id: true,
+                        name: true,
+                        startDate: true,
+                        endDate: true,
+                        staffCoordinatorId: true,
+                        status: true
+                    }
                 }
             }
         });

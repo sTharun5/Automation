@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { applyOD, getOdById, updateOdStatus, getStudentODs, getMentorODs, getMyODs, getAllODs, getCompanyStats, getCompanyPlacedStudents, manualErpSync } = require("./od.controller");
+const odController = require("./od.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
-
 
 const multer = require("multer");
 
@@ -42,23 +41,26 @@ router.post(
     { name: "aimFile", maxCount: 1 },
     { name: "offerFile", maxCount: 1 }
   ]),
-  applyOD
+  odController.applyOD
 );
 
-router.post("/scan-internal", verifyToken, require("./od.controller").scanInternalOD);
+// Subject Teacher verifies a student's Digital Gate Pass to authorize them leaving class
+router.post('/verify-gate-pass', verifyToken, odController.verifyGatePass);
 
-router.get("/my-ods", verifyToken, getMyODs); // ✅ New Route
-router.get("/:id", verifyToken, getOdById);
+router.post('/scan-internal', verifyToken, odController.scanInternalOD);
 
-router.put("/update-status/:id", verifyToken, updateOdStatus);
-router.post("/:id/sync-erp", verifyToken, manualErpSync);
+router.get("/my-ods", verifyToken, odController.getMyODs); // ✅ New Route
+router.get("/:id", verifyToken, odController.getOdById);
+
+router.put("/update-status/:id", verifyToken, odController.updateOdStatus);
+router.post("/:id/sync-erp", verifyToken, odController.manualErpSync);
 
 // 👮‍♂️ Admin / Faculty routes
-router.get("/mentor/pending", verifyToken, getMentorODs);
-router.get("/admin/student/:studentId", verifyToken, getStudentODs);
-router.get("/admin/all", verifyToken, getAllODs); // ✅ New Admin Search Route
-router.get("/admin/company-stats", verifyToken, getCompanyStats); // ✅ Company Stats Route
-router.get("/admin/company-placed", verifyToken, getCompanyPlacedStudents); // ✅ Company Placed Students Route
+router.get("/mentor/pending", verifyToken, odController.getMentorODs);
+router.get("/admin/student/:studentId", verifyToken, odController.getStudentODs);
+router.get("/admin/all", verifyToken, odController.getAllODs); // ✅ New Admin Search Route
+router.get("/admin/company-stats", verifyToken, odController.getCompanyStats); // ✅ Company Stats Route
+router.get("/admin/company-placed", verifyToken, odController.getCompanyPlacedStudents); // ✅ Company Placed Students Route
 
 
 module.exports = router;

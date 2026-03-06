@@ -13,6 +13,7 @@ export default function MenteeDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const { showToast } = useToast();
+    const currentUser = JSON.parse(sessionStorage.getItem("user"));
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -44,6 +45,22 @@ export default function MenteeDetails() {
             showToast("Failed to remove offer", "error");
         } finally {
             setConfirmModal({ ...confirmModal, isOpen: false });
+        }
+    };
+
+    const handleRevokeCoordinator = async (eventId) => {
+        if (!window.confirm("Are you sure you want to revoke this student's coordinator access?")) return;
+
+        const reason = window.prompt("Reason for revocation (Required):");
+        if (reason === null) return; // User cancelled prompt
+        if (!reason.trim()) return showToast("Reason is required to revoke coordinator access", "error");
+
+        try {
+            await api.put(`/events/${eventId}/revoke-coordinator`, { reason });
+            showToast("Student Coordinator access revoked successfully.", "success");
+            fetchDetails(); // Refresh
+        } catch (error) {
+            showToast(error.response?.data?.message || "Failed to revoke coordinator", "error");
         }
     };
 
@@ -112,7 +129,7 @@ export default function MenteeDetails() {
                                     <p className="text-xl font-black text-slate-900 dark:text-white">NIP</p>
                                     <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-tighter">Not Interested in Placement</p>
                                 </div>
-                            ) : (student.offers && student.offers.length > 0) || student.placement_status === "PLACED" ? (
+                            ) : ((student.offers && student.offers.length > 0) || student.placement_status === "PLACED") ? (
                                 <div className="space-y-4">
                                     <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
                                         <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-widest">Status</p>
@@ -191,7 +208,9 @@ export default function MenteeDetails() {
                                                         }`}>
                                                         {((od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime() ? "COMPLETED" : od.status).replace("_", " ")}
                                                     </span>
-                                                    <h3 className="font-bold text-slate-900 dark:text-white mt-1">{od.type} OD</h3>
+                                                    <h3 className="font-bold text-slate-900 dark:text-white mt-1">
+                                                        {od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Company OD")}
+                                                    </h3>
                                                 </div>
                                                 <p className="text-xs text-slate-500 font-medium">#{od.trackerId}</p>
                                             </div>
@@ -201,8 +220,15 @@ export default function MenteeDetails() {
                                                     <p className="font-semibold dark:text-white">{new Date(od.startDate).toLocaleDateString()}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-slate-500 text-xs">Duration</p>
-                                                    <p className="font-semibold dark:text-white">{od.duration} Days</p>
+                                                    <p className="text-slate-500 text-xs">{od.type === 'INTERNAL' ? "Value" : "Duration"}</p>
+                                                    <p className="font-semibold dark:text-white">
+                                                        {od.type === 'INTERNAL' ? (() => {
+                                                            const hrs = od.event?.allocatedHours || 0;
+                                                            const h = Math.floor(hrs);
+                                                            const m = Math.round((hrs % 1) * 60);
+                                                            return m > 0 ? `${h}h ${m}m` : `${h} Hours`;
+                                                        })() : `${od.duration} Days`}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -214,9 +240,49 @@ export default function MenteeDetails() {
                                 )}
                             </div>
                         </div>
+
+                        {/* COORDINATED EVENTS */}
+                        {student.coordinatedEvents?.length > 0 && (
+                            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    🏢 Coordinated Events
+                                </h2>
+                                <div className="space-y-4">
+                                    {student.coordinatedEvents.map((event) => {
+                                        // Loose equality check for ID just in case of string/number mismatch
+                                        const isStaffCoordinator = currentUser && currentUser.id == event.staffCoordinatorId;
+                                        return (
+                                            <div key={event.id} className="p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/30 dark:bg-slate-800/20">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="font-bold text-slate-900 dark:text-white">{event.name}</h3>
+                                                        <p className="text-xs text-slate-500 font-medium">
+                                                            {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}
+                                                        </p>
+                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase mt-2 inline-block ${event.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : 'bg-slate-100 text-slate-600 dark:bg-slate-800'
+                                                            }`}>
+                                                            {event.status}
+                                                        </span>
+                                                    </div>
+                                                    {isStaffCoordinator && (
+                                                        <button
+                                                            onClick={() => handleRevokeCoordinator(event.id)}
+                                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30"
+                                                        >
+                                                            Revoke Access
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
+
             <ConfirmationModal
                 {...confirmModal}
                 onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
