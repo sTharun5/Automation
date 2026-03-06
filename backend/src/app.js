@@ -18,21 +18,24 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
+        // Log for debugging (Check Render logs to see this!)
+        console.log(`[CORS DEBUG] Request from Origin: ${origin}`);
+
         // 1. Allow if no origin (local/mobile)
         if (!origin) return callback(null, true);
 
-        // 2. Exact match with allowed list
-        if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
-            return callback(null, true);
-        }
-
-        // 3. Pattern match for localhost development
+        // 2. Allow any localhost
         if (origin.startsWith("http://localhost:")) {
             return callback(null, true);
         }
 
-        // 4. Pattern match for your Vercel domain (Safe fallback)
-        if (origin.endsWith(".vercel.app")) {
+        // 3. Allow any Vercel subdomain (very important for preview links)
+        if (origin.toLowerCase().includes("vercel.app")) {
+            return callback(null, true);
+        }
+
+        // 5. Check explicit allowed list
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
             return callback(null, true);
         }
 
