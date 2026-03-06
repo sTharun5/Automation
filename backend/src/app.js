@@ -9,14 +9,23 @@ const app = express();
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://your-app-name.vercel.app" // 👈 REPLACE THIS with your actual Vercel URL later
-];
+    process.env.CLIENT_URL,
+    process.env.CLIENT_URL?.replace(/\/$/, "") // Allow without trailing slash
+].filter(Boolean);
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+            return origin === allowedOrigin || origin === allowedOrigin?.replace(/\/$/, "");
+        });
+
+        if (isAllowed || origin.startsWith("http://localhost:")) {
             callback(null, true);
         } else {
+            console.error(`CORS Blocked for origin: ${origin}`);
             callback(new Error("Not allowed by CORS"));
         }
     },
