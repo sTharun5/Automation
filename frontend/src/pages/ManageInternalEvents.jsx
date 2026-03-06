@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
+import SearchableSelect from '../components/SearchableSelect';
 
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
@@ -22,7 +23,8 @@ export default function ManageInternalEvents() {
         endDate: '',
         allocatedHours: 2,
         maxParticipants: 0,
-        staffCoordinatorId: ''
+        staffCoordinatorId: '',
+        studentCoordinatorId: ''
     });
 
     const [editingEvent, setEditingEvent] = useState(null);
@@ -32,7 +34,8 @@ export default function ManageInternalEvents() {
         endDate: '',
         allocatedHours: 2,
         maxParticipants: 0,
-        staffCoordinatorId: ''
+        staffCoordinatorId: '',
+        studentCoordinatorId: ''
     });
 
     // Projection State
@@ -145,7 +148,8 @@ export default function ManageInternalEvents() {
             endDate: fDate(event.endDate),
             allocatedHours: event.allocatedHours,
             maxParticipants: event.maxParticipants || 0,
-            staffCoordinatorId: event.staffCoordinatorId || ''
+            staffCoordinatorId: event.staffCoordinatorId || '',
+            studentCoordinatorId: event.studentCoordinatorId || ''
         });
         setEditingEvent(event);
     };
@@ -419,17 +423,39 @@ export default function ManageInternalEvents() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Staff Coordinator</label>
-                                <select
+                                <SearchableSelect
+                                    label="Staff Coordinator"
+                                    placeholder="Select a mentor..."
                                     value={formData.staffCoordinatorId}
-                                    onChange={(e) => setFormData({ ...formData, staffCoordinatorId: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                                >
-                                    <option value="">-- None (Auto-Approval) --</option>
-                                    {faculties.map(fac => (
-                                        <option key={fac.id} value={fac.id}>{fac.name} ({fac.department})</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, staffCoordinatorId: val })}
+                                    options={[
+                                        { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: "🤖" },
+                                        ...faculties.map(fac => ({
+                                            value: String(fac.id),
+                                            label: fac.name,
+                                            sublabel: fac.department || "Faculty",
+                                            icon: "👨‍🏫"
+                                        }))
+                                    ]}
+                                />
+                            </div>
+                            <div>
+                                <SearchableSelect
+                                    label="Student Coordinator"
+                                    placeholder="Type roll no or name..."
+                                    value={formData.studentCoordinatorId}
+                                    isAsync={true}
+                                    onSearch={async (q) => {
+                                        const res = await api.get(`/admin/search-students?q=${q}`);
+                                        return res.data.map(s => ({
+                                            value: String(s.id),
+                                            label: s.name,
+                                            sublabel: `${s.rollNo} • ${s.department}`,
+                                            icon: "👤"
+                                        }));
+                                    }}
+                                    onChange={(val) => setFormData({ ...formData, studentCoordinatorId: val })}
+                                />
                             </div>
                             <div className="md:col-span-2 flex justify-end mt-4">
                                 <button type="submit" className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold uppercase tracking-wider rounded-xl hover:scale-[1.02] transition-transform">
@@ -462,23 +488,53 @@ export default function ManageInternalEvents() {
                                     <p className="text-xs text-slate-500 font-medium">Ends: <span className="font-bold text-slate-700 dark:text-slate-300">{new Date(event.endDate).toLocaleString()}</span></p>
                                     <p className="text-xs text-slate-500 font-medium">Value: <span className="font-bold text-indigo-500">{Math.floor(event.allocatedHours)}h {Math.round((event.allocatedHours % 1) * 60)}m</span></p>
 
-                                    {event.staffCoordinatorId && (
-                                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between mt-2">
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mentor</p>
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                                    Prof. {event.staffCoordinator?.name}
-                                                </p>
+                                    <div className="space-y-3 mt-4">
+                                        {event.staffCoordinatorId && (
+                                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mentor (Staff)</p>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        Prof. {event.staffCoordinator?.name}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRevokeMentor(event)}
+                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors group"
+                                                    title="Revoke Mentor Access"
+                                                >
+                                                    <span className="text-xs font-black uppercase tracking-tighter group-hover:underline">Revoke</span>
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={() => handleRevokeMentor(event)}
-                                                className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors group"
-                                                title="Revoke Mentor Access"
-                                            >
-                                                <span className="text-xs font-black uppercase tracking-tighter group-hover:underline">Revoke</span>
-                                            </button>
-                                        </div>
-                                    )}
+                                        )}
+
+                                        {event.studentCoordinatorId && (
+                                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lead (Student)</p>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        {event.studentCoordinator?.name} <span className="text-[10px] font-medium text-slate-500">({event.studentCoordinator?.rollNo})</span>
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm("Revoke student coordinator access?")) {
+                                                            try {
+                                                                await api.put(`/events/internal/${event.id}`, { studentCoordinatorId: "" });
+                                                                showToast("Student coordinator revoked", "success");
+                                                                fetchEvents();
+                                                            } catch (err) {
+                                                                showToast("Failed to revoke student coordinator", "error");
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors group"
+                                                    title="Revoke Student Access"
+                                                >
+                                                    <span className="text-xs font-black uppercase tracking-tighter group-hover:underline">Revoke</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {event.staffCoordinatorId ? (
                                         <p className="text-xs text-slate-500 font-medium">Roster Status:
@@ -674,7 +730,7 @@ export default function ManageInternalEvents() {
                                 {/* OTP Status Block */}
                                 {eventOtp && (
                                     <div className="flex flex-col items-center p-8 bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-white/10 shadow-2xl">
-                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">OR ENTER CODE</p>
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">SCAN OR ENTER CODE</p>
                                         <div className="flex gap-2 mb-4">
                                             {eventOtp.split('').map((char, index) => (
                                                 <div key={index} className="w-12 md:w-16 h-16 md:h-20 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center text-3xl md:text-5xl font-mono font-black text-indigo-400 shadow-inner">
@@ -682,7 +738,7 @@ export default function ManageInternalEvents() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <p className="text-indigo-300/60 text-xs font-mono">Refreshes every 30s</p>
+                                        <p className="text-indigo-300/60 text-xs font-mono">Refreshes dynamically</p>
                                     </div>
                                 )}
                             </div>
@@ -781,17 +837,39 @@ export default function ManageInternalEvents() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Staff Coordinator</label>
-                                    <select
+                                    <SearchableSelect
+                                        label="Staff Coordinator"
+                                        placeholder="Select a mentor..."
                                         value={editFormData.staffCoordinatorId}
-                                        onChange={(e) => setEditFormData({ ...editFormData, staffCoordinatorId: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    >
-                                        <option value="">-- None (Auto-Approval) --</option>
-                                        {faculties.map(fac => (
-                                            <option key={fac.id} value={fac.id}>{fac.name} ({fac.department})</option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setEditFormData({ ...editFormData, staffCoordinatorId: val })}
+                                        options={[
+                                            { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: "🤖" },
+                                            ...faculties.map(fac => ({
+                                                value: String(fac.id),
+                                                label: fac.name,
+                                                sublabel: fac.department || "Faculty",
+                                                icon: "👨‍🏫"
+                                            }))
+                                        ]}
+                                    />
+                                </div>
+                                <div>
+                                    <SearchableSelect
+                                        label="Student Coordinator"
+                                        placeholder="Type roll no or name..."
+                                        value={editFormData.studentCoordinatorId}
+                                        isAsync={true}
+                                        onSearch={async (q) => {
+                                            const res = await api.get(`/admin/search-students?q=${q}`);
+                                            return res.data.map(s => ({
+                                                value: String(s.id),
+                                                label: s.name,
+                                                sublabel: `${s.rollNo} • ${s.department}`,
+                                                icon: "👤"
+                                            }));
+                                        }}
+                                        onChange={(val) => setEditFormData({ ...editFormData, studentCoordinatorId: val })}
+                                    />
                                 </div>
                                 <div className="md:col-span-2 flex justify-end mt-4 gap-4">
                                     <button type="button" onClick={() => setEditingEvent(null)} className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl transition-colors">

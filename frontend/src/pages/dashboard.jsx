@@ -10,9 +10,8 @@ import ProfileCard from "../components/ProfileCard";
 import ODAnalytics from "../components/ODAnalytics"; // ✅ New
 import ODCalendar from "../components/ODCalendar"; // ✅ New
 import InternshipReportModal from "../components/InternshipReportModal";
-import ScannerModal from "../components/ScannerModal"; // ✅ Internal OD Scanner
+import AttendanceModal from "../components/AttendanceModal"; // ✅ Unified Attendance
 import GatePassModal from "../components/GatePassModal"; // ✅ Digital Gate Pass
-import OtpCheckInModal from "../components/OtpCheckInModal"; // ✅ Hybrid OTP Check-in
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -21,9 +20,8 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null); // ✅ New State
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false); // ✅ Unified Modal State
   const [showGatePassModal, setShowGatePassModal] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false); // ✅ OTP Modal State
   const [provisionalOds, setProvisionalOds] = useState([]);
   const [assignedEvents, setAssignedEvents] = useState([]); // ✅ Events assigned to this student
 
@@ -205,39 +203,22 @@ export default function Dashboard() {
                   </span>
                 </button>
 
-                {/* Scan Internal QR */}
+                {/* Unified Attendance Logging */}
                 <button
-                  onClick={() => setShowScannerModal(true)}
-                  className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-100 dark:border-indigo-800/30 shadow-sm hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 text-left overflow-hidden"
+                  onClick={() => setShowAttendanceModal(true)}
+                  className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-400 dark:border-indigo-800 shadow-sm hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-500/20"
                 >
                   <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-indigo-500/30">
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                     </svg>
                   </div>
-                  <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1 relative z-10">Scan Internal QR</h3>
-                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mb-4 h-8 relative z-10">Use camera to scan venue attendance.</p>
+                  <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1 relative z-10">Log Attendance</h3>
+                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mb-4 h-8 relative z-10">Scan QR OR enter venue code to verify yourself.</p>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
-                    Open Camera <span aria-hidden>→</span>
+                    Open Attendance Console <span aria-hidden>→</span>
                   </span>
-                  {/* Decorative element */}
                   <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors"></div>
-                </button>
-
-                {/* Enter OTP Code */}
-                <button
-                  onClick={() => setShowOtpModal(true)}
-                  className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-violet-50 dark:from-violet-900/20 to-fuchsia-50 dark:to-fuchsia-900/10 rounded-xl border border-violet-100 dark:border-violet-800/30 shadow-sm hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-300 text-left overflow-hidden"
-                >
-                  <div className="p-2.5 bg-violet-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-violet-500/30">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                  </div>
-                  <h3 className="text-sm font-bold text-violet-900 dark:text-violet-100 mb-1 relative z-10">Enter Venue Code</h3>
-                  <p className="text-xs text-violet-700/70 dark:text-violet-300/70 mb-4 h-8 relative z-10">Type 6-digit code to log attendance.</p>
-                  <span className="text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
-                    Enter Code <span aria-hidden>→</span>
-                  </span>
-                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-violet-500/5 rounded-full blur-xl group-hover:bg-violet-500/10 transition-colors"></div>
                 </button>
 
                 {/* OD Status */}
@@ -403,19 +384,14 @@ export default function Dashboard() {
         provisionalOds={provisionalOds}
       />
 
-      <ScannerModal
-        isOpen={showScannerModal}
-        onClose={() => setShowScannerModal(false)}
+      <AttendanceModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
         studentId={student?.id}
         onSuccess={() => {
           // Refresh dashboard data instantly when OD is approved
           api.get("/students/dashboard").then(res => setDashboardData(res.data)).catch(console.error);
         }}
-      />
-
-      <OtpCheckInModal
-        isOpen={showOtpModal}
-        onClose={() => setShowOtpModal(false)}
       />
     </div>
   );

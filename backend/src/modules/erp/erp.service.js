@@ -21,7 +21,7 @@ const initErpFile = () => {
         const ws = xlsx.utils.aoa_to_sheet(wsData);
         xlsx.utils.book_append_sheet(wb, ws, "Attendance");
         xlsx.writeFile(wb, ERP_FILE_PATH);
-        console.log(`[ERP INIT] Created new Mock ERP file at ${ERP_FILE_PATH}`);
+
     }
 };
 
@@ -56,7 +56,7 @@ const getDatesInRange = (startDate, endDate) => {
  */
 exports.syncAttendanceToErp = async (studentRollNo, startDate, endDate, trackerId) => {
     try {
-        console.log(`[ERP SYNC] Initiating attendance sync for Roll No: ${studentRollNo}, Tracker ID: ${trackerId}`);
+
 
         // 1. Ensure file exists
         initErpFile();
@@ -116,7 +116,7 @@ exports.syncAttendanceToErp = async (studentRollNo, startDate, endDate, trackerI
         wb.Sheets[sheetName] = newWs;
         xlsx.writeFile(wb, ERP_FILE_PATH);
 
-        console.log(`[ERP SYNC] ✅ SUCCESS: Attendance marked as 'OD' in Excel for ${studentRollNo}`);
+
         return { success: true, message: `Attendance marked as OD in Mock_College_ERP.xlsx` };
 
     } catch (error) {

@@ -76,8 +76,6 @@ export default function Login() {
         email,
         otp: finalOtp
       });
-      console.log("LOGIN RESPONSE:", res.data);
-      console.log("ROLE RECEIVED:", res.data.role);
 
       /* ================= STORE AUTH ================= */
       sessionStorage.setItem("role", res.data.role);

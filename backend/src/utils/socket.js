@@ -11,17 +11,16 @@ const initSocket = (server) => {
     });
 
     io.on("connection", (socket) => {
-        console.log("New client connected:", socket.id);
+        // connection logic
 
         socket.on("join", (email) => {
             if (email) {
                 socket.join(email);
-                console.log(`Socket ${socket.id} joined room: ${email}`);
             }
         });
 
         socket.on("disconnect", () => {
-            console.log("Client disconnected:", socket.id);
+            // disconnect logic
         });
     });
 

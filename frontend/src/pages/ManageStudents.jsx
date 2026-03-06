@@ -6,6 +6,7 @@ import SearchInput from "../components/SearchInput";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import SearchableSelect from "../components/SearchableSelect";
 
 export default function ManageStudents() {
     const navigate = useNavigate();
@@ -193,33 +194,28 @@ export default function ManageStudents() {
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
-                                        <select
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            value={newStudent.department}
-                                            onChange={e => setNewStudent({ ...newStudent, department: e.target.value })}
-                                        >
-                                            <option value="">Select</option>
-                                            <option value="CS">CS</option>
-                                            <option value="IT">IT</option>
-                                            <option value="EC">EC</option>
-                                            <option value="EE">EE</option>
-                                            <option value="ME">ME</option>
-                                            <option value="CB">CB</option>
-                                            <option value="AI">AI</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Semester</label>
-                                        <select
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            value={newStudent.semester}
-                                            onChange={e => setNewStudent({ ...newStudent, semester: e.target.value })}
-                                        >
-                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                    </div>
+                                    <SearchableSelect
+                                        label="Department"
+                                        placeholder="Select dept..."
+                                        value={newStudent.department}
+                                        onChange={(val) => setNewStudent({ ...newStudent, department: val })}
+                                        options={[
+                                            { value: "CS", label: "CS", icon: "💻" },
+                                            { value: "IT", label: "IT", icon: "📱" },
+                                            { value: "EC", label: "EC", icon: "📡" },
+                                            { value: "EE", label: "EE", icon: "⚡" },
+                                            { value: "ME", label: "ME", icon: "⚙️" },
+                                            { value: "CB", label: "CB", icon: "🧪" },
+                                            { value: "AI", label: "AI", icon: "🧠" }
+                                        ]}
+                                    />
+                                    <SearchableSelect
+                                        label="Semester"
+                                        placeholder="Pick..."
+                                        value={newStudent.semester}
+                                        onChange={(val) => setNewStudent({ ...newStudent, semester: val })}
+                                        options={[1, 2, 3, 4, 5, 6, 7, 8].map(s => ({ value: String(s), label: String(s), icon: "📅" }))}
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone <span className="text-red-500">*</span></label>
@@ -288,33 +284,28 @@ export default function ManageStudents() {
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
-                                        <select
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            value={editingStudent.department}
-                                            onChange={e => setEditingStudent({ ...editingStudent, department: e.target.value })}
-                                        >
-                                            <option value="">Select</option>
-                                            <option value="CS">CS</option>
-                                            <option value="IT">IT</option>
-                                            <option value="EC">EC</option>
-                                            <option value="EE">EE</option>
-                                            <option value="ME">ME</option>
-                                            <option value="CB">CB</option>
-                                            <option value="AI">AI</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Semester</label>
-                                        <select
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                                            value={editingStudent.semester}
-                                            onChange={e => setEditingStudent({ ...editingStudent, semester: e.target.value })}
-                                        >
-                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                    </div>
+                                    <SearchableSelect
+                                        label="Department"
+                                        placeholder="Select dept..."
+                                        value={editingStudent.department}
+                                        onChange={(val) => setEditingStudent({ ...editingStudent, department: val })}
+                                        options={[
+                                            { value: "CS", label: "CS", icon: "💻" },
+                                            { value: "IT", label: "IT", icon: "📱" },
+                                            { value: "EC", label: "EC", icon: "📡" },
+                                            { value: "EE", label: "EE", icon: "⚡" },
+                                            { value: "ME", label: "ME", icon: "⚙️" },
+                                            { value: "CB", label: "CB", icon: "🧪" },
+                                            { value: "AI", label: "AI", icon: "🧠" }
+                                        ]}
+                                    />
+                                    <SearchableSelect
+                                        label="Semester"
+                                        placeholder="Pick..."
+                                        value={editingStudent.semester}
+                                        onChange={(val) => setEditingStudent({ ...editingStudent, semester: val })}
+                                        options={[1, 2, 3, 4, 5, 6, 7, 8].map(s => ({ value: String(s), label: String(s), icon: "📅" }))}
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent Phone <span className="text-red-500">*</span></label>

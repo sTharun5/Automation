@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import QRCode from "react-qr-code"; // Ensure react-qr-code is installed!
+import SearchableSelect from "./SearchableSelect";
 
 export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
     const [selectedOd, setSelectedOd] = useState(null);
@@ -50,19 +51,21 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                             {/* Event Selector (If multiple PROVISIONAL passes exist) */}
                             {provisionalOds.length > 1 && (
                                 <div className="w-full mb-6">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Select Event Pass</label>
-                                    <select
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500/50 outline-none"
-                                        value={selectedOd?.id || ""}
-                                        onChange={(e) => {
-                                            const od = provisionalOds.find(o => o.id === parseInt(e.target.value));
+                                    <SearchableSelect
+                                        label="Select Event Pass"
+                                        placeholder="Choose a pass..."
+                                        value={String(selectedOd?.id || "")}
+                                        onChange={(val) => {
+                                            const od = provisionalOds.find(o => String(o.id) === val);
                                             setSelectedOd(od);
                                         }}
-                                    >
-                                        {provisionalOds.map(od => (
-                                            <option key={od.id} value={od.id}>{od.event?.name || "Internal Event"}</option>
-                                        ))}
-                                    </select>
+                                        options={provisionalOds.map(od => ({
+                                            value: String(od.id),
+                                            label: od.event?.name || "Internal Event",
+                                            sublabel: od.event?.date || "Event Pass",
+                                            icon: "🎫"
+                                        }))}
+                                    />
                                 </div>
                             )}
 

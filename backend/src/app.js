@@ -6,16 +6,21 @@ const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
 
-// Allow dynamic origins for local dev (5173, 5174, etc)
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://your-app-name.vercel.app" // 👈 REPLACE THIS with your actual Vercel URL later
+];
+
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || origin.startsWith("http://localhost:")) {
+        if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS"));
         }
     },
-    credentials: true // Crucial for cookies
+    credentials: true
 }));
 
 app.use(cookieParser());

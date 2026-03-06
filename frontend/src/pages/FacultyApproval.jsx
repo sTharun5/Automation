@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api, { BASE_URL } from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
@@ -145,7 +145,7 @@ export default function FacultyApproval() {
                                             <label className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold block mb-2">Attached Documents</label>
                                             <div className="flex gap-4">
                                                 <a
-                                                    href={`http://localhost:3000/${selectedOd.proofFile}`}
+                                                    href={`${BASE_URL}/${selectedOd.proofFile}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300"
@@ -153,7 +153,7 @@ export default function FacultyApproval() {
                                                     <span>📄</span> Aim & Objective
                                                 </a>
                                                 <a
-                                                    href={`http://localhost:3000/${selectedOd.offerFile}`}
+                                                    href={`${BASE_URL}/${selectedOd.offerFile}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300"

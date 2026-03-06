@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { addFaculty, addStudent, updateStudent, searchFaculty, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty, getPlacementMapData, updateCompany } = require("./admin.controller");
+const { addFaculty, addStudent, updateStudent, searchFaculty, searchStudents, assignMentor, removeMentor, getAllFaculty, getAllStudents, listCompanies, createCompany, toggleCompanyApproval, deleteCompany, updateStudentStatus, deleteFaculty, getPlacementMapData, updateCompany } = require("./admin.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 const { isAdmin } = require("../../middlewares/isAdmin.middleware");
 const { exportODsToExcel } = require("./export.controller");
@@ -31,8 +31,13 @@ router.put(
 router.get(
   "/search-faculty",
   verifyToken,
-  isAdmin,
   searchFaculty
+);
+
+router.get(
+  "/search-students",
+  verifyToken,
+  searchStudents
 );
 
 router.put(

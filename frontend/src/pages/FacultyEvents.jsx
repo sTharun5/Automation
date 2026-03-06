@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import SearchableSelect from '../components/SearchableSelect';
 
 export default function FacultyEvents() {
     const { showToast } = useToast();
@@ -18,6 +19,12 @@ export default function FacultyEvents() {
     const [rosterData, setRosterData] = useState([]);
     const [rosterLoading, setRosterLoading] = useState(false);
     const [currentEventName, setCurrentEventName] = useState("");
+
+    // Projection State
+    const [projectingEvent, setProjectingEvent] = useState(null);
+    const [qrData, setQrData] = useState(null);
+    const [eventOtp, setEventOtp] = useState(null);
+    const projectionInterval = useRef(null);
 
     const fetchEvents = async () => {
         try {
@@ -96,6 +103,38 @@ export default function FacultyEvents() {
         }
     };
 
+    // --- QR Projection Logic ---
+    const startProjection = async (event) => {
+        setProjectingEvent(event);
+        await fetchLiveQR(event.id);
+
+        // Setup polling every 10 seconds to ensure QR is always fresh before TOTP expires
+        projectionInterval.current = setInterval(() => {
+            fetchLiveQR(event.id);
+        }, 10000);
+    };
+
+    const stopProjection = () => {
+        setProjectingEvent(null);
+        setQrData(null);
+        setEventOtp(null);
+        if (projectionInterval.current) {
+            clearInterval(projectionInterval.current);
+        }
+    };
+
+    const fetchLiveQR = async (eventId) => {
+        try {
+            const res = await api.get(`/events/${eventId}/live-qr`);
+            setQrData(res.data.qrData);
+            setEventOtp(res.data.otp);
+        } catch (error) {
+            console.error("QR Fetch Error:", error);
+            showToast("Failed to refresh live QR", "error");
+            stopProjection();
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
             <Header />
@@ -146,25 +185,38 @@ export default function FacultyEvents() {
                                             <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-3 flex items-center gap-2">
                                                 <span>👤</span> Assign Student Coordinator
                                             </p>
-                                            <div className="flex flex-col md:flex-row gap-3">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Roll No"
-                                                    value={assigningRollNo[event.id] || ''}
-                                                    onChange={(e) => setAssigningRollNo(prev => ({ ...prev, [event.id]: e.target.value.toUpperCase() }))}
-                                                    className="flex-1 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Reason (e.g. Event Lead)"
-                                                    value={assigningReason[event.id] || ''}
-                                                    onChange={(e) => setAssigningReason(prev => ({ ...prev, [event.id]: e.target.value }))}
-                                                    className="flex-[2] px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                                                />
+                                            <div className="flex flex-col md:flex-row gap-3 items-end">
+                                                <div className="flex-1">
+                                                    <SearchableSelect
+                                                        placeholder="Type roll no or name..."
+                                                        value={assigningRollNo[event.id] || ''}
+                                                        isAsync={true}
+                                                        onSearch={async (q) => {
+                                                            const res = await api.get(`/admin/search-students?q=${q}`);
+                                                            return res.data.map(s => ({
+                                                                value: s.rollNo, // Backend currently expects rollNo here
+                                                                label: s.name,
+                                                                sublabel: `${s.rollNo} • ${s.department}`,
+                                                                icon: "👤"
+                                                            }));
+                                                        }}
+                                                        onChange={(val) => setAssigningRollNo(prev => ({ ...prev, [event.id]: val }))}
+                                                    />
+                                                </div>
+                                                <div className="flex-[2]">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Reason (e.g. Event Lead)"
+                                                        value={assigningReason[event.id] || ''}
+                                                        onChange={(e) => setAssigningReason(prev => ({ ...prev, [event.id]: e.target.value }))}
+                                                        className="w-full px-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    />
+                                                </div>
                                                 <button
                                                     onClick={() => handleAssignCoordinator(event.id)}
-                                                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow-sm whitespace-nowrap"
+                                                    className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-2xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap flex items-center gap-2 group"
                                                 >
+                                                    <span className="text-lg group-hover:rotate-90 transition-transform">➕</span>
                                                     Assign
                                                 </button>
                                             </div>
@@ -252,6 +304,14 @@ export default function FacultyEvents() {
                                                             View Roster
                                                         </button>
                                                     </div>
+                                                    {event.status === 'ACTIVE' && (
+                                                        <button
+                                                            onClick={() => startProjection(event)}
+                                                            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 hover:scale-[1.02] flex items-center justify-center gap-3 mt-4"
+                                                        >
+                                                            <span className="text-xl">🎥</span> Project Live QR & OTP
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -320,6 +380,77 @@ export default function FacultyEvents() {
                                 Close
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* FULLSCREEN PROJECTION OVERLAY */}
+            {projectingEvent && (
+                <div className="fixed inset-0 z-[99999] bg-[#0f172a] flex flex-col items-center justify-center p-8 animate-fadeIn">
+
+                    {/* Top Bar */}
+                    <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+                        <div>
+                            <span className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                Live Projection
+                            </span>
+                        </div>
+                        <button onClick={stopProjection} className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-bold uppercase tracking-wider backdrop-blur-md transition-colors">
+                            End Projection
+                        </button>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="text-center max-w-4xl w-full mx-auto flex flex-col items-center mt-12">
+                        <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight mb-4 drop-shadow-2xl">
+                            {projectingEvent.name}
+                        </h1>
+                        <p className="text-lg md:text-2xl text-slate-300 font-medium mb-12">
+                            Scan to instantly log your attendance & OD.
+                        </p>
+
+                        {/* The QR Code Wrapper */}
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                            {/* QR Block */}
+                            <div className="relative p-6 bg-white rounded-[2rem] shadow-2xl shadow-indigo-500/20 flex flex-col items-center justify-center">
+                                {qrData ? (
+                                    <img src={qrData} alt="Live QR Code" className="w-[300px] md:w-[400px] h-[300px] md:h-[400px] object-contain rendering-pixelated" />
+                                ) : (
+                                    <div className="w-[300px] md:w-[400px] h-[300px] md:h-[400px] flex items-center justify-center">
+                                        <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+
+                                {/* Security Ring */}
+                                <div className="absolute -inset-4 border-2 border-indigo-500/30 rounded-[2.5rem] pointer-events-none"></div>
+                            </div>
+
+                            {/* OTP Status Block */}
+                            {eventOtp && (
+                                <div className="flex flex-col items-center p-8 bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-white/10 shadow-2xl">
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">SCAN OR ENTER CODE</p>
+                                    <div className="flex gap-2 mb-4">
+                                        {eventOtp.split('').map((char, index) => (
+                                            <div key={index} className="w-12 md:w-16 h-16 md:h-20 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center text-3xl md:text-5xl font-mono font-black text-indigo-400 shadow-inner">
+                                                {char}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-indigo-300/60 text-xs font-mono">Refreshes dynamically</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Security Footer */}
+                        <div className="mt-12 flex items-center gap-3 text-slate-400 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
+                            <span className="text-2xl">🔒</span>
+                            <div className="text-left">
+                                <p className="text-xs font-bold uppercase tracking-widest">Temporal Security Active</p>
+                                <p className="text-[10px] uppercase tracking-wider opacity-70">Code refreshes dynamically to prevent proxy scanning.</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             )}

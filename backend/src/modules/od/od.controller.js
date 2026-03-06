@@ -32,7 +32,6 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
     const parser = new PDFParse({ data: dataBuffer });
     const data = await parser.getText();
     const text = data.text.toLowerCase().replace(/\s+/g, " ");
-    console.log(`[AI VERIFY] Scanning ${options.docType || "Doc"} | Extracted Text (First 200 chars):`, text.substring(0, 200));
 
     // Initialize detailed results
     const verificationDetails = {
@@ -81,7 +80,7 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
       const normalizedRollNo = studentRollNo.toLowerCase().replace(/\s+/g, "");
 
       const rollNoFound = normalizedText.includes(normalizedRollNo);
-      console.log(`[AI VERIFY] Searching for Roll No: ${normalizedRollNo} (Normalized) | Found: ${rollNoFound}`);
+
 
       verificationDetails.rollNo = {
         searched: studentRollNo,
@@ -990,7 +989,7 @@ exports.updateOdStatus = async (req, res) => {
             where: { id: updatedOd.id },
             data: { erpSyncStatus: result.success ? "SYNCED" : "FAILED" }
           });
-          console.log(`[DB] ERP Sync status updated to ${result.success ? 'SYNCED' : 'FAILED'} for OD ID ${updatedOd.id}`);
+
         } catch (dbErr) {
           console.error("Failed to update ERP Sync Status in DB:", dbErr);
         }

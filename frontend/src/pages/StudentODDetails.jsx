@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getOdById } from "../services/odService";
-import Header from "../components/Header";
+import api, { BASE_URL } from "../api/axios";
 import Footer from "../components/Footer";
 import InternshipReportModal from "../components/InternshipReportModal";
 
@@ -12,7 +11,7 @@ export default function StudentODDetails() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const fetchOD = () => {
-    getOdById(odId)
+    api.get(`/od/details/${odId}`)
       .then((res) => setOd(res.data))
       .catch((err) => console.error(err));
   };
@@ -340,7 +339,7 @@ function FileRow({ label, filePath }) {
       <div className="col-span-2 flex flex-col gap-2">
         <span className="text-slate-700 dark:text-slate-300 break-all">{fileName}</span>
         <a
-          href={`http://localhost:3000/${filePath}`}
+          href={`${BASE_URL}/${filePath}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"

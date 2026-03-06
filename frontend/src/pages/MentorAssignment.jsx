@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import SearchableSelect from "../components/SearchableSelect";
 
 export default function MentorAssignment() {
     const navigate = useNavigate();
@@ -51,19 +52,6 @@ export default function MentorAssignment() {
         isDanger: false
     });
 
-    // Real-time Faculty Search
-    useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            if (facultyQuery.length > 2) {
-                handleFacultySearch();
-            } else if (facultyQuery === "") {
-                setFaculties([]);
-            }
-        }, 500);
-        return () => clearTimeout(delayDebounceFn);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [facultyQuery]);
-
     // Real-time Student Search
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -77,18 +65,6 @@ export default function MentorAssignment() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [studentQuery]);
 
-    /* ================= SEARCH FACULTY ================= */
-    const handleFacultySearch = async () => {
-        try {
-            setIsSearchingFaculty(true);
-            const res = await api.get(`/admin/search-faculty?q=${facultyQuery}`);
-            setFaculties(res.data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsSearchingFaculty(false);
-        }
-    };
 
     /* ================= SEARCH STUDENTS ================= */
     const handleStudentSearch = async () => {
@@ -200,61 +176,52 @@ export default function MentorAssignment() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                    {/* STEP 1: SELECT FACULTY */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm shadow-slate-200/50 dark:shadow-none transition-colors">
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs">1</span>
-                            Select Faculty Mentor
+                            Faculty Mentor
                         </h2>
 
-                        <div className="flex gap-2 mb-4">
-                            <input
-                                type="text"
-                                placeholder="Search by name or Faculty ID..."
-                                value={facultyQuery}
-                                onChange={(e) => setFacultyQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleFacultySearch()}
-                                className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                            />
-                            <button
-                                onClick={handleFacultySearch}
-                                className="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg text-white font-medium"
-                            >
-                                Search
-                            </button>
-                        </div>
+                        <SearchableSelect
+                            placeholder="Type faculty name or ID..."
+                            value={selectedFaculty?.id}
+                            isAsync={true}
+                            onSearch={async (q) => {
+                                const res = await api.get(`/admin/search-faculty?q=${q}`);
+                                return res.data.map(f => ({
+                                    value: f.id,
+                                    label: f.name,
+                                    sublabel: `${f.facultyId} • ${f.department || 'Faculty'}`,
+                                    icon: "👨‍🏫",
+                                    original: f
+                                }));
+                            }}
+                            onChange={(val, opt) => {
+                                if (opt?.original) {
+                                    setSelectedFaculty(opt.original);
+                                }
+                            }}
+                        />
 
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar min-h-[100px] flex flex-col">
-                            {isSearchingFaculty ? (
-                                <div className="flex-1 flex flex-col items-center justify-center py-12 text-blue-500 animate-pulse">
-                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                                    <p className="text-xs font-bold uppercase tracking-widest">Searching Faculty...</p>
-                                </div>
-                            ) : faculties.length > 0 ? (
-                                faculties.map((f) => (
-                                    <div
-                                        key={f.id}
-                                        onClick={() => setSelectedFaculty(f)}
-                                        className={`p-3 border rounded-xl cursor-pointer transition-all flex justify-between items-center ${selectedFaculty?.id === f.id
-                                            ? "bg-blue-50 border-blue-400 dark:bg-blue-900/40 dark:border-blue-500 shadow-sm"
-                                            : "border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800"
-                                            }`}
-                                    >
-                                        <div>
-                                            <p className="font-bold text-slate-900 dark:text-white capitalize">{f.name}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">{f.facultyId} • {f.department || "N/A"}</p>
-                                        </div>
-                                        {selectedFaculty?.id === f.id && <span className="text-blue-600 dark:text-blue-400">✔️</span>}
+                        {selectedFaculty && (
+                            <div className="mt-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                                        {selectedFaculty.name.charAt(0)}
                                     </div>
-                                ))
-                            ) : facultyQuery.length > 0 && facultyQuery.length <= 2 ? (
-                                <p className="text-center text-slate-400 text-xs py-8 italic font-medium">Keep typing to search...</p>
-                            ) : facultyQuery.length > 2 ? (
-                                <p className="text-center text-slate-500 text-sm py-8 font-medium">No faculty member found matching "{facultyQuery}"</p>
-                            ) : (
-                                <p className="text-center text-slate-500 text-sm py-8 font-medium">Type a name or ID above to find a mentor</p>
-                            )}
-                        </div>
+                                    <div>
+                                        <p className="font-bold text-slate-900 dark:text-white">{selectedFaculty.name}</p>
+                                        <p className="text-xs text-slate-500">{selectedFaculty.facultyId} • {selectedFaculty.department}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedFaculty(null)}
+                                    className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline"
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* STEP 2: SELECT STUDENTS */}
@@ -264,21 +231,15 @@ export default function MentorAssignment() {
                             Select Students
                         </h2>
 
-                        <div className="flex gap-2 mb-4">
+                        <div className="relative group">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-blue-500 transition-colors">🔍</span>
                             <input
                                 type="text"
                                 placeholder="Search by Roll No or Name..."
                                 value={studentQuery}
                                 onChange={(e) => setStudentQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleStudentSearch()}
-                                className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-3 text-sm font-bold placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
                             />
-                            <button
-                                onClick={handleStudentSearch}
-                                className="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-lg text-white font-medium"
-                            >
-                                Search
-                            </button>
                         </div>
 
                         <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar min-h-[100px] flex flex-col">

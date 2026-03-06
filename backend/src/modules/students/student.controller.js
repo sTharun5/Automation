@@ -143,9 +143,7 @@ async function fetchStudentDashboardData(email, res) {
     }
   });
 
-  console.log("Fetching dashboard for email:", email);
   if (!student) {
-    console.log("Student not found for email:", email);
     return res.status(404).json({ message: "Student not found" });
   }
 

@@ -30,7 +30,6 @@ exports.createEvent = async (req, res) => {
                 const examEnd = new Date(endDate);
 
                 // Find conflicting APPROVED ODs and fetch student details for notification
-                console.log("Checking for conflicting ODs with Exam:", startDate, "to", endDate);
                 const conflictingODs = await prisma.od.findMany({
                     where: {
                         status: { in: ["APPROVED", "MENTOR_APPROVED"] },
@@ -40,11 +39,9 @@ exports.createEvent = async (req, res) => {
                     },
                     include: { student: true } // ✅ Fetch Student for email
                 });
-                console.log("Found conflicting ODs:", conflictingODs.length);
 
                 for (const od of conflictingODs) {
                     const odStart = new Date(od.startDate);
-                    console.log("Processing OD:", od.id, "Start:", odStart);
 
                     // Case 1: OD starts before Exam -> Truncate to day before Exam
                     if (odStart < examStart) {
@@ -55,8 +52,6 @@ exports.createEvent = async (req, res) => {
                         const diffTime = Math.abs(newEndDate - odStart);
                         const newDuration = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-                        console.log("Truncating OD:", od.id, "New End:", newEndDate, "New Duration:", newDuration);
-
                         await prisma.od.update({
                             where: { id: od.id },
                             data: {
@@ -65,7 +60,6 @@ exports.createEvent = async (req, res) => {
                                 remarks: (od.remarks || "") + "\n[System: Auto-Truncated due to Exam Conflict]"
                             }
                         });
-                        console.log("OD Updated Successfully");
 
                         // 🔔 NOTIFY STUDENT
                         if (od.student && od.student.email) {
@@ -93,7 +87,6 @@ exports.createEvent = async (req, res) => {
                                     <p>System Auto-Generated Email</p>
                                 </div>`
                             );
-                            console.log("Sent notification to:", od.student.email);
                         }
                     }
                     // Case 2: OD starts on/after Exam -> Reject (Consumed by Exam)

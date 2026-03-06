@@ -188,6 +188,33 @@ exports.searchFaculty = async (req, res) => {
 };
 
 /* =====================================================
+   SEARCH STUDENTS (ADMIN ONLY)
+   Used for searchable assignment selectors
+===================================================== */
+exports.searchStudents = async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) return res.json([]);
+
+    const students = await prisma.student.findMany({
+      where: {
+        OR: [
+          { rollNo: { contains: query } },
+          { name: { contains: query } },
+          { email: { contains: query } }
+        ]
+      },
+      take: 10
+    });
+
+    res.json(students);
+  } catch (error) {
+    console.error("SEARCH STUDENTS ERROR:", error);
+    res.status(500).json({ message: "Search failed" });
+  }
+};
+
+/* =====================================================
    ASSIGN MENTOR TO STUDENTS (ADMIN ONLY)
 ===================================================== */
 exports.assignMentor = async (req, res) => {

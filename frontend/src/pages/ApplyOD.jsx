@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import VerificationResultModal from "../components/VerificationResultModal";
 import InternshipReportModal from "../components/InternshipReportModal"; // ✅ Import Modal
 import { useToast } from "../context/ToastContext";
+import SearchableSelect from "../components/SearchableSelect";
+import api from "../api/axios";
 
 export default function ApplyOD() {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -28,8 +29,8 @@ export default function ApplyOD() {
 
   /* ================= LOAD CALENDAR EVENTS ================= */
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/calendar")
+    api
+      .get("/calendar")
       .then((res) => setCalendarEvents(res.data))
       .catch((err) => console.error("Failed to fetch calendar", err));
   }, []);
@@ -51,8 +52,8 @@ export default function ApplyOD() {
   useEffect(() => {
     if (!form.studentId) return;
 
-    axios
-      .get(`http://localhost:3000/api/students/${form.studentId}/offers`)
+    api
+      .get(`/students/${form.studentId}/offers`)
       .then((res) => setOffers(res.data))
       .catch((err) => {
         console.error("Failed to fetch offers", err);
@@ -115,8 +116,8 @@ export default function ApplyOD() {
         if (value) formData.append(key, value);
       });
 
-      const res = await axios.post(
-        "http://localhost:3000/api/od/apply",
+      const res = await api.post(
+        "/od/apply",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" }
@@ -171,66 +172,57 @@ export default function ApplyOD() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Offer <span className="text-red-500">*</span></label>
-            <select
+            <SearchableSelect
+              label="Select Offer"
+              required
+              placeholder={offers.length > 0 ? "Choose your placement offer..." : "Loading offers..."}
               value={form.offerId}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
-              onChange={(e) => {
-                const offerId = e.target.value;
-                const selectedOffer = offers.find(o => o.id === Number(offerId));
-                setForm({ ...form, offerId });
-
+              options={offers.map(o => ({
+                value: String(o.id),
+                label: o.company.name,
+                sublabel: `${o.lpa} LPA • ${o.role || 'Internship'}`,
+                icon: o.company.isApproved ? "✅" : "💼"
+              }))}
+              onChange={(val) => {
+                const selectedOffer = offers.find(o => o.id === Number(val));
+                setForm({ ...form, offerId: val });
                 if (selectedOffer && !selectedOffer.company.isApproved) {
                   setError(`Warning: ${selectedOffer.company.name} is not on the approved list. This OD might be automatically rejected.`);
                 } else {
                   setError("");
                 }
               }}
-            >
-              <option value="">{offers.length > 0 ? "Click to choose" : "Loading offers..."}</option>
-              {offers.filter(o => o.company.isApproved).map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.company.name} ({o.lpa} LPA)
-                </option>
-              ))}
-            </select>
-            {offers.length > 0 && offers.filter(o => o.company.isApproved).length === 0 && (
-              <p className="text-red-500 text-xs mt-1">None of your offers are from approved companies. You are not eligible for OD.</p>
-            )}
-            {offers.length === 0 && (
-              <p className="text-amber-500 text-xs mt-1">No offers found. Please contact the placement cell or admin.</p>
-            )}
+              error={offers.length > 0 && offers.filter(o => o.company.isApproved).length === 0 ? "None of your offers are from approved companies." : ""}
+            />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Industry <span className="text-red-500">*</span></label>
-            <select
+            <SearchableSelect
+              label="Industry"
+              required
+              placeholder="Select sector..."
               value={form.industry}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
-              onChange={(e) =>
-                setForm({ ...form, industry: e.target.value })
-              }
-            >
-              <option value="">Click to choose</option>
-              <option>IT</option>
-              <option>Core</option>
-              <option>Research</option>
-            </select>
+              options={[
+                { value: "IT", label: "IT / Software", sublabel: "Tech & Services", icon: "💻" },
+                { value: "Core", label: "Core Engineering", sublabel: "Mechanical/Electrical/Civil", icon: "⚙️" },
+                { value: "Research", label: "Research & Development", sublabel: "Academic/Lab work", icon: "🧪" }
+              ]}
+              onChange={(val) => setForm({ ...form, industry: val })}
+            />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Campus Type <span className="text-red-500">*</span></label>
-            <select
+            <SearchableSelect
+              label="Campus Type"
+              required
+              placeholder="Select venue..."
               value={form.campusType}
-              className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
-              onChange={(e) =>
-                setForm({ ...form, campusType: e.target.value })
-              }
-            >
-              <option value="">Click to choose</option>
-              <option>On Campus</option>
-              <option>Off Campus</option>
-            </select>
+              options={[
+                { value: "On Campus", label: "On Campus", sublabel: "Hostel/Institute venue", icon: "🏫" },
+                { value: "Off Campus", label: "Off Campus", sublabel: "External office/venue", icon: "🚗" }
+              ]}
+              onChange={(val) => setForm({ ...form, campusType: val })}
+            />
           </div>
 
           <div className="mb-6">

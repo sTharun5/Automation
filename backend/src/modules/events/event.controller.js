@@ -9,7 +9,7 @@ authenticator.options = { step: 30 };
 
 exports.createInternalEvent = async (req, res) => {
     try {
-        const { name, startDate, endDate, allocatedHours, maxParticipants, staffCoordinatorId } = req.body;
+        const { name, startDate, endDate, allocatedHours, maxParticipants, staffCoordinatorId, studentCoordinatorId } = req.body;
 
         if (!name || !startDate || !endDate || !allocatedHours) {
             return res.status(400).json({ message: "Missing required fields" });
@@ -26,6 +26,11 @@ exports.createInternalEvent = async (req, res) => {
             if (!fac) return res.status(400).json({ message: "Staff Coordinator Faculty ID not found" });
         }
 
+        if (studentCoordinatorId) {
+            const stu = await prisma.student.findUnique({ where: { id: parseInt(studentCoordinatorId) } });
+            if (!stu) return res.status(400).json({ message: "Student Coordinator ID not found" });
+        }
+
         const newEvent = await prisma.event.create({
             data: {
                 eventId,
@@ -37,7 +42,8 @@ exports.createInternalEvent = async (req, res) => {
                 qrSecretKey,
                 status: 'ACTIVE',
                 maxParticipants: maxParticipants ? parseInt(maxParticipants) : 0,
-                staffCoordinatorId: staffCoordinatorId ? parseInt(staffCoordinatorId) : null
+                staffCoordinatorId: staffCoordinatorId ? parseInt(staffCoordinatorId) : null,
+                studentCoordinatorId: studentCoordinatorId ? parseInt(studentCoordinatorId) : null
             }
         });
 
@@ -54,7 +60,7 @@ exports.createInternalEvent = async (req, res) => {
 exports.editInternalEvent = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const { name, startDate, endDate, maxParticipants, staffCoordinatorId } = req.body;
+        const { name, startDate, endDate, maxParticipants, staffCoordinatorId, studentCoordinatorId } = req.body;
 
         const event = await prisma.event.findUnique({
             where: { id: parseInt(eventId) }
@@ -67,6 +73,11 @@ exports.editInternalEvent = async (req, res) => {
         if (staffCoordinatorId) {
             const fac = await prisma.faculty.findUnique({ where: { id: parseInt(staffCoordinatorId) } });
             if (!fac) return res.status(400).json({ message: "Staff Coordinator Faculty ID not found" });
+        }
+
+        if (studentCoordinatorId) {
+            const stu = await prisma.student.findUnique({ where: { id: parseInt(studentCoordinatorId) } });
+            if (!stu) return res.status(400).json({ message: "Student Coordinator ID not found" });
         }
 
         const dataToUpdate = {};
@@ -85,6 +96,15 @@ exports.editInternalEvent = async (req, res) => {
             } else {
                 const parsedStaffId = parseInt(staffCoordinatorId);
                 dataToUpdate.staffCoordinatorId = isNaN(parsedStaffId) ? null : parsedStaffId;
+            }
+        }
+
+        if (studentCoordinatorId !== undefined) {
+            if (!studentCoordinatorId || studentCoordinatorId === "") {
+                dataToUpdate.studentCoordinatorId = null;
+            } else {
+                const parsedStudentId = parseInt(studentCoordinatorId);
+                dataToUpdate.studentCoordinatorId = isNaN(parsedStudentId) ? null : parsedStudentId;
             }
         }
 
@@ -122,6 +142,16 @@ exports.getLiveEventQR = async (req, res) => {
             return res.status(404).json({ message: "Internal event not found" });
         }
 
+        // --- RBAC Enforcement ---
+        // Only ADMINs or the assigned staffCoordinator for this event can generate the QR code
+        const { role, id: userId } = req.user;
+        const isAuthorized = role === 'ADMIN' ||
+            (role === 'FACULTY' && event.staffCoordinatorId === userId);
+
+        if (!isAuthorized) {
+            return res.status(403).json({ message: "Only assigned Staff Coordinators or Admins can generate attendance QR." });
+        }
+
         if (event.status !== 'ACTIVE') {
             return res.status(400).json({ message: "Event is no longer active" });
         }
@@ -146,6 +176,7 @@ exports.getLiveEventQR = async (req, res) => {
 
         res.json({
             qrData: qrBase64,
+            otp: token, // ✅ Added OTP
             expiresIn: authenticator.timeRemaining() // Tell frontend when to refresh
         });
 
@@ -175,6 +206,8 @@ exports.getActiveEvents = async (req, res) => {
                 maxParticipants: true,
                 staffCoordinatorId: true,
                 staffCoordinator: { select: { name: true, department: true } },
+                studentCoordinatorId: true,
+                studentCoordinator: { select: { name: true, rollNo: true } },
                 isRosterSubmitted: true,
                 isRosterApproved: true,
                 timeline: true

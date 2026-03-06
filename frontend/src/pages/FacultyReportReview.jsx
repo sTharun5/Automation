@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api, { BASE_URL } from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
@@ -94,7 +94,7 @@ export default function FacultyReportReview() {
                                     <p className="text-sm text-slate-500 mb-4">Submitted on {new Date(report.createdAt).toLocaleDateString()}</p>
 
                                     <a
-                                        href={`http://localhost:3000/${report.fileUrl}`}
+                                        href={`${BASE_URL}/${report.fileUrl}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-2 text-blue-600 hover:underline font-medium text-sm"
