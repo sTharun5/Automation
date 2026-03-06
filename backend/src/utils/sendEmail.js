@@ -1,14 +1,6 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // use SSL
-    auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Send an email
@@ -18,16 +10,21 @@ const transporter = nodemailer.createTransport({
  */
 const sendEmail = async (to, subject, html) => {
     try {
-        const info = await transporter.sendMail({
-            from: `SMART OD <${process.env.MAIL_USER}>`,
+        const { data, error } = await resend.emails.send({
+            from: "SMART OD <onboarding@resend.dev>", // Replace with your domain once verified
             to,
             subject,
             html
         });
-        return info;
+
+        if (error) {
+            console.error("Resend Error:", error);
+            return null;
+        }
+
+        return data;
     } catch (error) {
         console.error("Error sending email:", error);
-        // Don't throw, just log, so it doesn't break the main flow
         return null;
     }
 };

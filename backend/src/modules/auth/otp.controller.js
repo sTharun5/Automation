@@ -1,20 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 const jwt = require("jsonwebtoken");
-
-/* =========================
-   EMAIL TRANSPORT
-========================= */
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // use SSL
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
 
 /* =========================
    OTP EMAIL TEMPLATE
@@ -94,8 +82,8 @@ exports.sendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await transporter.sendMail({
-      from: `SMART OD <${process.env.MAIL_USER}>`,
+    await resend.emails.send({
+      from: "SMART OD <onboarding@resend.dev>",
       to: email,
       subject: "SMART OD Login OTP",
       html: OTP_EMAIL_HTML.replace("{{OTP}}", otp)

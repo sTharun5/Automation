@@ -1,19 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const nodemailer = require("nodemailer");
-
-
-/* =====================================================
-   CONFIGURE EMAIL TRANSPORTER
-   (User needs to provide these env variables)
- ===================================================== */
-const transporter = nodemailer.createTransport({
-    service: "gmail", // Or use 'smtp.host'
-    auth: {
-        user: process.env.MAIL_USER || "your-email@gmail.com",
-        pass: process.env.MAIL_PASS || "your-app-password",
-    },
-});
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* =====================================================
    SUBMIT SUPPORT QUERY
@@ -33,39 +21,36 @@ exports.submitQuery = async (req, res) => {
         const senderId = user.rollNo || user.facultyId || user.email;
         const senderName = user.name || "Unknown User";
 
-        const mailOptions = {
-            from: process.env.MAIL_USER,
+        const payload = {
+            from: "SMART OD <onboarding@resend.dev>",
             to: process.env.ADMIN_EMAIL || "stharun612@gmail.com",
             subject: `[SUPPORT] ${senderRole}: ${subject}`,
             html: `
-            <h3>New Support Query</h3>
-            <p><strong>From:</strong> ${senderName} (${senderId})</p>
-            <p><strong>Role:</strong> ${senderRole}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <hr />
-            <h4>Subject: ${subject}</h4>
-            <p>${description}</p>
-            <hr />
-            <p><em>This query was submitted via the Smart OD Portal.</em></p>
-        `,
+                <h3>New Support Query</h3>
+                <p><strong>From:</strong> ${senderName} (${senderId})</p>
+                <p><strong>Role:</strong> ${senderRole}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <hr />
+                <h4>Subject: ${subject}</h4>
+                <p>${description}</p>
+                <hr />
+                <p><em>This query was submitted via the Smart OD Portal.</em></p>
+            `,
             attachments: []
         };
 
-        // 2. Attach File if exists
         if (file) {
-            mailOptions.attachments.push({
+            const fs = require('fs');
+            payload.attachments.push({
                 filename: file.originalname,
-                path: file.path
+                content: fs.readFileSync(file.path)
             });
         }
 
-        // 3. Send Email
         try {
-            await transporter.sendMail(mailOptions);
+            await resend.emails.send(payload);
         } catch (emailErr) {
-            console.error("EMAIL SEND ERROR:", emailErr);
-            // Continue flow, don't fail user request just because email failed? 
-            // Or fail? Let's log it but notify admin via dashboard at least.
+            console.error("RESEND SEND ERROR:", emailErr);
         }
 
         // 4. Create Dashboard Notification for Admin
