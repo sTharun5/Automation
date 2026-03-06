@@ -1,7 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY);
+const SibApiV3Sdk = require("sib-api-v3-sdk");
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 /* =====================================================
    SUBMIT SUPPORT QUERY
@@ -21,36 +24,37 @@ exports.submitQuery = async (req, res) => {
         const senderId = user.rollNo || user.facultyId || user.email;
         const senderName = user.name || "Unknown User";
 
-        const payload = {
-            from: "SMART OD <onboarding@resend.dev>",
-            to: process.env.ADMIN_EMAIL || "stharun612@gmail.com",
-            subject: `[SUPPORT] ${senderRole}: ${subject}`,
-            html: `
-                <h3>New Support Query</h3>
-                <p><strong>From:</strong> ${senderName} (${senderId})</p>
-                <p><strong>Role:</strong> ${senderRole}</p>
-                <p><strong>Email:</strong> ${user.email}</p>
-                <hr />
-                <h4>Subject: ${subject}</h4>
-                <p>${description}</p>
-                <hr />
-                <p><em>This query was submitted via the Smart OD Portal.</em></p>
-            `,
-            attachments: []
-        };
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+        sendSmtpEmail.subject = `[SUPPORT] ${senderRole}: ${subject}`;
+        sendSmtpEmail.htmlContent = `
+            <h3>New Support Query</h3>
+            <p><strong>From:</strong> ${senderName} (${senderId})</p>
+            <p><strong>Role:</strong> ${senderRole}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <hr />
+            <h4>Subject: ${subject}</h4>
+            <p>${description}</p>
+            <hr />
+            <p><em>This query was submitted via the Smart OD Portal.</em></p>
+        `;
+        sendSmtpEmail.sender = { name: "SMART OD", email: process.env.MAIL_USER };
+        sendSmtpEmail.to = [{ email: process.env.ADMIN_EMAIL || "stharun612@gmail.com" }];
+        sendSmtpEmail.attachments = [];
 
         if (file) {
             const fs = require('fs');
-            payload.attachments.push({
-                filename: file.originalname,
-                content: fs.readFileSync(file.path)
+            const data = fs.readFileSync(file.path);
+            sendSmtpEmail.attachments.push({
+                name: file.originalname,
+                content: data.toString('base64')
             });
         }
 
         try {
-            await resend.emails.send(payload);
+            const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+            console.log("BREVO SUPPORT SUCCESS:", data.messageId);
         } catch (emailErr) {
-            console.error("RESEND SEND ERROR:", emailErr);
+            console.error("BREVO SUPPORT ERROR:", emailErr.response?.body || emailErr.message);
         }
 
         // 4. Create Dashboard Notification for Admin

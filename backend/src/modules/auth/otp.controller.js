@@ -1,8 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY);
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../../utils/sendEmail");
 
 /* =========================
    OTP EMAIL TEMPLATE
@@ -82,24 +81,19 @@ exports.sendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const { data, error } = await resend.emails.send({
-      from: "SMART OD <onboarding@resend.dev>",
-      to: email,
-      subject: "SMART OD Login OTP",
-      html: OTP_EMAIL_HTML.replace("{{OTP}}", otp)
-    });
+    const result = await sendEmail(
+      email,
+      "SMART OD Login OTP",
+      OTP_EMAIL_HTML.replace("{{OTP}}", otp)
+    );
 
-    if (error) {
-      console.error("RESEND ERROR (SDK):", error);
-      // If it's the Resend "onboarding" restriction, we should know
+    if (!result) {
       return res.status(500).json({
-        message: "Email delivery failed",
-        error: error.message,
-        details: "If using Resend Free Tier, you can only send to your own registered email address."
+        message: "Email delivery failed. Please check Render logs."
       });
     }
 
-    console.log("RESEND SUCCESS:", data);
+    console.log("OTP Email Sent via Brevo");
 
     await prisma.emailotp.deleteMany({ where: { email } });
 
