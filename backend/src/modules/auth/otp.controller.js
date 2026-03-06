@@ -82,12 +82,24 @@ exports.sendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: "SMART OD <onboarding@resend.dev>",
       to: email,
       subject: "SMART OD Login OTP",
       html: OTP_EMAIL_HTML.replace("{{OTP}}", otp)
     });
+
+    if (error) {
+      console.error("RESEND ERROR (SDK):", error);
+      // If it's the Resend "onboarding" restriction, we should know
+      return res.status(500).json({
+        message: "Email delivery failed",
+        error: error.message,
+        details: "If using Resend Free Tier, you can only send to your own registered email address."
+      });
+    }
+
+    console.log("RESEND SUCCESS:", data);
 
     await prisma.emailotp.deleteMany({ where: { email } });
 
