@@ -9,25 +9,41 @@ A specialized automated platform for **Bannari Amman Institute of Technology (BI
 
 ---
 
-## 🚀 Key Features
+## 🌟 Key Features
 
 ### 🛡️ Smart Verification (OCR)
-- **AI-Powered**: Automatically parses uploaded PDF documents to verify student names, roll numbers, and dates.
-- **OCR Engine**: Uses advanced PDF parsing to cross-check application data against official documents.
+- **AI-Powered Parsing**: Automatically extracts text from uploaded PDF certificates to verify student names, roll numbers, and dates against application data.
+- **Fraud Prevention**: Rejects applications with mismatched or suspicious document data instantly.
 
-### 📊 Role-Based Dashboards
-- **Student**: Apply for OD, upload certificates, and track real-time approval status.
-- **Faculty/Mentor**: Review student applications, approve/reject based on validity, and manage student attendance logs.
-- **Admin**: Complete system overview, coordinator management, and event organization.
+### 📊 Multirole Dashboards
+- **Student Dashboard**: Apply for OD, upload proof, track approval progress, and view attendance history.
+- **Faculty/Mentor Dashboard**: Manage mentees, review OD requests, mark attendance manually, and track placement progress.
+- **Admin Dashboard**: Comprehensive control over events, user roles, faculty assignments, and system-wide reports.
 
-### ✉️ Real-Time Notifications
-- **Email OTPs**: Secure login system for students and staff via **Brevo API**.
-- **Instant Alerts**: Get notified immediately when an OD is applied for or its status changes.
-- **Socket.io Migration**: (Planned) Real-time live dashboard updates.
+### ✉️ Unrestricted Notification System
+- **Transactional OTPs**: Secure login for any student or staff member using the **Brevo API**.
+- **Email Alerts**: Automatic email notifications for OD approval/rejection and coordinator assignments.
 
-### 📱 Responsive UI
-- **Zenith Design System**: Professional, high-fidelity UI optimized for both desktop and mobile.
-- **Dark/Light Mode**: Premium aesthetics with smooth transitions.
+### 📅 Advanced Event Management
+- **Internal & External Events**: Create and manage college events with dedicated coordinators.
+- **Coordinator Logic**: Assign and track student coordinators with specific permissions.
+
+### 📈 Analytics & Reporting
+- **Placement Tracking**: Monitor student placement cycles and status in real-time.
+- **Detailed Reports**: Generate and export system-wide reports for OD history and student performance.
+
+### 🗓️ Smart Academic Calendar
+- **Event Syncing**: Integrated calendar showing holidays, events, and important deadlines.
+- **Schedule Management**: Keep students and staff aligned with college-wide schedules.
+
+### 📱 Premium Interactive UI
+- **Zenith Design System**: High-fidelity, modern UI built with **Framer Motion** for smooth animations and transitions.
+- **Responsive Layout**: Optimized for desktop, tablets, and smartphones.
+- **Interactive Attendance**: Live QR-code based or manual attendance tracking modules.
+
+### 🆘 Integrated Support Helpdesk
+- **Query Management**: Students and faculty can submit support queries directly from the dashboard.
+- **Attachment Support**: Send screenshots or videos along with support tickets for faster resolution.
 
 ---
 
@@ -40,15 +56,15 @@ A specialized automated platform for **Bannari Amman Institute of Technology (BI
 | **Database** | PostgreSQL (Supabase) |
 | **Email** | Brevo API (Transactional Emails) |
 | **Auth** | JWT (Stateless Authentication) + HttpOnly Cookies |
-| **Tools** | Axios, PDF-Parse, XLSX, Recharts |
+| **Tools** | Axios, PDF-Parse, XLSX, Recharts, Leaflet |
 
 ---
 
 ## 🏗️ Project Structure
 
 ```bash
-├── frontend    # React application (Vite)
-└── backend     # Express.js API + Prisma Schema
+├── frontend    # React application (Vite + Tailwind)
+└── backend     # Express.js API + Prisma Schema + OCR Engine
 ```
 
 ---
@@ -65,11 +81,8 @@ cd Automation
 ```bash
 cd backend
 npm install
-# Create a .env file with:
-# DATABASE_URL="your_supabase_url"
-# JWT_SECRET="your_secret"
-# BREVO_API_KEY="your_brevo_key"
-# MAIL_USER="your_verified_email"
+# Configure your .env:
+# DATABASE_URL, JWT_SECRET, BREVO_API_KEY, MAIL_USER
 npm run dev
 ```
 
@@ -82,12 +95,9 @@ npm run dev
 
 ---
 
-## 🌐 Deployment Details
-
-| Link | Description |
-| :--- | :--- |
-| **Frontend** | [Vercel](https://automation-cx9ztyhni.vercel.app) |
-| **Backend** | [Render](https://automation-f8jn.onrender.com) |
+## 🌐 Deployment
+- **Frontend**: Hosted on [Vercel](https://automation-cx9ztyhni.vercel.app)
+- **Backend**: Hosted on [Render](https://automation-f8jn.onrender.com)
 
 ---
 
