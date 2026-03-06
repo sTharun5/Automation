@@ -6,6 +6,9 @@ const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
 
+// Trust the proxy (Render) so rate limiting works correctly
+app.set("trust proxy", 1);
+
 const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
