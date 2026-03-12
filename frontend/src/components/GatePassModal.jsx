@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import QRCode from "react-qr-code"; // Ensure react-qr-code is installed!
 import SearchableSelect from "./SearchableSelect";
+import {
+    Ticket,
+    Inbox,
+    X
+} from "lucide-react";
 
 export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
     const [selectedOd, setSelectedOd] = useState(null);
@@ -25,13 +30,11 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                         onClick={onClose}
                         className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition-colors"
                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="w-5 h-5" />
                     </button>
 
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center mb-3 shadow-[0_4px_20px_rgb(0,0,0,0.1)] border border-white/20">
-                        <span className="text-3xl">🎫</span>
+                        <Ticket className="w-8 h-8 text-white/80" />
                     </div>
                     <h2 className="text-xl font-bold text-white tracking-tight">Digital Gate Pass</h2>
                     <p className="text-sm text-indigo-100 font-medium opacity-90">Show this to your Subject Teacher</p>
@@ -42,7 +45,7 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                     {provisionalOds.length === 0 ? (
                         <div className="text-center py-6">
                             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl opacity-50">📭</span>
+                                <Inbox className="w-8 h-8 opacity-50" />
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 font-medium">No active Gate Passes found.</p>
                         </div>

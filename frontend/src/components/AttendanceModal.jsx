@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import {
+    Camera,
+    X
+} from 'lucide-react';
 
 export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess }) {
     const { showToast } = useToast();
@@ -199,7 +203,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                     onClick={() => { stopScanner(); onClose(); }}
                     className="absolute top-6 right-6 p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 rounded-full transition-all"
                 >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                    <X className="w-5 h-5" />
                 </button>
 
                 <div className="text-center mb-8">
@@ -223,7 +227,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                     {!isScanning && !processingScan && (
                         <div className="absolute inset-0 z-10 bg-slate-800 flex flex-col items-center justify-center p-8 text-center gap-4">
                             <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-700">
-                                <span className="text-4xl">📸</span>
+                                <Camera className="w-10 h-10 text-slate-400" />
                             </div>
                             <div className="space-y-2">
                                 <p className="text-sm font-bold text-white">Camera Permission Needed</p>

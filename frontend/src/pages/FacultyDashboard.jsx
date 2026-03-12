@@ -5,6 +5,16 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProfileCard from "../components/ProfileCard";
 import GatePassScannerModal from "../components/GatePassScannerModal"; // ✅ Added Gate Pass Scanner
+import {
+  QrCode,
+  Calendar,
+  CheckCircle,
+  FileEdit,
+  FileText,
+  Users,
+  ChevronRight,
+  GraduationCap
+} from "lucide-react";
 
 export default function FacultyDashboard() {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -55,40 +65,52 @@ export default function FacultyDashboard() {
                   className="w-full flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100 transition-all font-bold shadow-sm hover:shadow-emerald-500/20"
                 >
                   <span className="flex items-center tracking-tight">
-                    <svg className="w-5 h-5 mr-2 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                    <QrCode className="w-5 h-5 mr-2 opacity-80" />
                     Scan Gate Pass
                   </span>
-                  <span className="opacity-60">→</span>
+                  <ChevronRight className="w-5 h-5 opacity-60" />
                 </button>
 
                 <button
                   onClick={() => navigate("/faculty/events")}
                   className="w-full flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 transition-all font-semibold"
                 >
-                  <span>📅 Manage Events</span>
-                  <span>→</span>
+                  <span className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    Manage Events
+                  </span>
+                  <ChevronRight className="w-5 h-5 opacity-60" />
                 </button>
 
                 <button
                   onClick={() => navigate("/faculty/approvals")}
                   className="w-full flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-900 dark:text-blue-100 transition-all font-semibold"
                 >
-                  <span>✅ Approve ODs</span>
-                  <span>→</span>
+                  <span className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    Approve ODs
+                  </span>
+                  <ChevronRight className="w-5 h-5 opacity-60" />
                 </button>
                 <button
                   onClick={() => navigate("/faculty/update-placement")}
                   className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white transition-all font-semibold"
                 >
-                  <span>📋 Update Placement</span>
-                  <span>→</span>
+                  <span className="flex items-center gap-2">
+                    <FileEdit className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    Update Placement
+                  </span>
+                  <ChevronRight className="w-5 h-5 opacity-60" />
                 </button>
                 <button
                   onClick={() => navigate("/faculty/reports")}
                   className="w-full flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-900 dark:text-purple-100 transition-all font-semibold"
                 >
-                  <span>📄 Review Reports</span>
-                  <span>→</span>
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    Review Reports
+                  </span>
+                  <ChevronRight className="w-5 h-5 opacity-60" />
                 </button>
               </div>
             </div>
@@ -98,7 +120,7 @@ export default function FacultyDashboard() {
                 <p className="text-blue-100 text-sm font-medium">Active Mentees</p>
                 <h3 className="text-4xl font-black mt-1">{mentees.length}</h3>
               </div>
-              <span className="absolute -bottom-4 -right-4 text-7xl opacity-10 group-hover:scale-110 transition-transform duration-700">👨‍🎓</span>
+              <Users className="absolute -bottom-4 -right-4 w-20 h-20 opacity-10 group-hover:scale-110 transition-transform duration-700" />
             </div>
 
             <ProfileCard student={user} />
@@ -142,7 +164,7 @@ export default function FacultyDashboard() {
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{student.rollNo}</p>
                         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                           <span className="text-[10px] text-slate-400 font-medium">Click for details</span>
-                          <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                          <ChevronRight className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
                     ))}

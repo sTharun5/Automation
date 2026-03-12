@@ -1,4 +1,8 @@
 import { useEffect } from "react";
+import {
+    AlertTriangle,
+    Info
+} from "lucide-react";
 
 export default function ConfirmationModal({
     isOpen,
@@ -47,7 +51,7 @@ export default function ConfirmationModal({
                             ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                             : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                             }`}>
-                            {isDanger ? "⚠️" : "ℹ️"}
+                            {isDanger ? <AlertTriangle className="w-5 h-5" /> : <Info className="w-5 h-5" />}
                         </span>
                         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                             {title}

@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import {
+    ArrowLeft,
+    Folder,
+    CheckCircle,
+    Clock,
+    ChevronRight
+} from "lucide-react";
 
 export default function ODHistory() {
     const [ods, setOds] = useState([]);
@@ -54,7 +61,7 @@ export default function ODHistory() {
                             to="/student/dashboard"
                             className="inline-flex items-center justify-center bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500 transition-colors"
                         >
-                            ←
+                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         </Link>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">OD History Archive</h1>
@@ -66,19 +73,19 @@ export default function ODHistory() {
                         <StatCard
                             label="Total Applications"
                             value={totalODs}
-                            icon="📂"
+                            icon={<Folder className="w-6 h-6" />}
                             color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
                         />
                         <StatCard
                             label="Approved ODs"
                             value={approvedODs}
-                            icon="✅"
+                            icon={<CheckCircle className="w-6 h-6" />}
                             color="text-green-600 bg-green-50 dark:bg-green-900/20"
                         />
                         <StatCard
                             label="Days Utilized"
                             value={`${totalDays} Days`}
-                            icon="⏳"
+                            icon={<Clock className="w-6 h-6" />}
                             color="text-purple-600 bg-purple-50 dark:bg-purple-900/20"
                         />
                     </div>
@@ -146,7 +153,7 @@ export default function ODHistory() {
                                                     to={`/student/od/${od.id}`}
                                                     className="font-bold text-blue-600 hover:text-blue-500 text-xs"
                                                 >
-                                                    View →
+                                                    View <ChevronRight className="w-3 h-3" />
                                                 </Link>
                                             </td>
                                         </tr>

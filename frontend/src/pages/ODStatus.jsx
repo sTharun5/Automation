@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import {
+    ArrowLeft,
+    ChevronRight,
+    CheckCircle,
+    Info,
+    AlertCircle,
+    Clock,
+    CheckCircle2,
+    XCircle
+} from "lucide-react";
 
 export default function ODStatus() {
     const [activeODs, setActiveODs] = useState([]);
@@ -44,7 +54,7 @@ export default function ODStatus() {
                             to="/student/dashboard"
                             className="inline-flex items-center justify-center bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500 transition-colors"
                         >
-                            ←
+                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         </Link>
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Live OD Tracker</h1>
@@ -85,9 +95,9 @@ export default function ODStatus() {
                                     </div>
                                     <Link
                                         to={`/student/od/${od.id}`}
-                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                        className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                                     >
-                                        View Details →
+                                        View Details <ChevronRight className="w-3 h-3" />
                                     </Link>
                                 </div>
 
@@ -121,8 +131,8 @@ export default function ODStatus() {
                                     ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
                                     : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800'
                                     }`}>
-                                    <div className="text-xl">
-                                        {od.status === 'REJECTED' ? '❌' : 'ℹ️'}
+                                    <div className="shrink-0">
+                                        {od.status === 'REJECTED' ? <XCircle className="w-5 h-5 text-red-500" /> : <Info className="w-5 h-5 text-blue-500" />}
                                     </div>
                                     <div>
                                         <h4 className={`font-bold text-sm mb-1 ${od.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
@@ -138,7 +148,9 @@ export default function ODStatus() {
                     </div>
                 ) : (
                     <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
-                        <div className="text-5xl mb-4">✅</div>
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        </div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">All Caught Up!</h3>
                         <p className="text-slate-500 dark:text-slate-400 mb-6">You have no pending applications directly requiring your attention.</p>
                         <Link
@@ -182,20 +194,20 @@ function Step({ label, status }) {
     if (status === "completed") {
         circleClass = "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/30";
         textClass = "text-green-600 dark:text-green-400";
-        icon = "✓";
+        icon = <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />;
     } else if (status === "current") {
         circleClass = "bg-blue-600 border-blue-600 text-white animate-pulse shadow-lg shadow-blue-500/30";
         textClass = "text-blue-600 dark:text-blue-400";
-        icon = "●";
+        icon = <Clock className="w-4 h-4 md:w-5 md:h-5" />;
     } else if (status === "rejected") {
         circleClass = "bg-red-500 border-red-500 text-white";
         textClass = "text-red-600 dark:text-red-400";
-        icon = "✕";
+        icon = <XCircle className="w-4 h-4 md:w-5 md:h-5" />;
     } else if (status === "waiting") {
         // waiting for this step to start
         circleClass = "bg-slate-100 border-slate-200 text-slate-400 dark:bg-slate-800 dark:border-slate-700";
         textClass = "text-slate-400 dark:text-slate-500";
-        icon = "○";
+        icon = <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />;
     }
 
     return (

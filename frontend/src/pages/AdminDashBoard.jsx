@@ -8,6 +8,18 @@ import ProfileCard from "../components/ProfileCard";
 import ConfirmationModal from "../components/ConfirmationModal";
 import CalendarManagementModal from "../components/CalendarManagementModal";
 import PlacementMapWidget from "../components/PlacementMapWidget";
+import {
+  Calendar,
+  Users,
+  BarChart3,
+  Loader2,
+  GraduationCap,
+  Building2,
+  ShieldAlert,
+  CalendarCheck,
+  Globe,
+  ChevronRight
+} from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -63,20 +75,20 @@ export default function AdminDashboard() {
               onClick={() => setShowCalendarModal(true)}
               className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20"
             >
-              <span>📅</span> Manage Calendar
+              <Calendar className="w-5 h-5" /> Manage Calendar
             </button>
             <button
               onClick={() => navigate("/admin/assign-mentor")}
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20"
             >
-              <span>🤝</span> Manage Mentors
+              <Users className="w-5 h-5" /> Manage Mentors
             </button>
             <button
               onClick={handleExportExcel}
               disabled={exporting}
               className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg text-white ${exporting ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'}`}
             >
-              <span>{exporting ? '⏳' : '📊'}</span> {exporting ? 'Exporting...' : 'Export Excel'}
+              {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <BarChart3 className="w-5 h-5" />} {exporting ? 'Exporting...' : 'Export Excel'}
             </button>
           </div>
         </div>
@@ -96,8 +108,10 @@ export default function AdminDashboard() {
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="text-3xl bg-blue-50 dark:bg-blue-900/30 p-2 rounded-xl">👨‍🏫</span>
-                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-xl text-blue-600 dark:text-blue-400">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Faculty</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Add, Remove and View Faculty Members.</p>
@@ -108,8 +122,10 @@ export default function AdminDashboard() {
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="text-3xl bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-xl">🎓</span>
-                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-xl text-indigo-600 dark:text-indigo-400">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Students</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Examine all students and their assigned mentors.</p>
@@ -120,8 +136,10 @@ export default function AdminDashboard() {
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="text-3xl bg-amber-50 dark:bg-amber-900/30 p-2 rounded-xl">🏢</span>
-                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="bg-amber-50 dark:bg-amber-900/30 p-2 rounded-xl text-amber-600 dark:text-amber-400">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage Companies</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Approve or reject companies for OD requests.</p>
@@ -134,8 +152,10 @@ export default function AdminDashboard() {
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="text-3xl bg-rose-50 dark:bg-rose-900/30 p-2 rounded-xl">🛑</span>
-                  <span className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="bg-rose-50 dark:bg-rose-900/30 p-2 rounded-xl text-rose-600 dark:text-rose-400">
+                    <ShieldAlert className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Manage OD Requests</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Search, View and Cancel Student ODs.</p>
@@ -148,8 +168,10 @@ export default function AdminDashboard() {
                 className="group bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-3xl shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden text-white"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="text-3xl bg-white/20 backdrop-blur-sm p-2 rounded-xl">🎭</span>
-                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
+                    <CalendarCheck className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <h3 className="text-xl font-bold mb-1 relative z-10">Internal Events</h3>
                 <p className="text-sm text-indigo-100 relative z-10">Create auto-approved internal events and project Live QRs.</p>
@@ -177,7 +199,7 @@ export default function AdminDashboard() {
             {/* Interactive Placement Hotspot Map */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm transition-colors mt-6">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                🌍 Global Placement Footprint
+                <Globe className="w-5 h-5" /> Global Placement Footprint
               </h3>
               <PlacementMapWidget />
             </div>

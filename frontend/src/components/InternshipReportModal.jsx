@@ -3,6 +3,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import {
+    FileText,
+    CheckCircle,
+    UploadCloud
+} from 'lucide-react';
 
 export default function InternshipReportModal({ isOpen, onClose, pendingODs = [], onUploadSuccess }) {
     const [file, setFile] = useState(null);
@@ -69,7 +74,7 @@ export default function InternshipReportModal({ isOpen, onClose, pendingODs = []
                 >
                     <div className="text-center mb-6">
                         <div className="mx-auto bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <span className="text-2xl">📄</span>
+                            <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                         </div>
                         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Submit Internship Report</h2>
                         <p className="text-sm text-slate-500 mt-2">
@@ -106,11 +111,12 @@ export default function InternshipReportModal({ isOpen, onClose, pendingODs = []
                                 />
                                 {file ? (
                                     <div className="flex items-center justify-center gap-2 text-blue-600 font-medium">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                        <FileText className="w-5 h-5" />
                                         <span className="truncate max-w-[200px]">{file.name}</span>
                                     </div>
                                 ) : (
                                     <div className="text-slate-500">
+                                        <UploadCloud className="w-8 h-8 mx-auto mb-2 text-slate-400 group-hover:text-blue-500 transition-colors" />
                                         <p className="font-medium">Click to upload PDF</p>
                                         <p className="text-xs mt-1">Max size 5MB</p>
                                     </div>
@@ -135,7 +141,7 @@ export default function InternshipReportModal({ isOpen, onClose, pendingODs = []
                     ) : (
                         <div className="space-y-6 text-center">
                             <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-6">
-                                <span className="text-4xl mb-3 block">✅</span>
+                                <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
                                 <h3 className="font-bold text-emerald-900 dark:text-emerald-100 mb-2">All Caught Up!</h3>
                                 <p className="text-sm text-emerald-700 dark:text-emerald-300">
                                     You don't have any pending internship reports to submit at this time. Great job staying on track!
