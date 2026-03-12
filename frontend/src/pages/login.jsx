@@ -204,12 +204,12 @@ export default function Login() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
                 />
               </div>
               <button
                 onClick={sendOTP}
-                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
               >
                 <Zap className="w-4 h-4" /> Send OTP
               </button>
@@ -228,7 +228,7 @@ export default function Login() {
                     value={digit}
                     onChange={(e) => handleOtpChange(e.target.value, i)}
                     onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                    className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-bold border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-bold border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 ))}
               </div>
@@ -254,7 +254,7 @@ export default function Login() {
               <button
                 onClick={() => verifyOTP(otp.join(""))}
                 disabled={otp.join("").length !== 6}
-                className={`w-full mt-4 py-3 rounded-lg font-semibold
+                className={`w-full mt-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2
                   ${otp.join("").length === 6
                     ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
