@@ -5,6 +5,18 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import {
+    ArrowLeft,
+    Mailbox,
+    CheckCircle2,
+    FileSpreadsheet,
+    Plus,
+    X,
+    Clock,
+    User,
+    Calendar,
+    Award
+} from 'lucide-react';
 
 export default function StudentEvents() {
     const { showToast } = useToast();
@@ -143,7 +155,7 @@ export default function StudentEvents() {
             <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
                 <div className="mb-8">
                     <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-indigo-600 mb-2 flex items-center gap-1 transition-colors text-sm font-bold uppercase tracking-wider">
-                        ← Back
+                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                     <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Coordinator Portal</h1>
                     <p className="text-slate-600 dark:text-slate-400 font-medium">Draft and submit participant rosters for your assigned events.</p>
@@ -154,7 +166,7 @@ export default function StudentEvents() {
                         <div className="py-20 text-center animate-pulse font-bold text-slate-400 uppercase tracking-widest">Loading Your Events...</div>
                     ) : events.length === 0 ? (
                         <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                            <span className="text-5xl block mb-4">📭</span>
+                            <Mailbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                             <p className="text-slate-500 font-bold uppercase tracking-wider">You haven't been assigned to coordinate any active events.</p>
                         </div>
                     ) : (
@@ -195,7 +207,7 @@ export default function StudentEvents() {
                                         {event.isRosterApproved ? (
                                             <div className="space-y-4 mt-6">
                                                 <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl flex items-center gap-3">
-                                                    <span className="text-3xl">✅</span>
+                                                    <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0" />
                                                     <div>
                                                         <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Roster Approved & Locked</p>
                                                         <p className="text-xs font-medium text-emerald-700/70 dark:text-emerald-500/70 mt-1">Staff has locked the roster. Digital Passes are live.</p>
@@ -211,7 +223,7 @@ export default function StudentEvents() {
                                                     <div>
                                                         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 dark:border-slate-600 border-dashed rounded-xl cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <span className="text-3xl mb-2">📊</span>
+                                                                <FileSpreadsheet className="w-10 h-10 text-emerald-500 mb-2" />
                                                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-bold"><span className="text-indigo-600 dark:text-indigo-400">Click to upload</span> an Excel file</p>
                                                                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Automatic Roll Number extraction</p>
                                                             </div>
@@ -235,9 +247,9 @@ export default function StudentEvents() {
                                                         />
                                                         <button
                                                             onClick={() => handleManualAdd(event.id)}
-                                                            className="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shrink-0"
+                                                            className="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shrink-0 flex items-center gap-2"
                                                         >
-                                                            + Add
+                                                            <Plus className="w-4 h-4" /> Add
                                                         </button>
                                                     </div>
                                                 </div>
@@ -278,7 +290,7 @@ export default function StudentEvents() {
                                                                 className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 title="Remove Student"
                                                             >
-                                                                ✕
+                                                                <X className="w-4 h-4" />
                                                             </button>
                                                         )}
                                                     </div>

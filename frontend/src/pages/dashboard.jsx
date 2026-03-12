@@ -275,11 +275,11 @@ export default function Dashboard() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="flex-1 space-y-4">
                     <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
-                      <Zap className="w-4 h-4" />
-                      <span>Disha AI 2.0</span>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Disha AI Smart Assistant</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-2">Automated Application Workflow</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">Automated Workflow Engine</h3>
                       <p className="text-sm text-slate-400 leading-relaxed max-w-lg">
                         Use natural language commands in the chat assistant to instantly generate OD requests.
                         Supported on all active chat sessions.

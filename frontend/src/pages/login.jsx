@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import logo from "../assets/bit-logo.jpg";
 import bg from "../assets/campus.jpg";
+import {
+  Mail,
+  ShieldCheck,
+  Loader2,
+  CheckCircle2,
+  Timer,
+  RefreshCcw,
+  Zap,
+  Lock
+} from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -167,8 +177,8 @@ export default function Login() {
 
       {/* LOADER */}
       {loading && (
-        <div className="absolute inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="w-14 h-14 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
+          <Loader2 className="w-14 h-14 text-white animate-spin" />
         </div>
       )}
 
@@ -187,18 +197,21 @@ export default function Login() {
         <div className="p-6 space-y-5">
           {step === 1 && (
             <>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                />
+              </div>
               <button
                 onClick={sendOTP}
                 className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
               >
-                Send OTP
+                <Zap className="w-4 h-4" /> Send OTP
               </button>
             </>
           )}
@@ -222,7 +235,11 @@ export default function Login() {
 
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600 dark:text-slate-400">
-                  {canResend ? "Didn't get OTP?" : `Resend in ${seconds}s`}
+                  {canResend ? "Didn't get OTP?" : (
+                    <span className="flex items-center gap-1.5">
+                      <Timer className="w-3.5 h-3.5" /> Resend in {seconds}s
+                    </span>
+                  )}
                 </span>
                 <button
                   onClick={resendOTP}
@@ -243,7 +260,7 @@ export default function Login() {
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
               >
-                Verify & Login
+                <ShieldCheck className="w-5 h-5" /> Verify & Login
               </button>
             </>
           )}
@@ -252,8 +269,8 @@ export default function Login() {
 
           {success && (
             <div className="flex justify-center">
-              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white text-xl">
-                ✓
+              <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
             </div>
           )}

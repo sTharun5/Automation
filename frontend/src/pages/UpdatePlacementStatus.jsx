@@ -5,6 +5,17 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import {
+  ArrowLeft,
+  Calendar,
+  History,
+  Trash2,
+  Briefcase,
+  GraduationCap,
+  Building2,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 
 export default function UpdatePlacementStatus() {
   const navigate = useNavigate();
@@ -180,9 +191,9 @@ export default function UpdatePlacementStatus() {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-black uppercase tracking-widest text-xs"
         >
-          <span>←</span> Back
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -275,7 +286,9 @@ export default function UpdatePlacementStatus() {
                       placeholder="DD-MM-YYYY"
                       className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 pr-10 cursor-pointer text-slate-900 dark:text-white"
                     />
-                    <span className="absolute right-3 top-3 text-slate-500 dark:text-slate-400">📅</span>
+                    <span className="absolute right-3 top-3 text-slate-400 pointer-events-none">
+                      <Calendar className="w-5 h-5" />
+                    </span>
                     <input
                       ref={dateRef}
                       type="date"
@@ -302,8 +315,8 @@ export default function UpdatePlacementStatus() {
 
           {/* Right Sidebar: History */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors h-fit">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-              <span>🕒</span> Placement History
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+              <History className="w-5 h-5 text-indigo-500" /> Placement History
             </h3>
             {!selectedStudent ? (
               <p className="text-sm text-slate-500 italic">Select a student to view history</p>
@@ -313,10 +326,10 @@ export default function UpdatePlacementStatus() {
                   <div key={idx} className="group/offer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 relative">
                     <button
                       onClick={() => handleRemoveOffer(offer.id)}
-                      className="absolute top-2 right-2 text-red-500 opacity-0 group-hover/offer:opacity-100 transition-opacity p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                      className="absolute top-2 right-2 text-red-500 opacity-0 group-hover/offer:opacity-100 transition-all p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                       title="Delete Offer"
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </button>
                     <p className="font-bold text-slate-900 dark:text-white pr-6">{offer.company.name}</p>
                     <div className="flex justify-between items-center mt-1">

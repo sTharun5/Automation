@@ -357,7 +357,7 @@ export default function Hero({ student, dashboardData }) {
                 <p className="text-xs text-slate-500 dark:text-slate-400">Select how you want to submit your OD request</p>
               </div>
               <button onClick={() => setShowApplyModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1">
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

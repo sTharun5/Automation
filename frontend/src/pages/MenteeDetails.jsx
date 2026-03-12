@@ -5,6 +5,22 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import {
+    ArrowLeft,
+    Briefcase,
+    Trash2,
+    Phone,
+    FileText,
+    Building2,
+    GraduationCap,
+    CheckCircle2,
+    Clock,
+    XCircle,
+    Mail,
+    UserPlus,
+    UserMinus,
+    AlertCircle
+} from "lucide-react";
 
 export default function MenteeDetails() {
     const { studentId } = useParams();
@@ -106,9 +122,9 @@ export default function MenteeDetails() {
                 <div className="flex items-center gap-4 mb-8">
                     <button
                         onClick={() => navigate(-1)}
-                        className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm"
+                        className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                     >
-                        ←
+                        <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white capitalize">{student.name}</h1>
@@ -120,8 +136,8 @@ export default function MenteeDetails() {
                     {/* PLACEMENT INFO */}
                     <div className="md:col-span-1 space-y-6">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                                💼 Placement Status
+                            <h2 className="text-lg font-black text-slate-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-tight">
+                                <Briefcase className="w-5 h-5 text-blue-500" /> Placement Status
                             </h2>
                             {student.placement_status === "NIP" ? (
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
@@ -139,10 +155,10 @@ export default function MenteeDetails() {
                                         <div key={offer.id} className={`${idx > 0 ? "pt-4 border-t border-slate-100 dark:border-slate-800" : ""} group relative`}>
                                             <button
                                                 onClick={() => handleRemoveOffer(offer.id)}
-                                                className="absolute top-0 right-0 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                                className="absolute top-0 right-0 text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                                                 title="Delete Offer"
                                             >
-                                                🗑️
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                             <p className="text-xs text-slate-500 uppercase font-bold">Offer {student.offers.length > 1 ? idx + 1 : ""}</p>
                                             <p className="text-slate-900 dark:text-white font-semibold pr-6">{offer.company.name}</p>
@@ -174,8 +190,8 @@ export default function MenteeDetails() {
                                 <p className="text-sm">
                                     <span className="text-slate-500 block">Parent Phone</span>
                                     {student.parentPhone ? (
-                                        <a href={`tel:${student.parentPhone}`} className="text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1">
-                                            📞 {student.parentPhone}
+                                        <a href={`tel:${student.parentPhone}`} className="text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-2">
+                                            <Phone className="w-3.5 h-3.5" /> {student.parentPhone}
                                         </a>
                                     ) : (
                                         <span className="text-slate-400 italic">Not Provided</span>
@@ -188,8 +204,8 @@ export default function MenteeDetails() {
                     {/* OD HISTORY */}
                     <div className="md:col-span-2">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-full">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                📑 OD Application History
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+                                <FileText className="w-6 h-6 text-indigo-500" /> OD Application History
                             </h2>
 
                             <div className="space-y-4 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
@@ -244,8 +260,8 @@ export default function MenteeDetails() {
                         {/* COORDINATED EVENTS */}
                         {student.coordinatedEvents?.length > 0 && (
                             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                    🏢 Coordinated Events
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+                                    <Building2 className="w-6 h-6 text-emerald-500" /> Coordinated Events
                                 </h2>
                                 <div className="space-y-4">
                                     {student.coordinatedEvents.map((event) => {
@@ -267,9 +283,9 @@ export default function MenteeDetails() {
                                                     {isStaffCoordinator && (
                                                         <button
                                                             onClick={() => handleRevokeCoordinator(event.id)}
-                                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30"
+                                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30 flex items-center gap-1.5"
                                                         >
-                                                            Revoke Access
+                                                            <UserMinus className="w-3 h-3" /> Revoke Access
                                                         </button>
                                                     )}
                                                 </div>

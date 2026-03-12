@@ -1,5 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import {
+    CheckCircle2,
+    XCircle,
+    Info,
+    AlertTriangle,
+    X
+} from "lucide-react";
 
 const ToastContext = createContext();
 
@@ -46,10 +53,10 @@ const ToastCard = ({ toast, onClose }) => {
     const { message, type } = toast;
 
     const icons = {
-        success: '✅',
-        error: '❌',
-        info: 'ℹ️',
-        warning: '⚠️'
+        success: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+        error: <XCircle className="w-5 h-5 text-red-500" />,
+        info: <Info className="w-5 h-5 text-blue-500" />,
+        warning: <AlertTriangle className="w-5 h-5 text-amber-500" />
     };
 
     const colors = {
@@ -69,9 +76,9 @@ const ToastCard = ({ toast, onClose }) => {
             <p className="flex-1 font-medium text-sm">{message}</p>
             <button
                 onClick={onClose}
-                className="text-current opacity-50 hover:opacity-100 transition-opacity"
+                className="text-current opacity-50 hover:opacity-100 transition-opacity p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"
             >
-                ✕
+                <X className="w-4 h-4" />
             </button>
         </div>
     );

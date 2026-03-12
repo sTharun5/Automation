@@ -7,6 +7,20 @@ import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import {
+    ArrowLeft,
+    Plus,
+    Building2,
+    MapPin,
+    Search,
+    Edit3,
+    Trash2,
+    CheckCircle2,
+    XCircle,
+    RotateCcw,
+    X,
+    Building
+} from "lucide-react";
 
 export default function ManageCompanies() {
     const navigate = useNavigate();
@@ -157,13 +171,15 @@ export default function ManageCompanies() {
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
                     >
-                        ← Back
+                        <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" /> Back
                     </button>
                 </div>
 
                 {/* Add Company Form */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 transition-colors">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add New Company</h3>
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        <Plus className="w-3.5 h-3.5" /> Add New Company
+                    </h3>
                     <form onSubmit={handleAddCompany} className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 flex flex-col sm:flex-row gap-4">
                             <input
@@ -185,7 +201,15 @@ export default function ManageCompanies() {
                             disabled={adding}
                             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
                         >
-                            {adding ? "Adding..." : "Add Company"}
+                            {adding ? (
+                                <span className="flex items-center gap-2">
+                                    <RotateCcw className="w-4 h-4 animate-spin" /> Adding...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2">
+                                    <Plus className="w-4 h-4" /> Add Company
+                                </span>
+                            )}
                         </button>
                     </form>
                 </div>
@@ -253,7 +277,7 @@ export default function ManageCompanies() {
                                                         className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                                         title="Edit Company"
                                                     >
-                                                        ✏️
+                                                        <Edit3 className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleApproval(company.id, company.isApproved)}
@@ -269,7 +293,7 @@ export default function ManageCompanies() {
                                                         className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                                         title="Delete Company"
                                                     >
-                                                        🗑️
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -296,7 +320,7 @@ export default function ManageCompanies() {
                                 onClick={() => setShowEditModal(false)}
                                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             >
-                                ✕
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleUpdateCompany} className="p-6">

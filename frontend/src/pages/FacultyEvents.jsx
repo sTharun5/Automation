@@ -5,6 +5,22 @@ import Footer from '../components/Footer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
+import {
+    ArrowLeft,
+    Calendar,
+    User,
+    Plus,
+    Eye,
+    CheckCircle2,
+    MonitorPlay,
+    X,
+    Lock,
+    ShieldAlert,
+    Clock,
+    UserPlus,
+    UserMinus,
+    AlertCircle
+} from 'lucide-react';
 
 export default function FacultyEvents() {
     const { showToast } = useToast();
@@ -141,7 +157,7 @@ export default function FacultyEvents() {
             <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
                 <div className="mb-8">
                     <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-blue-600 mb-2 flex items-center gap-1 transition-colors text-sm font-bold uppercase tracking-wider">
-                        ← Back
+                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                     <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Coordinated Events</h1>
                     <p className="text-slate-600 dark:text-slate-400 font-medium">Manage student delegations and approve event rosters.</p>
@@ -152,7 +168,7 @@ export default function FacultyEvents() {
                         <div className="py-20 text-center animate-pulse font-bold text-slate-400 uppercase tracking-widest">Loading Events...</div>
                     ) : events.length === 0 ? (
                         <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                            <span className="text-5xl block mb-4">📅</span>
+                            <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                             <p className="text-slate-500 font-bold uppercase tracking-wider">No events assigned to you yet.</p>
                         </div>
                     ) : (
@@ -183,7 +199,7 @@ export default function FacultyEvents() {
                                     {!event.studentCoordinatorId ? (
                                         <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl">
                                             <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <span>👤</span> Assign Student Coordinator
+                                                <UserPlus className="w-4 h-4" /> Assign Student Coordinator
                                             </p>
                                             <div className="flex flex-col md:flex-row gap-3 items-end">
                                                 <div className="flex-1">
@@ -197,7 +213,7 @@ export default function FacultyEvents() {
                                                                 value: s.rollNo, // Backend currently expects rollNo here
                                                                 label: s.name,
                                                                 sublabel: `${s.rollNo} • ${s.department}`,
-                                                                icon: "👤"
+                                                                icon: <User className="w-4 h-4" />
                                                             }));
                                                         }}
                                                         onChange={(val) => setAssigningRollNo(prev => ({ ...prev, [event.id]: val }))}
@@ -216,7 +232,7 @@ export default function FacultyEvents() {
                                                     onClick={() => handleAssignCoordinator(event.id)}
                                                     className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-2xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap flex items-center gap-2 group"
                                                 >
-                                                    <span className="text-lg group-hover:rotate-90 transition-transform">➕</span>
+                                                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                                                     Assign
                                                 </button>
                                             </div>
@@ -236,10 +252,10 @@ export default function FacultyEvents() {
                                                 </div>
                                                 <button
                                                     onClick={() => handleRevokeCoordinator(event.id)}
-                                                    className="px-4 py-2 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30"
+                                                    className="px-4 py-2 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30 flex items-center gap-1"
                                                     title="Revoke Coordinator Access"
                                                 >
-                                                    Revoke Access
+                                                    <UserMinus className="w-3.5 h-3.5" /> Revoke Access
                                                 </button>
                                             </div>
 
@@ -272,26 +288,26 @@ export default function FacultyEvents() {
                                                         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                                                             <button
                                                                 onClick={() => handleViewRoster(event.id, event.name)}
-                                                                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
+                                                                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-slate-200 dark:border-slate-700 flex items-center gap-2"
                                                             >
-                                                                👀 View Roster
+                                                                <Eye className="w-3.5 h-3.5" /> View Roster
                                                             </button>
                                                             <button
                                                                 onClick={() => handleApproveRoster(event.id)}
                                                                 disabled={!event.isRosterSubmitted}
-                                                                className={`px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg ${event.isRosterSubmitted
+                                                                className={`px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2 ${event.isRosterSubmitted
                                                                     ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
                                                                     : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none"
                                                                     }`}
                                                             >
-                                                                {event.isRosterSubmitted ? "Approve" : "Pending Submission"}
+                                                                {event.isRosterSubmitted ? <><CheckCircle2 className="w-4 h-4" /> Approve</> : <><Clock className="w-4 h-4" /> Pending Submission</>}
                                                             </button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30 rounded-2xl flex items-center gap-3">
-                                                    <span className="text-2xl">✅</span>
+                                                    <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0" />
                                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4">
                                                         <div>
                                                             <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400">Roster Approved & Locked</p>
@@ -299,9 +315,9 @@ export default function FacultyEvents() {
                                                         </div>
                                                         <button
                                                             onClick={() => handleViewRoster(event.id, event.name)}
-                                                            className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"
+                                                            className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800 flex items-center gap-2"
                                                         >
-                                                            View Roster
+                                                            <Eye className="w-3.5 h-3.5" /> View Roster
                                                         </button>
                                                     </div>
                                                     {event.status === 'ACTIVE' && (
@@ -309,7 +325,7 @@ export default function FacultyEvents() {
                                                             onClick={() => startProjection(event)}
                                                             className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 hover:scale-[1.02] flex items-center justify-center gap-3 mt-4"
                                                         >
-                                                            <span className="text-xl">🎥</span> Project Live QR & OTP
+                                                            <MonitorPlay className="w-6 h-6" /> Project Live QR & OTP
                                                         </button>
                                                     )}
                                                 </div>
@@ -333,7 +349,7 @@ export default function FacultyEvents() {
                                 <p className="text-xs font-bold text-slate-500 mt-1">{currentEventName}</p>
                             </div>
                             <button onClick={() => setViewingRoster(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
-                                ✕
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -444,7 +460,7 @@ export default function FacultyEvents() {
 
                         {/* Security Footer */}
                         <div className="mt-12 flex items-center gap-3 text-slate-400 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
-                            <span className="text-2xl">🔒</span>
+                            <Lock className="w-6 h-6 text-indigo-400" />
                             <div className="text-left">
                                 <p className="text-xs font-bold uppercase tracking-widest">Temporal Security Active</p>
                                 <p className="text-[10px] uppercase tracking-wider opacity-70">Code refreshes dynamically to prevent proxy scanning.</p>

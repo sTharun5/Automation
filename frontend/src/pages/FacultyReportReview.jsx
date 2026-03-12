@@ -4,6 +4,17 @@ import api, { BASE_URL } from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
+import {
+    ArrowLeft,
+    FileText,
+    CheckCircle2,
+    XCircle,
+    ExternalLink,
+    Clock,
+    User,
+    AlertCircle,
+    Check
+} from "lucide-react";
 
 export default function FacultyReportReview() {
     const [reports, setReports] = useState([]);
@@ -70,8 +81,8 @@ export default function FacultyReportReview() {
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
             <Header />
             <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
-                <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors">
-                    ← Back to Dashboard
+                <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-sm font-bold uppercase tracking-widest">
+                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
                 </button>
 
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">Review Internship Reports</h1>
@@ -79,8 +90,12 @@ export default function FacultyReportReview() {
                 {loading ? (
                     <div className="text-center py-20 text-slate-500">Loading reports...</div>
                 ) : reports.length === 0 ? (
-                    <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-                        <p className="text-slate-500">No pending internship reports to review.</p>
+                    <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+                        <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Check className="w-8 h-8 text-emerald-500" />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">All Caught Up!</h3>
+                        <p className="text-slate-500 mt-1 font-medium">No pending internship reports to review.</p>
                     </div>
                 ) : (
                     <div className="grid gap-6">
@@ -97,24 +112,24 @@ export default function FacultyReportReview() {
                                         href={`${BASE_URL}/${report.fileUrl}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-blue-600 hover:underline font-medium text-sm"
+                                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-bold text-sm bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl border border-blue-100 dark:border-blue-800 transition-colors group"
                                     >
-                                        📄 View Report PDF
+                                        <FileText className="w-4 h-4" /> View Report PDF <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </a>
                                 </div>
 
                                 <div className="flex gap-3 w-full md:w-auto">
                                     <button
                                         onClick={() => openActionModal(report, 'APPROVED')}
-                                        className="flex-1 md:flex-none bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 px-6 py-2.5 rounded-xl font-bold transition-colors"
+                                        className="flex-1 md:flex-none bg-emerald-600 text-white hover:bg-emerald-700 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-xs transition-shadow shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
                                     >
-                                        Approve
+                                        <CheckCircle2 className="w-4 h-4" /> Approve
                                     </button>
                                     <button
                                         onClick={() => openActionModal(report, 'REJECTED')}
-                                        className="flex-1 md:flex-none bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-6 py-2.5 rounded-xl font-bold transition-colors"
+                                        className="flex-1 md:flex-none bg-white dark:bg-slate-800 text-red-600 border border-red-100 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-xs transition-colors flex items-center justify-center gap-2"
                                     >
-                                        Reject
+                                        <XCircle className="w-4 h-4" /> Reject
                                     </button>
                                 </div>
                             </div>

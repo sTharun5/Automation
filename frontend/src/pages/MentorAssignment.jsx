@@ -6,6 +6,17 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import SearchableSelect from "../components/SearchableSelect";
+import {
+    ArrowLeft,
+    Search,
+    UserCircle2,
+    Trash2,
+    CheckCircle2,
+    Users,
+    ChevronRight,
+    UserCheck,
+    GraduationCap
+} from "lucide-react";
 
 export default function MentorAssignment() {
     const navigate = useNavigate();
@@ -170,7 +181,7 @@ export default function MentorAssignment() {
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors bg-white dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm"
                     >
-                        <span>←</span> Back
+                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                 </div>
 
@@ -192,7 +203,7 @@ export default function MentorAssignment() {
                                     value: f.id,
                                     label: f.name,
                                     sublabel: `${f.facultyId} • ${f.department || 'Faculty'}`,
-                                    icon: "👨‍🏫",
+                                    icon: <GraduationCap className="w-4 h-4 text-blue-500" />,
                                     original: f
                                 }));
                             }}
@@ -232,7 +243,9 @@ export default function MentorAssignment() {
                         </h2>
 
                         <div className="relative group">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-blue-500 transition-colors">🔍</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                                <Search className="w-4 h-4" />
+                            </span>
                             <input
                                 type="text"
                                 placeholder="Search by Roll No or Name..."
@@ -280,14 +293,14 @@ export default function MentorAssignment() {
                                                         title="Remove Mentor"
                                                         className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
                                                     >
-                                                        🗑️
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 )}
                                                 <div
                                                     onClick={() => toggleStudentSelection(s)}
                                                     className={`h-5 w-5 rounded-md border flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300 dark:border-slate-600"
                                                         }`}>
-                                                    {isSelected && "✓"}
+                                                    {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
                                                 </div>
                                             </div>
                                         </div>

@@ -7,6 +7,24 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import SearchableSelect from "../components/SearchableSelect";
+import {
+    ArrowLeft,
+    Plus,
+    UserPlus,
+    Search,
+    User,
+    Trash2,
+    Edit,
+    GraduationCap,
+    Layout,
+    Smartphone,
+    Radio,
+    Zap,
+    Settings,
+    Beaker,
+    Brain,
+    Calendar
+} from "lucide-react";
 
 export default function ManageStudents() {
     const navigate = useNavigate();
@@ -112,9 +130,9 @@ export default function ManageStudents() {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate(-1)}
-                            className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500 transition-colors"
+                            className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500 transition-colors flex items-center justify-center"
                         >
-                            ←
+                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         </button>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Manage Students</h1>
                     </div>
@@ -146,13 +164,13 @@ export default function ManageStudents() {
                             onClick={() => setAddModalOpen(true)}
                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                         >
-                            <span>➕</span> Add Student
+                            <Plus className="w-4 h-4" /> Add Student
                         </button>
                         <button
                             onClick={() => navigate("/admin/assign-mentor")}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
                         >
-                            <span>🤝</span> Assign Mentors
+                            <UserPlus className="w-4 h-4" /> Assign Mentors
                         </button>
                     </div>
                 </div>
@@ -200,13 +218,13 @@ export default function ManageStudents() {
                                         value={newStudent.department}
                                         onChange={(val) => setNewStudent({ ...newStudent, department: val })}
                                         options={[
-                                            { value: "CS", label: "CS", icon: "💻" },
-                                            { value: "IT", label: "IT", icon: "📱" },
-                                            { value: "EC", label: "EC", icon: "📡" },
-                                            { value: "EE", label: "EE", icon: "⚡" },
-                                            { value: "ME", label: "ME", icon: "⚙️" },
-                                            { value: "CB", label: "CB", icon: "🧪" },
-                                            { value: "AI", label: "AI", icon: "🧠" }
+                                            { value: "CS", label: "CS", icon: <Layout className="w-4 h-4 text-blue-500" /> },
+                                            { value: "IT", label: "IT", icon: <Smartphone className="w-4 h-4 text-indigo-500" /> },
+                                            { value: "EC", label: "EC", icon: <Radio className="w-4 h-4 text-emerald-500" /> },
+                                            { value: "EE", label: "EE", icon: <Zap className="w-4 h-4 text-amber-500" /> },
+                                            { value: "ME", label: "ME", icon: <Settings className="w-4 h-4 text-slate-500" /> },
+                                            { value: "CB", label: "CB", icon: <Beaker className="w-4 h-4 text-rose-500" /> },
+                                            { value: "AI", label: "AI", icon: <Brain className="w-4 h-4 text-purple-500" /> }
                                         ]}
                                     />
                                     <SearchableSelect
@@ -214,7 +232,7 @@ export default function ManageStudents() {
                                         placeholder="Pick..."
                                         value={newStudent.semester}
                                         onChange={(val) => setNewStudent({ ...newStudent, semester: val })}
-                                        options={[1, 2, 3, 4, 5, 6, 7, 8].map(s => ({ value: String(s), label: String(s), icon: "📅" }))}
+                                        options={[1, 2, 3, 4, 5, 6, 7, 8].map(s => ({ value: String(s), label: String(s), icon: <Calendar className="w-4 h-4 text-blue-500" /> }))}
                                     />
                                 </div>
                                 <div>
@@ -388,7 +406,7 @@ export default function ManageStudents() {
                                                             className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                                             title="Unassign Mentor"
                                                         >
-                                                            🗑️
+                                                            <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
                                                 ) : (

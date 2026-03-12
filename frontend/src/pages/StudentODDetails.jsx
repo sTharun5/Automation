@@ -1,8 +1,24 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import api, { BASE_URL } from "../api/axios";
-import Footer from "../components/Footer";
 import InternshipReportModal from "../components/InternshipReportModal";
+import Header from "../components/Header";
+import {
+  ArrowLeft,
+  AlertCircle,
+  FileText,
+  Activity,
+  Clock,
+  CheckCircle2,
+  History,
+  FileCheck2,
+  Building2,
+  Calendar,
+  Download,
+  XCircle,
+  Timer,
+  Check
+} from "lucide-react";
 
 export default function StudentODDetails() {
   const { odId } = useParams();
@@ -140,13 +156,13 @@ export default function StudentODDetails() {
           onClick={() => navigate(-1)}
           className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium w-fit bg-transparent border-none cursor-pointer"
         >
-          <span>←</span> Back
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
         {needsReport && (
           <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
+              <AlertCircle className="w-6 h-6 text-amber-500" />
               <div>
                 <h3 className="font-bold text-amber-900 dark:text-amber-100">Internship Report Required</h3>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -161,7 +177,7 @@ export default function StudentODDetails() {
                 onClick={() => setShowReportModal(true)}
                 className="whitespace-nowrap bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-sm"
               >
-                Submit Report
+                <FileText className="w-4 h-4" /> Submit Report
               </button>
             )}
           </div>
@@ -170,7 +186,7 @@ export default function StudentODDetails() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
           <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              On-Duty Application Details
+              <Activity className="w-5 h-5 text-blue-500" /> On-Duty Application Details
             </h2>
           </div>
 
@@ -228,7 +244,9 @@ export default function StudentODDetails() {
 
             {/* Visual Timeline */}
             <div className="px-6 py-8">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-6 uppercase tracking-widest">Application Lifecycle</h4>
+              <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 mb-6 uppercase tracking-widest flex items-center gap-2">
+                <History className="w-3.5 h-3.5" /> Application Lifecycle
+              </h4>
               <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
                 {(od.timeline || []).map((step, idx) => (
                   <div key={idx} className="relative pl-10 animate-fadeIn" style={{ animationDelay: `${idx * 100}ms` }}>
@@ -248,7 +266,9 @@ export default function StudentODDetails() {
 
             {/* Details Table */}
             <div className="px-6 py-4 bg-slate-50/30 dark:bg-slate-800/10">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-4 uppercase tracking-widest">Verification Details</h4>
+              <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2">
+                <FileCheck2 className="w-3.5 h-3.5" /> Verification Details
+              </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {Object.entries(od.verificationDetails || {}).map(([key, val]) => (
                   <div key={key} className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -344,7 +364,7 @@ function FileRow({ label, filePath }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
         >
-          ⬇ Download
+          <Download className="w-4 h-4" /> Download
         </a>
       </div>
     </div>

@@ -5,6 +5,26 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import SearchableSelect from '../components/SearchableSelect';
+import {
+    ArrowLeft,
+    Clock,
+    X,
+    Plus,
+    MonitorPlay,
+    Users,
+    Eye,
+    Pencil,
+    Trash2,
+    ScrollText,
+    Mailbox,
+    Lock,
+    ShieldAlert,
+    CheckCircle2,
+    AlertCircle,
+    User,
+    GraduationCap,
+    Bot
+} from 'lucide-react';
 
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
@@ -317,7 +337,7 @@ export default function ManageInternalEvents() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div>
                         <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-indigo-600 mb-2 flex items-center gap-1 transition-colors text-sm font-bold uppercase tracking-wider">
-                            ← Back
+                            <ArrowLeft className="w-4 h-4" /> Back
                         </button>
                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Internal Events</h1>
                         <p className="text-slate-600 dark:text-slate-400 font-medium italic">Create and manage internal pre-registered OD sessions.</p>
@@ -332,17 +352,18 @@ export default function ManageInternalEvents() {
                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-indigo-500'
                                 }`}
                         >
-                            <span>{showPastEvents ? "🕒 Showing All" : "🕒 Active Only"}</span>
+                            <Clock className="w-4 h-4" />
+                            <span>{showPastEvents ? "Showing All" : "Active Only"}</span>
                         </button>
 
                         <button
                             onClick={() => setIsCreating(!isCreating)}
-                            className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-[0.98] ${isCreating
+                            className={`flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-[0.98] ${isCreating
                                 ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-none'
                                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
                                 }`}
                         >
-                            {isCreating ? '✕ Cancel' : '+ Create Event'}
+                            {isCreating ? <><X className="w-4 h-4" /> Cancel</> : <><Plus className="w-4 h-4" /> Create Event</>}
                         </button>
                     </div>
                 </div>
@@ -429,12 +450,12 @@ export default function ManageInternalEvents() {
                                     value={formData.staffCoordinatorId}
                                     onChange={(val) => setFormData({ ...formData, staffCoordinatorId: val })}
                                     options={[
-                                        { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: "🤖" },
+                                        { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: <Bot className="w-4 h-4" /> },
                                         ...faculties.map(fac => ({
                                             value: String(fac.id),
                                             label: fac.name,
                                             sublabel: fac.department || "Faculty",
-                                            icon: "👨‍🏫"
+                                            icon: <GraduationCap className="w-4 h-4" />
                                         }))
                                     ]}
                                 />
@@ -451,7 +472,7 @@ export default function ManageInternalEvents() {
                                             value: String(s.id),
                                             label: s.name,
                                             sublabel: `${s.rollNo} • ${s.department}`,
-                                            icon: "👤"
+                                            icon: <User className="w-4 h-4" />
                                         }));
                                     }}
                                     onChange={(val) => setFormData({ ...formData, studentCoordinatorId: val })}
@@ -472,7 +493,7 @@ export default function ManageInternalEvents() {
                         <div className="col-span-full py-12 text-center text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Events...</div>
                     ) : events.length === 0 ? (
                         <div className="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-                            <span className="text-4xl block mb-3">📭</span>
+                            <Mailbox className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                             <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">No active events</p>
                         </div>
                     ) : (
@@ -555,7 +576,7 @@ export default function ManageInternalEvents() {
                                         onClick={() => startProjection(event)}
                                         className="col-span-2 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
                                     >
-                                        <span>🎥</span> Project Live QR
+                                        <MonitorPlay className="w-5 h-5" /> Project Live QR
                                     </button>
                                     <button
                                         onClick={() => fetchAttendance(event)}
@@ -563,35 +584,35 @@ export default function ManageInternalEvents() {
                                         className="py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
                                         title="Attendance Log"
                                     >
-                                        👥 Attendance
+                                        <Users className="w-3.5 h-3.5" /> Attendance
                                     </button>
                                     <button
                                         onClick={() => handleViewRoster(event)}
                                         className="py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-purple-600 hover:text-white dark:hover:bg-purple-500 dark:hover:text-white transition-colors flex items-center justify-center gap-1"
                                         title="View Pre-Registered Roster"
                                     >
-                                        👀 Roster
+                                        <Eye className="w-3.5 h-3.5" /> Roster
                                     </button>
                                     <button
                                         onClick={() => openEditModal(event)}
                                         className="py-2.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-sky-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
                                         title="Edit Event"
                                     >
-                                        <span>✏️</span> Edit
+                                        <Pencil className="w-3.5 h-3.5" /> Edit
                                     </button>
                                     <button
                                         onClick={() => confirmDelete(event.id)}
                                         className="py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
                                         title="Delete Event"
                                     >
-                                        <span>🗑️</span> Delete
+                                        <Trash2 className="w-3.5 h-3.5" /> Delete
                                     </button>
                                     <button
                                         onClick={() => { setLogEvent(event); setViewingLogs(true); }}
                                         className="col-span-2 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-800"
                                         title="View Administrative Logs"
                                     >
-                                        📜 Event Logs
+                                        <ScrollText className="w-3.5 h-3.5" /> Event Logs
                                     </button>
                                 </div>
                             </div>
@@ -616,7 +637,7 @@ export default function ManageInternalEvents() {
                                     onClick={() => { setViewingLogs(false); setLogEvent(null); }}
                                     className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"
                                 >
-                                    ✕
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
 
@@ -624,7 +645,7 @@ export default function ManageInternalEvents() {
                             <div className="flex-1 overflow-y-auto p-8">
                                 {!logEvent.timeline || logEvent.timeline.length === 0 ? (
                                     <div className="text-center py-12">
-                                        <span className="text-4xl block mb-4">📄</span>
+                                        <ScrollText className="w-12 h-12 text-slate-200 mx-auto mb-4" />
                                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No administrative logs recorded yet.</p>
                                     </div>
                                 ) : (
@@ -745,7 +766,7 @@ export default function ManageInternalEvents() {
 
                             {/* Security Footer */}
                             <div className="mt-12 flex items-center gap-3 text-slate-400 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
-                                <span className="text-2xl">🔒</span>
+                                <Lock className="w-6 h-6 text-indigo-400" />
                                 <div className="text-left">
                                     <p className="text-xs font-bold uppercase tracking-widest">Temporal Security Active</p>
                                     <p className="text-[10px] uppercase tracking-wider opacity-70">Code refreshes dynamically to prevent proxy scanning.</p>
@@ -764,7 +785,7 @@ export default function ManageInternalEvents() {
                         <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-slideUp overflow-y-auto max-h-[90vh]">
                             <div className="flex justify-between items-center mb-8">
                                 <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Edit Internal Event</h2>
-                                <button onClick={() => setEditingEvent(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">✕</button>
+                                <button onClick={() => setEditingEvent(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
                             </div>
                             <form onSubmit={handleEditSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
@@ -843,12 +864,12 @@ export default function ManageInternalEvents() {
                                         value={editFormData.staffCoordinatorId}
                                         onChange={(val) => setEditFormData({ ...editFormData, staffCoordinatorId: val })}
                                         options={[
-                                            { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: "🤖" },
+                                            { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: <Bot className="w-4 h-4" /> },
                                             ...faculties.map(fac => ({
                                                 value: String(fac.id),
                                                 label: fac.name,
                                                 sublabel: fac.department || "Faculty",
-                                                icon: "👨‍🏫"
+                                                icon: <GraduationCap className="w-4 h-4" />
                                             }))
                                         ]}
                                     />
@@ -865,7 +886,7 @@ export default function ManageInternalEvents() {
                                                 value: String(s.id),
                                                 label: s.name,
                                                 sublabel: `${s.rollNo} • ${s.department}`,
-                                                icon: "👤"
+                                                icon: <User className="w-4 h-4" />
                                             }));
                                         }}
                                         onChange={(val) => setEditFormData({ ...editFormData, studentCoordinatorId: val })}
@@ -892,7 +913,7 @@ export default function ManageInternalEvents() {
                         <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-slideUp">
 
                             <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-6 text-red-600 dark:text-red-500">
-                                <span className="text-3xl">⚠️</span>
+                                <AlertCircle className="w-8 h-8" />
                             </div>
 
                             <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Revoke & Delete Event</h2>
@@ -927,7 +948,7 @@ export default function ManageInternalEvents() {
                         <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl border border-rose-200 dark:border-rose-900/50 transform transition-all animate-slideUp">
 
                             <div className="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center mb-6 text-rose-600 dark:text-rose-500">
-                                <span className="text-3xl">☢️</span>
+                                <ShieldAlert className="w-8 h-8" />
                             </div>
 
                             <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Nuke All Events</h2>
@@ -975,7 +996,7 @@ export default function ManageInternalEvents() {
                                     onClick={() => setAttendanceData(null)}
                                     className="w-10 h-10 shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors"
                                 >
-                                    ✕
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
 
@@ -983,7 +1004,7 @@ export default function ManageInternalEvents() {
                             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/50 dark:bg-slate-900/50">
                                 {attendanceData.attendance.length === 0 ? (
                                     <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-                                        <span className="text-5xl block mb-4">📭</span>
+                                        <Mailbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                                         <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">No scans recorded yet</p>
                                         <p className="text-xs text-slate-400 mt-2 font-medium">Students need to scan the live projection to appear here.</p>
                                     </div>
@@ -1005,8 +1026,8 @@ export default function ManageInternalEvents() {
                                                 <div className="text-right flex flex-col justify-center items-end shrink-0">
                                                     {record.status === 'APPROVED' ? (
                                                         <>
-                                                            <span className="text-[10px] font-black uppercase text-green-500 bg-green-50 dark:bg-green-500/10 px-2 py-1 rounded-lg border border-green-100 dark:border-green-500/20 mb-1">
-                                                                ✅ Attended
+                                                            <span className="text-[10px] font-black uppercase text-green-500 bg-green-50 dark:bg-green-500/10 px-2 py-1 rounded-lg border border-green-100 dark:border-green-500/20 mb-1 flex items-center gap-1">
+                                                                <CheckCircle2 className="w-3 h-3" /> Attended
                                                             </span>
                                                             <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">
                                                                 {new Date(record.scanTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1014,8 +1035,8 @@ export default function ManageInternalEvents() {
                                                         </>
                                                     ) : record.status === 'PROVISIONAL' ? (
                                                         <>
-                                                            <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-500/20 mb-1">
-                                                                🎫 Gate Pass
+                                                            <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-500/20 mb-1 flex items-center gap-1">
+                                                                <MonitorPlay className="w-3 h-3" /> Gate Pass
                                                             </span>
                                                             {(() => {
                                                                 const verifierEntries = record.timeline?.filter(t => t.label === "Gate Pass Authorized") || [];
@@ -1087,21 +1108,21 @@ export default function ManageInternalEvents() {
                                                 : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                                                 }`}
                                         >
-                                            {selectedEvent?.isRosterSubmitted ? "✅ Approve Roster" : "⏳ Awaiting Submission"}
+                                            {selectedEvent?.isRosterSubmitted ? <><CheckCircle2 className="w-4 h-4" /> Approve Roster</> : <><Clock className="w-4 h-4" /> Awaiting Submission</>}
                                         </button>
                                     )}
                                     <button
                                         onClick={() => setViewingRoster(false)}
                                         className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                     >
-                                        ✕
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
                             {!rosterData.isApproved && !selectedEvent?.isRosterSubmitted && (
                                 <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl flex items-center gap-3">
-                                    <span className="text-xl">ℹ️</span>
+                                    <Info className="w-5 h-5 text-indigo-500" />
                                     <p className="text-sm text-indigo-700 dark:text-indigo-300">
                                         The roster has not been submitted by the <span className="font-bold">Student Coordinator</span> yet. You can approve it once they finalize the list.
                                     </p>

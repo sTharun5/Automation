@@ -4,7 +4,8 @@ import SearchableSelect from "./SearchableSelect";
 import {
     Ticket,
     Inbox,
-    X
+    X,
+    FileText
 } from "lucide-react";
 
 export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
@@ -66,7 +67,7 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                                             value: String(od.id),
                                             label: od.event?.name || "Internal Event",
                                             sublabel: od.event?.date || "Event Pass",
-                                            icon: "🎫"
+                                            icon: <Ticket className="w-4 h-4 text-indigo-500" />
                                         }))}
                                     />
                                 </div>

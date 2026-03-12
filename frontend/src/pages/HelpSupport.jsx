@@ -4,6 +4,15 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
+import {
+    ArrowLeft,
+    Mail,
+    Building2,
+    Send,
+    Loader2,
+    Paperclip,
+    LifeBuoy
+} from "lucide-react";
 
 export default function HelpSupport() {
     const navigate = useNavigate();
@@ -74,10 +83,10 @@ export default function HelpSupport() {
                 <div className="text-center mb-10 relative">
                     <button
                         onClick={() => navigate(-1)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors font-bold uppercase tracking-widest text-xs"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                        <span className="hidden sm:inline font-medium">Back</span>
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="hidden sm:inline">Back</span>
                     </button>
 
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Help & Support</h1>
@@ -92,24 +101,30 @@ export default function HelpSupport() {
                         {/* Left Side: Contact Info / Visuals */}
                         <div className="bg-blue-600 dark:bg-blue-700 p-8 md:w-1/3 text-white flex flex-col justify-between">
                             <div>
-                                <h3 className="text-xl font-bold mb-4">Contact Logic</h3>
+                                <h3 className="text-xl font-black mb-4 flex items-center gap-2 uppercase tracking-tight">
+                                    <LifeBuoy className="w-6 h-6 text-blue-200" /> Support Desk
+                                </h3>
                                 <p className="text-blue-100 text-sm mb-6">
                                     Your query will be emailed directly to the administrators and logged in their dashboard for immediate attention.
                                 </p>
 
                                 <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-white/20 p-2 rounded-lg">📧</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10">
+                                            <Mail className="w-5 h-5 text-blue-100" />
+                                        </div>
                                         <div className="text-sm">
-                                            <p className="font-semibold opacity-90">Email Support</p>
-                                            <p className="opacity-75">support@smartod.com</p>
+                                            <p className="font-black uppercase tracking-widest text-[10px] opacity-70">Email Support</p>
+                                            <p className="font-bold">support@smartod.com</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="bg-white/20 p-2 rounded-lg">🏫</span>
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/10">
+                                            <Building2 className="w-5 h-5 text-blue-100" />
+                                        </div>
                                         <div className="text-sm">
-                                            <p className="font-semibold opacity-90">Admin Office</p>
-                                            <p className="opacity-75">Main Block, BIT</p>
+                                            <p className="font-black uppercase tracking-widest text-[10px] opacity-70">Admin Office</p>
+                                            <p className="font-bold">Main Block, BIT</p>
                                         </div>
                                     </div>
                                 </div>
@@ -159,7 +174,7 @@ export default function HelpSupport() {
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-300 dark:border-slate-600 transition-all text-sm font-medium">
-                                            <span>📎 Upload Image/Video</span>
+                                            <Paperclip className="w-4 h-4" /> <span>Upload Image/Video</span>
                                             <input
                                                 type="file"
                                                 onChange={handleFileChange}
@@ -182,9 +197,15 @@ export default function HelpSupport() {
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
-                                        <><span>📨</span> Sending...</>
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            <span className="uppercase tracking-widest font-black text-sm">Sending...</span>
+                                        </>
                                     ) : (
-                                        <><span>🚀</span> Submit Query</>
+                                        <>
+                                            <Send className="w-5 h-5" />
+                                            <span className="uppercase tracking-widest font-black text-sm">Submit Query</span>
+                                        </>
                                     )}
                                 </button>
                             </form>
