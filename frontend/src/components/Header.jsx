@@ -14,7 +14,8 @@ import {
   X,
   Home,
   Bell,
-  Settings
+  Settings,
+  Sparkles
 } from "lucide-react";
 
 export default function Header() {
@@ -64,14 +65,17 @@ export default function Header() {
               onClick={handleDashboardClick}
               className="flex items-center gap-3 min-w-0 cursor-pointer group"
             >
-              <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transform transition-transform group-hover:scale-105">
-                <img src={logo} alt="BIT" className="h-full w-full object-contain" />
+              <div className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transform transition-all group-hover:scale-105 group-hover:shadow-indigo-500/10">
+                <img src={logo} alt="BIT" className="h-[80%] w-[80%] object-contain" />
               </div>
               <div className="min-w-0 flex flex-col justify-center">
-                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 truncate hidden sm:block">
-                  BIT / OD Portal
-                </p>
-                <h1 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hidden sm:block">
+                    Portal
+                  </p>
+                  <Sparkles className="w-3 h-3 text-yellow-500 hidden sm:block animate-pulse" />
+                </div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-600 dark:from-white dark:via-blue-100 dark:to-indigo-200">
                   SMART OD
                 </h1>
               </div>
@@ -115,18 +119,25 @@ export default function Header() {
                 </button>
 
                 {open && (
-                  <div className="absolute right-0 mt-3 w-72 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl overflow-hidden animate-fadeIn z-50 ring-1 ring-black/5">
-                    <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-sm">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate font-mono mt-1">
-                        {user.email}
-                      </p>
-                      <div className="mt-3 flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${role === 'ADMIN' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                          role === 'FACULTY' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  <div className="absolute right-0 mt-3 w-72 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-slideUp z-50 ring-1 ring-black/5">
+                    <div className="px-6 py-6 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/20">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+                          {user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center gap-2">
+                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest shadow-sm ${role === 'ADMIN' ? 'bg-red-500 text-white shadow-red-500/20' :
+                          role === 'FACULTY' ? 'bg-blue-600 text-white shadow-blue-600/20' :
+                            'bg-emerald-600 text-white shadow-emerald-600/20'
                           }`}>
                           {role}
                         </span>
@@ -136,22 +147,30 @@ export default function Header() {
                       {role !== "ADMIN" && (
                         <button
                           onClick={() => { setOpen(false); navigate("/help"); }}
-                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl flex items-center gap-3 transition-colors group"
+                          className="w-full px-4 py-3 text-left text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl flex items-center gap-3 transition-all group active:scale-[0.98]"
                         >
-                          <HelpCircle className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                          <HelpCircle className="w-5 h-5 text-slate-400 group-hover:text-indigo-500 group-hover:scale-110 transition-all" />
                           Help & Support
                         </button>
                       )}
                       <button
-                        onClick={() => { setOpen(false); setShowLogout(true); }}
-                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl flex items-center gap-3 transition-colors"
+                        onClick={() => { setOpen(false); navigate("/settings"); }} // Assumption settings exists
+                        className="w-full px-4 py-3 text-left text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl flex items-center gap-3 transition-all group active:scale-[0.98]"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <Settings className="w-5 h-5 text-slate-400 group-hover:text-indigo-500 group-hover:scale-110 transition-all" />
+                        Account Settings
+                      </button>
+                      <div className="border-t border-slate-100 dark:border-slate-700/50 my-1 mx-2" />
+                      <button
+                        onClick={() => { setOpen(false); setShowLogout(true); }}
+                        className="w-full px-4 py-3 text-left text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl flex items-center gap-3 transition-all active:scale-[0.98]"
+                      >
+                        <LogOut className="w-5 h-5" />
                         Sign out
                       </button>
                     </div>
                   </div>
-                )}
+                )  }
               </div>
             </div>
 
