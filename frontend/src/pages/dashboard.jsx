@@ -25,7 +25,8 @@ import {
   Info,
   Mail,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from "lucide-react";
 
 export default function Dashboard() {
