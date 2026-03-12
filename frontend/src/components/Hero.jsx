@@ -12,7 +12,8 @@ import {
   FileText,
   ChevronRight,
   Clock,
-  Calendar
+  Calendar,
+  X
 } from "lucide-react";
 
 export default function Hero({ student, dashboardData }) {

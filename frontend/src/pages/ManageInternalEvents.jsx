@@ -23,7 +23,8 @@ import {
     AlertCircle,
     User,
     GraduationCap,
-    Bot
+    Bot,
+    Info
 } from 'lucide-react';
 
 export default function ManageInternalEvents() {
