@@ -38,8 +38,12 @@ export default function ActionCard({
       "
     >
       <div className="flex items-start justify-between gap-3">
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${styles.iconBg}`}>
-          {icon || "→"}
+        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+          {icon ? (
+            typeof icon === "string" ? <span>{icon}</span> : <div className="w-6 h-6">{icon}</div>
+          ) : (
+            "→"
+          )}
         </div>
         <div className={`h-1 w-10 rounded-full bg-gradient-to-r ${styles.bar} shrink-0`} />
       </div>

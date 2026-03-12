@@ -12,6 +12,21 @@ import ODCalendar from "../components/ODCalendar"; // ✅ New
 import InternshipReportModal from "../components/InternshipReportModal";
 import AttendanceModal from "../components/AttendanceModal"; // ✅ Unified Attendance
 import GatePassModal from "../components/GatePassModal"; // ✅ Digital Gate Pass
+import {
+  AlertTriangle,
+  Ticket,
+  LayoutDashboard,
+  PlusCircle,
+  Upload,
+  QrCode,
+  Activity,
+  History,
+  Zap,
+  Info,
+  Mail,
+  ChevronRight,
+  ExternalLink
+} from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -114,7 +129,7 @@ export default function Dashboard() {
             {dashboardData?.odStats?.pendingReports?.length > 0 && (
               <div className="animate-fadeIn mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-start gap-4">
-                  <span className="text-3xl">⚠️</span>
+                  <AlertTriangle className="w-8 h-8 text-amber-500 shrink-0" />
                   <div>
                     <h3 className="font-bold text-amber-900 dark:text-amber-100 text-lg">Internship Report Required</h3>
                     <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
@@ -147,12 +162,12 @@ export default function Dashboard() {
                     className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-amber-50 dark:from-amber-900/20 to-orange-50 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800/50 shadow-sm hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-amber-400/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-950 animate-pulse"
                   >
                     <div className="p-2.5 bg-amber-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-amber-500/30 relative z-10">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+                      <Ticket className="w-6 h-6" />
                     </div>
                     <h3 className="text-sm font-bold text-amber-900 dark:text-amber-100 mb-1 relative z-10">Show Gate Pass</h3>
                     <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mb-4 h-8 relative z-10">Present to your teacher to leave class for the event.</p>
                     <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
-                      Open Ticket <span aria-hidden>→</span>
+                      Open Ticket <ChevronRight className="w-3 h-3" />
                     </span>
                     <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-colors"></div>
                   </button>
@@ -164,12 +179,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm hover:border-indigo-400 hover:shadow-lg transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-400/30"
                 >
                   <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+                    <LayoutDashboard className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1">Coordinator Portal</h3>
                   <p className="text-xs text-indigo-700/80 dark:text-indigo-300/80 mb-4 h-8">Manage rosters for your assigned events.</p>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Manage Events <span aria-hidden>→</span>
+                    Manage Events <ChevronRight className="w-3 h-3" />
                   </span>
                 </button>
 
@@ -179,12 +194,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <PlusCircle className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">New Application</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Submit a request for Internship or On-Duty leave.</p>
                   <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Start Application <span aria-hidden>→</span>
+                    Start Application <ChevronRight className="w-3 h-3" />
                   </span>
                 </button>
 
@@ -194,12 +209,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-400 mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <Upload className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Submit Report</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Upload internship reports for completed requests.</p>
                   <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Upload File <span aria-hidden>→</span>
+                    Upload File <ChevronRight className="w-3 h-3" />
                   </span>
                 </button>
 
@@ -209,14 +224,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-400 dark:border-indigo-800 shadow-sm hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-500/20"
                 >
                   <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-indigo-500/30">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                    </svg>
+                    <QrCode className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-1 relative z-10">Log Attendance</h3>
                   <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mb-4 h-8 relative z-10">Scan QR OR enter venue code to verify yourself.</p>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all relative z-10">
-                    Open Attendance Console <span aria-hidden>→</span>
+                    Open Attendance Console <ChevronRight className="w-3 h-3" />
                   </span>
                   <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors"></div>
                 </button>
@@ -227,12 +240,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    <Activity className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Track Status</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Monitor the progress of your active requests.</p>
                   <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    View Live Tracker <span aria-hidden>→</span>
+                    View Live Tracker <ChevronRight className="w-3 h-3" />
                   </span>
                 </button>
 
@@ -242,12 +255,12 @@ export default function Dashboard() {
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-violet-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-violet-50 dark:bg-violet-900/20 rounded-lg text-violet-600 dark:text-violet-400 mb-4 group-hover:scale-110 transition-transform">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <History className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Archive & Logs</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 h-8">Access historical records of all approvals.</p>
                   <span className="text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    View History <span aria-hidden>→</span>
+                    View History <ChevronRight className="w-3 h-3" />
                   </span>
                 </button>
               </div>
@@ -262,7 +275,7 @@ export default function Dashboard() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                   <div className="flex-1 space-y-4">
                     <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      <Zap className="w-4 h-4" />
                       <span>Disha AI 2.0</span>
                     </div>
                     <div>
@@ -301,7 +314,7 @@ export default function Dashboard() {
             {/* Professional Guidelines Panel */}
             <section className="animate-fadeIn mt-8">
               <div className="flex items-center gap-2 mb-4">
-                <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <Info className="w-4 h-4 text-slate-400" />
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Compliance & Guidelines</h3>
               </div>
 
@@ -343,7 +356,7 @@ export default function Dashboard() {
                       href={`mailto:${dashboardData.student.mentor.email}`}
                       className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
                     >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      <Mail className="w-3 h-3" />
                       Contact Mentor
                     </a>
                   ) : (
@@ -351,7 +364,7 @@ export default function Dashboard() {
                       href="mailto:admin@college.edu"
                       className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
                     >
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      <Mail className="w-3 h-3" />
                       Contact Admin
                     </a>
                   )}

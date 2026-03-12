@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../context/ChatContext"; // ✅ Import Hook
+import {
+  GraduationCap,
+  CheckCircle,
+  AlertCircle,
+  Activity,
+  BarChart3,
+  Plus,
+  Sparkles,
+  FileText,
+  ChevronRight,
+  Clock,
+  Calendar
+} from "lucide-react";
 
 export default function Hero({ student, dashboardData }) {
   const navigate = useNavigate();
@@ -25,7 +38,7 @@ export default function Hero({ student, dashboardData }) {
 
         {/* Mentor Info */}
         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-fadeIn">
-          <span className="text-lg">👨‍🏫</span>
+          <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <div className="flex flex-col">
             <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider leading-none">Your Mentor</span>
             <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -52,7 +65,7 @@ export default function Hero({ student, dashboardData }) {
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Placement Eligibility</h3>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-blue-600 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <CheckCircle className="w-5 h-5" />
             </div>
           </div>
 
@@ -79,7 +92,7 @@ export default function Hero({ student, dashboardData }) {
               </div>
             ) : (
               <div className="flex items-center gap-2 text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-3 py-2 rounded-lg w-fit">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <AlertCircle className="w-4 h-4" />
                 <span className="text-xs font-semibold">Not Placed Yet</span>
               </div>
             )}
@@ -274,7 +287,7 @@ export default function Hero({ student, dashboardData }) {
                 className="w-full flex flex-col items-center justify-center py-2 text-center h-[90px] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group/btn cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2 text-slate-400 group-hover/btn:bg-blue-100 group-hover/btn:text-blue-600 dark:group-hover/btn:bg-blue-900/30 dark:group-hover/btn:text-blue-400 transition-all shadow-sm">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  <Plus className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover/btn:text-blue-600 dark:group-hover/btn:text-blue-400 transition-colors">Start Application</p>
@@ -293,7 +306,7 @@ export default function Hero({ student, dashboardData }) {
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Total Metrics</h3>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-violet-600 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              <BarChart3 className="w-5 h-5" />
             </div>
           </div>
 
@@ -326,9 +339,10 @@ export default function Hero({ student, dashboardData }) {
           hover:from-blue-700 hover:to-indigo-700
           shadow-lg shadow-blue-500/25 dark:shadow-blue-900/30
           transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.98]
+          flex items-center gap-2
         "
       >
-        Apply Internship OD →
+        Apply Internship OD <ChevronRight className="w-4 h-4" />
       </button>
 
       {/* Apply Mode Modal */}
@@ -352,8 +366,8 @@ export default function Hero({ student, dashboardData }) {
               <div className="group relative p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all cursor-pointer"
                 onClick={() => { setShowApplyModal(false); openChat(); }}>
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">
-                    ✨
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
                     <h4 className="font-bold text-indigo-900 dark:text-indigo-300 mb-1">AI Assistant (Recommended)</h4>
@@ -373,8 +387,8 @@ export default function Hero({ student, dashboardData }) {
                 onClick={() => { setShowApplyModal(false); navigate("/apply-od"); }}
                 className="group flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md transition-all text-left"
               >
-                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                  📝
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileText className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 dark:text-white mb-1">Manual Form</h4>
@@ -383,7 +397,7 @@ export default function Hero({ student, dashboardData }) {
                   </p>
                 </div>
                 <div className="ml-auto text-slate-300 group-hover:text-slate-500 dark:group-hover:text-slate-400">
-                  →
+                  <ChevronRight className="w-5 h-5" />
                 </div>
               </button>
             </div>

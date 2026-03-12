@@ -4,6 +4,18 @@ import { useTheme } from "../context/ThemeContext";
 import logo from "../assets/bit-logo.jpg";
 import NotificationBell from "./NotificationBell";
 import ConfirmLogoutModal from "./ConfirmLogoutModal";
+import {
+  Sun,
+  Moon,
+  ChevronDown,
+  HelpCircle,
+  LogOut,
+  Menu,
+  X,
+  Home,
+  Bell,
+  Settings
+} from "lucide-react";
 
 export default function Header() {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -76,9 +88,9 @@ export default function Header() {
                 title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {theme === "dark" ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  <Sun className="w-5 h-5" />
                 ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  <Moon className="w-5 h-5" />
                 )}
               </button>
 
@@ -99,7 +111,7 @@ export default function Header() {
                       {role}
                     </p>
                   </div>
-                  <svg className={`w-4 h-4 text-slate-400 transition-transform duration-200 hidden lg:block ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 hidden lg:block ${open ? 'rotate-180' : ''}`} />
                 </button>
 
                 {open && (
@@ -126,7 +138,7 @@ export default function Header() {
                           onClick={() => { setOpen(false); navigate("/help"); }}
                           className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl flex items-center gap-3 transition-colors group"
                         >
-                          <span className="text-slate-400 group-hover:text-blue-500 transition-colors">❓</span>
+                          <HelpCircle className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
                           Help & Support
                         </button>
                       )}
@@ -134,7 +146,7 @@ export default function Header() {
                         onClick={() => { setOpen(false); setShowLogout(true); }}
                         className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl flex items-center gap-3 transition-colors"
                       >
-                        <span className="scale-x-[-1]">🚪</span>
+                        <LogOut className="w-4 h-4" />
                         Sign out
                       </button>
                     </div>
@@ -151,7 +163,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(true)}
                 className="p-2 -mr-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                <Menu className="w-6 h-6" />
               </button>
             </div>
 
@@ -177,7 +189,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 -mr-2 text-slate-500 hover:text-slate-800 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <X className="w-6 h-6" />
               </button>
             </div>
 
@@ -205,21 +217,21 @@ export default function Header() {
                   onClick={handleDashboardClick}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white font-medium active:scale-95 transition-all"
                 >
-                  <span>🏠</span> Dashboard
+                  <Home className="w-5 h-5" /> Dashboard
                 </button>
                 {role !== "ADMIN" && (
                   <button
                     onClick={() => { navigate("/help"); setMobileMenuOpen(false); }}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
                   >
-                    <span>❓</span> Help & Support
+                    <HelpCircle className="w-5 h-5" /> Help & Support
                   </button>
                 )}
                 <button
                   onClick={() => { navigate("/notifications"); setMobileMenuOpen(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
                 >
-                  <span>🔔</span> Notifications
+                  <Bell className="w-5 h-5" /> Notifications
                 </button>
               </nav>
 
@@ -231,7 +243,7 @@ export default function Header() {
                     onClick={toggleTheme}
                     className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600"
                   >
-                    <span className="text-lg">{theme === "dark" ? "🌙" : "☀️"}</span>
+                    <span className="text-lg">{theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}</span>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{theme === "dark" ? "Dark" : "Light"}</span>
                   </button>
                 </div>
@@ -244,7 +256,7 @@ export default function Header() {
                 onClick={() => { setMobileMenuOpen(false); setShowLogout(true); }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold rounded-xl active:scale-95 transition-all"
               >
-                <span className="scale-x-[-1]">🚪</span>
+                <LogOut className="w-5 h-5" />
                 Sign Out
               </button>
             </div>
