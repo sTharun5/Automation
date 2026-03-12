@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useNotification } from "../context/NotificationContext";
+import { Bell } from "lucide-react";
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function NotificationBell() {
         onClick={() => setOpen(!open)}
         className="relative flex items-center justify-center h-9 w-9 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
-        <span className="text-xl">🔔</span>
+        <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 text-[10px] font-semibold text-white rounded-full animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}

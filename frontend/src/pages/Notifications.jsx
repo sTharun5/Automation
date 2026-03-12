@@ -2,6 +2,16 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useNotification } from "../context/NotificationContext";
+import {
+    ArrowLeft,
+    Bell,
+    BellOff,
+    CheckCheck,
+    Trash2,
+    Info,
+    CheckCircle,
+    AlertCircle
+} from "lucide-react";
 
 export default function Notifications() {
     const navigate = useNavigate();
@@ -16,7 +26,7 @@ export default function Notifications() {
                     onClick={() => navigate(-1)}
                     className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
                 >
-                    <span>←</span> Back
+                    <ArrowLeft className="w-4 h-4" /> Back
                 </button>
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
@@ -33,7 +43,7 @@ export default function Notifications() {
                                     onClick={markAllAsRead}
                                     className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
                                 >
-                                    Mark all as read
+                                    <CheckCheck className="w-4 h-4 inline mr-1" /> Mark all as read
                                 </button>
                             )}
                             {notifications.length > 0 && (
@@ -41,7 +51,7 @@ export default function Notifications() {
                                     onClick={deleteAll}
                                     className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
                                 >
-                                    Clear all
+                                    <Trash2 className="w-4 h-4 inline mr-1" /> Clear all
                                 </button>
                             )}
                         </div>
@@ -49,8 +59,8 @@ export default function Notifications() {
 
                     {notifications.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-4xl">
-                                🔔
+                            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                                <BellOff className="w-10 h-10 text-slate-400" />
                             </div>
                             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No notifications yet</h3>
                             <p className="text-slate-500 dark:text-slate-400 max-w-sm">
@@ -69,6 +79,14 @@ export default function Notifications() {
                                         }`}
                                 >
                                     <div className="flex items-start justify-between gap-4">
+                                        <div className={`p-2 rounded-lg shrink-0 ${n.title.toLowerCase().includes('approved') ? 'bg-green-100 dark:bg-green-900/30 text-green-600' :
+                                                n.title.toLowerCase().includes('rejected') ? 'bg-red-100 dark:bg-red-900/30 text-red-600' :
+                                                    'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                                            }`}>
+                                            {n.title.toLowerCase().includes('approved') ? <CheckCircle className="w-5 h-5" /> :
+                                                n.title.toLowerCase().includes('rejected') ? <AlertCircle className="w-5 h-5" /> :
+                                                    <Info className="w-5 h-5" />}
+                                        </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
                                                 {!n.read && <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>}
