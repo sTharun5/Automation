@@ -57,6 +57,9 @@ app.use(globalLimiter);
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
+// Health check for early wake-up
+app.get("/api/ping", (req, res) => res.status(200).json({ status: "active" }));
+
 
 app.use("/api/auth", authRoutes);
 

@@ -8,6 +8,18 @@
   <title>Smart OD | Placement & Mentor Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Early Backend Wake-up (Render Cold Start Fix) -->
+  <script>
+    (function() {
+      // Proactively ping the backend to start the spin-up process
+      // while the browser handles the initial HTML/JS parsing.
+      const API_URL = "https://automation-main.onrender.com"; // User should verify this matches Render URL
+      fetch(API_URL + "/api/ping").catch(() => {});
+      console.log("%c[System] Initializing Neural Link... Backend pinged.", "color: #6366f1; font-weight: bold;");
+    })();
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body {
