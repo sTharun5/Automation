@@ -195,48 +195,49 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl animate-springUp border border-slate-200 dark:border-slate-800 relative">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-8 w-full max-w-md shadow-2xl animate-springUp border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
 
                 {/* Close Button */}
                 <button
                     onClick={() => { stopScanner(); onClose(); }}
-                    className="absolute top-6 right-6 p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 rounded-full transition-all"
+                    className="absolute top-6 right-6 p-3 bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white text-slate-500 rounded-2xl transition-all z-50 group"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                 </button>
 
-                <div className="text-center mb-8">
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Log Attendance</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-bold uppercase tracking-widest">Digital OD Authentication</p>
+                <div className="text-center mb-8 relative z-10">
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Presence Sync</h2>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-bold uppercase tracking-[0.3em]">Initialize Bio-Metric / QR Handshake</p>
                 </div>
 
                 {/* SCANNER SECTION */}
-                <div className="relative rounded-3xl overflow-hidden bg-black aspect-square mb-6 border-4 border-slate-100 dark:border-slate-800 shadow-inner group">
+                <div className="relative rounded-[2.5rem] overflow-hidden bg-black aspect-square mb-8 border-8 border-slate-50 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none group">
                     <div id="attendance-scanner-reader" className="w-full h-full object-cover"></div>
 
                     {/* Verifying Overlay */}
                     {(processingScan || isProcessingOtp) && (
-                        <div className="absolute inset-0 z-20 bg-slate-900/90 flex flex-col items-center justify-center gap-4 backdrop-blur-md">
-                            <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-                            <p className="text-xs font-black text-white uppercase tracking-widest">Verifying...</p>
+                        <div className="absolute inset-0 z-20 bg-slate-900/90 flex flex-col items-center justify-center gap-4 backdrop-blur-xl">
+                            <div className="w-16 h-16 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                            <p className="text-[10px] font-black text-white uppercase tracking-[0.5em] animate-pulse">Decrypting...</p>
                         </div>
                     )}
 
                     {/* Error Overlay / Fallback */}
                     {!isScanning && !processingScan && (
-                        <div className="absolute inset-0 z-10 bg-slate-800 flex flex-col items-center justify-center p-8 text-center gap-4">
-                            <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-700">
-                                <Camera className="w-10 h-10 text-slate-400" />
+                        <div className="absolute inset-0 z-10 bg-slate-900 flex flex-col items-center justify-center p-10 text-center gap-6">
+                            <div className="w-24 h-24 bg-slate-800 rounded-[2rem] flex items-center justify-center border-4 border-slate-700 shadow-xl group-hover:border-indigo-500 transition-colors">
+                                <Camera className="w-10 h-10 text-slate-500" />
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-sm font-bold text-white">Camera Permission Needed</p>
-                                <p className="text-[10px] text-slate-400 font-medium leading-relaxed">Please allow camera access to log your attendance via QR code. Look for the prompt at the top of your screen.</p>
+                            <div className="space-y-4">
+                                <p className="text-sm font-black text-white uppercase tracking-tight">Camera Feed Locked</p>
+                                <p className="text-[9px] text-slate-400 font-black uppercase leading-relaxed tracking-widest opacity-60">Authentication requires direct visual handshake via terminal optic sensor.</p>
                                 <button
                                     onClick={(e) => { e.preventDefault(); startScanner(); }}
-                                    className="mt-4 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+                                    className="mt-4 w-full px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-indigo-500/30 active:scale-95"
                                 >
-                                    Allow Camera Access
+                                    Enable Sensor
                                 </button>
                             </div>
                         </div>
@@ -244,8 +245,8 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
 
                     {isScanning && !processingScan && (
                         <div className="absolute inset-0 pointer-events-none">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border-2 border-indigo-500/40 rounded-2xl flex items-center justify-center">
-                                <div className="w-full h-0.5 bg-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.5)] animate-scan"></div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-indigo-500/20 rounded-3xl flex items-center justify-center">
+                                <div className="w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent shadow-[0_0_30px_rgba(99,102,241,0.8)] animate-scan opacity-60"></div>
                             </div>
                         </div>
                     )}
@@ -253,20 +254,20 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
 
                 {/* DIVIDER */}
                 <div className="flex items-center gap-4 mb-8">
-                    <hr className="flex-1 border-slate-100 dark:border-slate-800" />
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Scan OR Enter Code</span>
-                    <hr className="flex-1 border-slate-100 dark:border-slate-800" />
+                    <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800"></div>
+                    <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.4em]">Protocol Sync</span>
+                    <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800"></div>
                 </div>
 
                 {/* OTP SECTION */}
-                <form onSubmit={handleOtpSubmit} className="space-y-6">
+                <form onSubmit={handleOtpSubmit} className="space-y-8">
                     {otpError && (
-                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/50 rounded-xl text-center text-xs font-bold text-red-600 dark:text-red-400 animate-shake">
-                            {otpError}
+                        <div className="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 animate-shake">
+                             Auth Failure: {otpError}
                         </div>
                     )}
 
-                    <div className="flex justify-between gap-2" onPaste={handleOtpPaste}>
+                    <div className="flex justify-between gap-3" onPaste={handleOtpPaste}>
                         {otp.map((digit, idx) => (
                             <input
                                 key={idx}
@@ -281,7 +282,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                                 onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                                 disabled={processingScan || isProcessingOtp}
-                                className="w-full h-14 md:h-16 text-center text-2xl font-black font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                className="w-full h-14 sm:h-20 text-center text-3xl font-black font-mono bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                             />
                         ))}
                     </div>
@@ -289,17 +290,17 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                     <button
                         type="submit"
                         disabled={otp.join("").length !== 6 || processingScan || isProcessingOtp}
-                        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${otp.join("").length === 6 && !processingScan && !isProcessingOtp
-                            ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/20"
+                        className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] transition-all ${otp.join("").length === 6 && !processingScan && !isProcessingOtp
+                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-2xl shadow-slate-900/20"
                             : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                             }`}
                     >
-                        {isProcessingOtp ? "Authorizing..." : "Authorize with OTP"}
+                        {isProcessingOtp ? "Authorizing Sync..." : "Confirm Protocol"}
                     </button>
                 </form>
 
-                <p className="mt-8 text-center text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                    Temporal Security Active • Code refreshes every 30s
+                <p className="mt-8 text-center text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] opacity-40">
+                    Dynamic Token Refreshes Every 30.0s
                 </p>
             </div>
         </div>

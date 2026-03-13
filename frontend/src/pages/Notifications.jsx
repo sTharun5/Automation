@@ -29,15 +29,15 @@ export default function Notifications() {
                     <ArrowLeft className="w-4 h-4" /> Back
                 </button>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-8 shadow-sm transition-colors">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">All Notifications</h2>
+                            <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 dark:text-white">All Notifications</h2>
                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                 You have {unreadCount} unread notifications
                             </p>
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
@@ -78,27 +78,29 @@ export default function Notifications() {
                                         : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30"
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className={`p-2 rounded-lg shrink-0 ${n.title.toLowerCase().includes('approved') ? 'bg-green-100 dark:bg-green-900/30 text-green-600' :
-                                                n.title.toLowerCase().includes('rejected') ? 'bg-red-100 dark:bg-red-900/30 text-red-600' :
-                                                    'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
-                                            }`}>
-                                            {n.title.toLowerCase().includes('approved') ? <CheckCircle className="w-5 h-5" /> :
-                                                n.title.toLowerCase().includes('rejected') ? <AlertCircle className="w-5 h-5" /> :
-                                                    <Info className="w-5 h-5" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                {!n.read && <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>}
-                                                <h4 className={`font-semibold ${n.read ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
-                                                    {n.title}
-                                                </h4>
+                                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+                                        <div className="flex gap-3 sm:gap-4 flex-1">
+                                            <div className={`p-2 rounded-lg shrink-0 h-fit ${n.title.toLowerCase().includes('approved') ? 'bg-green-100 dark:bg-green-900/30 text-green-600' :
+                                                    n.title.toLowerCase().includes('rejected') ? 'bg-red-100 dark:bg-red-900/30 text-red-600' :
+                                                        'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                                                }`}>
+                                                {n.title.toLowerCase().includes('approved') ? <CheckCircle className="w-5 h-5" /> :
+                                                    n.title.toLowerCase().includes('rejected') ? <AlertCircle className="w-5 h-5" /> :
+                                                        <Info className="w-5 h-5" />}
                                             </div>
-                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                                                {n.message}
-                                            </p>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    {!n.read && <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>}
+                                                    <h4 className={`font-semibold truncate ${n.read ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
+                                                        {n.title}
+                                                    </h4>
+                                                </div>
+                                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                                    {n.message}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <span className="text-xs text-slate-400 whitespace-nowrap">
+                                        <span className="text-[10px] sm:text-xs text-slate-400 whitespace-nowrap sm:self-center ml-11 sm:ml-0">
                                             {new Date(n.createdAt).toLocaleString()}
                                         </span>
                                     </div>

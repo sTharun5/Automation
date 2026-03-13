@@ -362,28 +362,28 @@ export default function ChatAssistant() {
                 className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col overflow-hidden shadow-2xl
                 ${isExpanded
                         ? "inset-0 w-full h-full rounded-none"
-                        : `bottom-24 right-6 w-96 max-h-[600px] h-[500px] rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
+                        : `bottom-0 sm:bottom-24 right-0 sm:right-6 w-full sm:w-96 max-h-[100dvh] sm:max-h-[600px] h-[calc(100dvh-0px)] sm:h-[500px] rounded-t-3xl sm:rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
                     }
-                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
+                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t sm:border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
             `}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="relative w-10 h-10 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-inner overflow-hidden">
-                            <Sparkles className="w-6 h-6 text-yellow-300 drop-shadow-md" />
+                <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-inner overflow-hidden">
+                            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow-md" />
                             {/* Animated gradient overlay */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
                         </div>
                         <div>
-                            <h3 className="font-bold text-base tracking-wide flex items-center gap-2 drop-shadow-sm">
+                            <h3 className="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5 sm:gap-2 drop-shadow-sm">
                                 Disha 2.0
                                 <span className="relative flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
                                 </span>
                             </h3>
-                            <p className="text-[10px] uppercase tracking-widest opacity-90 font-semibold text-blue-100">AI Assistant</p>
+                            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest opacity-90 font-semibold text-blue-100">AI Assistant</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -519,13 +519,13 @@ export default function ChatAssistant() {
 
             {/* Floating Action Button (FAB) */}
             {!isExpanded && (
-                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0 translate-y-4" : "visible opacity-100 translate-y-0"}`}>
-                    <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur shadow-2xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white px-5 py-3 rounded-full text-sm font-semibold hidden sm:flex items-center gap-2 animate-bounce">
+                <div className={`fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0 translate-y-4" : "visible opacity-100 translate-y-0"}`}>
+                    <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur shadow-2xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white px-5 py-3 rounded-full text-sm font-semibold hidden md:flex items-center gap-2 animate-bounce">
                         <Sparkles className="w-4 h-4 text-indigo-500" /> Need Help? Chat with Disha
                     </div>
                     <button
                         onClick={() => openChat()}
-                        className="group relative h-[68px] w-[68px] rounded-2xl shadow-2xl shadow-indigo-500/30 flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 active:scale-95 ring-4 ring-white dark:ring-slate-900 border border-white/10 overflow-hidden"
+                        className="group relative h-14 w-14 sm:h-[68px] sm:w-[68px] rounded-2xl shadow-2xl shadow-indigo-500/30 flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 active:scale-95 ring-4 ring-white dark:ring-slate-900 border border-white/10 overflow-hidden"
                     >
                         {/* Shimmer effect inside button */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 translate-x-[-150%] group-hover:animate-[shimmer_1.5s_infinite]"></div>

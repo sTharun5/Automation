@@ -17,7 +17,12 @@ import {
   Download,
   XCircle,
   Timer,
-  Check
+  Check,
+  Zap,
+  LayoutGrid,
+  ShieldCheck,
+  FileSearch,
+  ArrowUpRight
 } from "lucide-react";
 
 export default function StudentODDetails() {
@@ -150,165 +155,208 @@ export default function StudentODDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium w-fit bg-transparent border-none cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-5xl mx-auto w-full">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-10">
+          <div className="flex items-center gap-5">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:scale-110 active:scale-95 transition-all text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            </button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Application Dossier</h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Real-time Transmission Monitor</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+              <span className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] rounded-full border shadow-sm ${getLiveStatus(od.startDate, od.endDate, od.status).color}`}>
+                {getLiveStatus(od.startDate, od.endDate, od.status).label}
+              </span>
+          </div>
+        </div>
 
         {needsReport && (
-          <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-amber-500" />
+          <div className="mb-10 bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/30 rounded-[2rem] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-amber-200/20 dark:shadow-none overflow-hidden relative group">
+            <div className="absolute inset-0 bg-amber-500/5 pointer-events-none"></div>
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 shrink-0 rotate-3">
+                <AlertCircle className="w-7 h-7" />
+              </div>
               <div>
-                <h3 className="font-bold text-amber-900 dark:text-amber-100">Internship Report Required</h3>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Report Required</h3>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">
                   {od.report?.status === "PENDING"
-                    ? "Your report is currently under review."
-                    : "You must submit an internship report for this completed OD to apply for future ODs."}
+                    ? "Vector Transmission: Review in Progress"
+                    : "Post-Activity Documentation Mandatory"}
                 </p>
               </div>
             </div>
             {(!od.report || od.report.status !== "PENDING") && (
               <button
                 onClick={() => setShowReportModal(true)}
-                className="whitespace-nowrap bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-sm"
+                className="w-full md:w-auto bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-[10px] uppercase tracking-[0.2em] py-4 px-10 rounded-2xl hover:bg-amber-500 dark:hover:bg-amber-500 dark:hover:text-white transition-all shadow-xl shadow-slate-200/50 dark:shadow-none relative z-10"
               >
-                <FileText className="w-4 h-4" /> Submit Report
+                Submit Dossier
               </button>
             )}
           </div>
         )}
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              <Activity className="w-5 h-5 text-blue-500" /> On-Duty Application Details
-            </h2>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Status & Progress Card */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+               
+               <div className="flex justify-between items-start mb-8 relative z-10">
+                 <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Primary Vector</p>
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight line-clamp-2">
+                       {od.type === 'INTERNAL' ? (od.event?.name || "Internal Activity") : (od.offer?.company?.name || od.verificationDetails?.company?.searched || "Unknown Node")}
+                    </h2>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Status Code</p>
+                    <p className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{statusText}</p>
+                 </div>
+               </div>
 
-          {/* ⏱️ REAL-TIME TRACKING HEADER */}
-          <div className="px-6 py-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-end mb-2">
-              <div className="flex items-center gap-3">
-                <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md border shadow-sm ${getLiveStatus(od.startDate, od.endDate, od.status).color}`}>
-                  {getLiveStatus(od.startDate, od.endDate, od.status).label}
-                </span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                  {progressPercent}% {isApproved ? "Time Elapsed" : "Processing"}
-                </span>
-              </div>
-              <div className="text-right">
-                {isApproved ? (
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    {getElapsedDays(od.startDate, od.endDate, od.status, od.duration)} / {od.duration} Days
-                  </span>
-                ) : (
-                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                    {getProgressLabel(od.status)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
-              <div
-                className={`h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' :
-                  isApproved ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
-                    'bg-gradient-to-r from-blue-500 to-indigo-500 relative'
-                  }`}
-                style={{ width: `${progressPercent}%` }}
-              >
-                {/* Shimmer effect only for pending states */}
-                {!isApproved && od.status !== 'REJECTED' && (
-                  <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]" style={{ backgroundImage: 'linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)', backgroundSize: '1rem 1rem' }}></div>
-                )}
-              </div>
-            </div>
-          </div>
+               <div className="space-y-6 relative z-10">
+                  <div className="flex justify-between items-end">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
+                        <Activity className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                        {progressPercent}% {isApproved ? "Mission Coverage" : "Synchronization"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                       {isApproved ? `${getElapsedDays(od.startDate, od.endDate, od.status, od.duration)} / ${od.duration} Cycles` : getProgressLabel(od.status)}
+                    </p>
+                  </div>
 
-          <div className="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
-            {/* Activity ID & Tracker ID */}
-            <div className="grid grid-cols-2 gap-4 px-6 py-6 bg-slate-50/50 dark:bg-slate-800/30">
-              <div>
-                <p className="text-[10px] uppercase text-slate-500 font-bold mb-1 tracking-wider">Tracker ID</p>
-                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{od.trackerId}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] uppercase text-slate-500 font-bold mb-1 tracking-wider">Activity ID</p>
-                <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">{od.activityId || "PENDING"}</p>
-              </div>
-            </div>
-
-            {/* Visual Timeline */}
-            <div className="px-6 py-8">
-              <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 mb-6 uppercase tracking-widest flex items-center gap-2">
-                <History className="w-3.5 h-3.5" /> Application Lifecycle
-              </h4>
-              <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-700">
-                {(od.timeline || []).map((step, idx) => (
-                  <div key={idx} className="relative pl-10 animate-fadeIn" style={{ animationDelay: `${idx * 100}ms` }}>
-                    <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 ${step.status === "REJECTED" ? "bg-red-500 border-red-100 dark:border-red-950" :
-                      idx === (od.timeline.length - 1) && !isApproved ? "bg-blue-600 border-blue-100 dark:border-blue-950 animate-pulse" :
-                        "bg-green-500 border-green-100 dark:border-green-950"
-                      }`} />
-                    <div>
-                      <h5 className="font-bold text-slate-900 dark:text-white capitalize leading-tight">{step.label}</h5>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{new Date(step.time).toLocaleString()}</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">{step.description}</p>
+                  <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-1 shadow-inner relative">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ease-out relative ${od.status === 'REJECTED' ? 'bg-rose-500' :
+                        isApproved ? 'bg-indigo-600 shadow-lg shadow-indigo-500/40' :
+                        'bg-slate-900 dark:bg-white'
+                        }`}
+                      style={{ width: `${progressPercent}%` }}
+                    >
+                      {!isApproved && od.status !== 'REJECTED' && (
+                        <div className="absolute inset-0 bg-white/20 animate-shimmer scale-x-150"></div>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
+               </div>
             </div>
 
-            {/* Details Table */}
-            <div className="px-6 py-4 bg-slate-50/30 dark:bg-slate-800/10">
-              <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2">
-                <FileCheck2 className="w-3.5 h-3.5" /> Verification Details
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {Object.entries(od.verificationDetails || {}).map(([key, val]) => (
-                  <div key={key} className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <p className="text-[10px] uppercase text-slate-400 font-bold mb-1">{key}</p>
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${val ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                      {val ? 'VERIFIED' : 'FAILED'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Application Lifecycle */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+                <div className="flex items-center gap-4 mb-12">
+                   <div className="w-10 h-10 bg-indigo-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                      <History className="w-5 h-5" />
+                   </div>
+                   <div>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Transmission History</h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Activity Lifecycle Pipeline</p>
+                   </div>
+                </div>
 
-            {/* Standard Info */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              <Row label={od.type === 'INTERNAL' ? "Event Name" : "Industry"} value={od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || od.verificationDetails?.company?.searched || "—")} />
-              <Row label="Dates" value={`${new Date(od.startDate).toLocaleDateString()} to ${new Date(od.endDate).toLocaleDateString()} (${od.type === 'INTERNAL' ? (() => {
-                const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
-                const h = Math.floor(hrs);
-                const m = Math.round((hrs % 1) * 60);
-                return m > 0 ? `${h}h ${m}m` : `${h} Hours`;
-              })() : `${od.duration} days`})`} />
-
-              {od.type !== 'INTERNAL' && (
-                <>
-                  <FileRow label="Aim & Objective" filePath={od.proofFile} />
-                  <FileRow label="Offer Letter" filePath={od.offerFile} />
-                  {od.report?.fileUrl && (
-                    <FileRow label="Internship Report" filePath={od.report.fileUrl} />
-                  )}
-                  {od.report?.status && (
-                    <Row label="Report Status" value={od.report.status} status />
-                  )}
-                  {od.report?.remarks && (
-                    <Row label="Report Remarks" value={od.report.remarks} danger />
-                  )}
-                </>
-              )}
-              <Row label="Current Status" value={statusText} status />
-              {od.remarks && <Row label="Mentor Remarks" value={od.remarks} danger />}
+                <div className="space-y-12 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                  {(od.timeline || []).map((step, idx) => (
+                    <div key={idx} className="relative pl-14 group/step">
+                      <div className={`absolute left-0 top-1 w-10 h-10 rounded-2xl flex items-center justify-center border-4 border-white dark:border-slate-900 shadow-xl transition-all ${step.status === "REJECTED" ? "bg-rose-500 text-white" :
+                        idx === (od.timeline.length - 1) && !isApproved ? "bg-indigo-600 text-white animate-pulse" :
+                        "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover/step:bg-indigo-500 group-hover/step:text-white"
+                        }`}>
+                        {step.status === "REJECTED" ? <XCircle className="w-5 h-5" /> : (idx === (od.timeline.length - 1) && !isApproved ? <Timer className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />)}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                           <h5 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">{step.label}</h5>
+                           <p className="text-[10px] font-mono font-bold text-slate-400 uppercase">{new Date(step.time).toLocaleString()}</p>
+                        </div>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 max-w-lg leading-relaxed">{step.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
             </div>
+          </div>
+
+          {/* Sidebar Content */}
+          <div className="space-y-8">
+             {/* IDs Card */}
+             <div className="bg-slate-900 dark:bg-white p-8 rounded-[2.5rem] text-white dark:text-slate-900 shadow-2xl shadow-indigo-500/10 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-white/5 dark:bg-black/5 rounded-full -ml-16 -mt-16 blur-2xl"></div>
+                
+                <div className="space-y-8 relative z-10">
+                   <div>
+                      <p className="text-[9px] font-black text-indigo-300 dark:text-indigo-400 uppercase tracking-widest mb-2">Universal Tracker</p>
+                      <p className="text-3xl font-black tracking-tighter uppercase">{od.trackerId}</p>
+                   </div>
+                   <div className="pt-8 border-t border-white/10 dark:border-slate-100">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Activity Reference</p>
+                      <p className="text-xl font-black tracking-tighter text-indigo-400 dark:text-indigo-600 font-mono">{od.activityId || "PENDING_INT"}</p>
+                   </div>
+                </div>
+             </div>
+
+             {/* Details Matrix */}
+             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
+                   <ShieldCheck className="w-4 h-4 text-indigo-500" /> Validation Matrix
+                </h4>
+                <div className="space-y-4">
+                  {Object.entries(od.verificationDetails || {}).map(([key, val]) => (
+                    <div key={key} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-500/20 transition-all">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{key}</p>
+                      <div className={`flex items-center gap-2 group`}>
+                         <div className={`w-2 h-2 rounded-full ${val ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50' : 'bg-rose-500 shadow-lg shadow-rose-500/50'}`}></div>
+                         <span className={`text-[9px] font-black uppercase tracking-widest ${val ? 'text-emerald-500' : 'text-rose-500'}`}>
+                           {val ? 'Verified' : 'Failed'}
+                         </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+
+             {/* Transmission Payload Section */}
+             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-3">
+                   <FileSearch className="w-4 h-4 text-indigo-500" /> Transmission Payload
+                </h4>
+                <div className="space-y-1">
+                   <PremiumRow label="Schedule" value={`${new Date(od.startDate).toLocaleDateString()} -> ${new Date(od.endDate).toLocaleDateString()}`} />
+                   <PremiumRow label="Bandwidth" value={od.type === 'INTERNAL' ? (() => {
+                      const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
+                      const h = Math.floor(hrs);
+                      const m = Math.round((hrs % 1) * 60);
+                      return m > 0 ? `${h}h ${m}m` : `${h} Cycles`;
+                   })() : `${od.duration} Cycles`} />
+                   
+                   {od.type !== 'INTERNAL' && (
+                     <div className="space-y-1 mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
+                       <PremiumFileRow label="Inception Proof" filePath={od.proofFile} />
+                       <PremiumFileRow label="Offer Vector" filePath={od.offerFile} />
+                       {od.report?.fileUrl && <PremiumFileRow label="Post-Matrix Report" filePath={od.report.fileUrl} />}
+                     </div>
+                   )}
+
+                   {od.remarks && (
+                     <div className="mt-6 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl">
+                        <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-2">System Remarks</p>
+                        <p className="text-xs font-bold text-rose-700 dark:text-rose-400 italic">"{od.remarks}"</p>
+                     </div>
+                   )}
+                </div>
+             </div>
           </div>
         </div>
       </main>
@@ -320,51 +368,38 @@ export default function StudentODDetails() {
         pendingODs={[od]}
         onUploadSuccess={() => {
           setShowReportModal(false);
-          fetchOD(); // Refresh data to show report status
+          fetchOD();
         }}
       />
     </div>
   );
 }
 
-function Row({ label, value, highlight, status, danger }) {
-  let valueClass = "text-slate-700 dark:text-slate-300";
-  if (highlight) valueClass = "text-blue-600 dark:text-blue-400 font-semibold";
-  if (status) valueClass = "text-amber-600 dark:text-amber-400 font-semibold";
-  if (danger) valueClass = "text-red-600 dark:text-red-400";
-
+function PremiumRow({ label, value }) {
   return (
-    <div className="grid grid-cols-3 gap-4 px-6 py-4">
-      <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
-      <div className={`col-span-2 ${valueClass}`}>{value}</div>
+    <div className="py-3 flex flex-col gap-1">
+      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+      <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tighter">{value}</p>
     </div>
   );
 }
 
-function FileRow({ label, filePath }) {
-  if (!filePath) {
-    return (
-      <div className="grid grid-cols-3 gap-4 px-6 py-4">
-        <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
-        <div className="col-span-2 text-slate-500 dark:text-slate-400">Not uploaded</div>
-      </div>
-    );
-  }
-
+function PremiumFileRow({ label, filePath }) {
+  if (!filePath) return null;
   const fileName = filePath.split(/[\\/]/).pop();
 
   return (
-    <div className="grid grid-cols-3 gap-4 px-6 py-4">
-      <div className="col-span-1 text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="col-span-2 flex flex-col gap-2">
-        <span className="text-slate-700 dark:text-slate-300 break-all">{fileName}</span>
+    <div className="py-3 flex flex-col gap-2">
+      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+      <div className="flex items-center justify-between gap-4 group">
+        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{fileName}</span>
         <a
           href={`${BASE_URL}/${filePath}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform"
         >
-          <Download className="w-4 h-4" /> Download
+          Download <ArrowUpRight className="w-3 h-3" />
         </a>
       </div>
     </div>

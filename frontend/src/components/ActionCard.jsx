@@ -1,74 +1,39 @@
-const colorMap = {
-  blue: {
-    bar: "from-blue-600 to-indigo-600",
-    button: "group-hover:from-blue-600 group-hover:to-indigo-600",
-    iconBg: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  },
-  green: {
-    bar: "from-emerald-600 to-teal-600",
-    button: "group-hover:from-emerald-600 group-hover:to-teal-600",
-    iconBg: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
-  },
-  purple: {
-    bar: "from-violet-600 to-purple-600",
-    button: "group-hover:from-violet-600 group-hover:to-purple-600",
-    iconBg: "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400",
-  },
-};
+import { ChevronRight } from "lucide-react";
+import React from 'react';
 
-export default function ActionCard({
-  title,
-  description,
-  buttonText,
-  color = "blue",
-  icon,
-  onClick,
-}) {
-  const styles = colorMap[color] || colorMap.blue;
+export default function ActionCard({ title, description, buttonText, color = "blue", icon, onClick }) {
+  const colors = {
+    blue: "bg-indigo-600 text-white shadow-indigo-200 dark:shadow-none",
+    green: "bg-emerald-600 text-white shadow-emerald-200 dark:shadow-none",
+    purple: "bg-violet-600 text-white shadow-violet-200 dark:shadow-none",
+    rose: "bg-rose-600 text-white shadow-rose-200 dark:shadow-none"
+  };
 
   return (
-    <div
-      className="
-        group bg-white dark:bg-slate-900
-        rounded-2xl shadow-sm
-        border border-slate-200 dark:border-slate-700/80
-        p-6 flex flex-col justify-between
-        transition-all duration-300
-        hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 hover:-translate-y-0.5
-      "
+    <button
+      onClick={onClick}
+      className={`relative w-full p-8 rounded-[3rem] ${colors[color] || colors.blue} group overflow-hidden active:scale-[0.98] transition-all duration-300 text-left h-full flex flex-col justify-between`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:opacity-20 transition-opacity"></div>
+      
+      <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
+        <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xl flex items-center justify-center group-hover:scale-110 transition-transform">
           {icon ? (
-            typeof icon === "string" ? <span>{icon}</span> : <div className="w-6 h-6">{icon}</div>
+            typeof icon === "string" ? <span className="text-2xl">{icon}</span> : React.cloneElement(icon, { className: "w-7 h-7" })
           ) : (
-            "→"
+            <ChevronRight className="w-7 h-7" />
           )}
         </div>
-        <div className={`h-1 w-10 rounded-full bg-gradient-to-r ${styles.bar} shrink-0`} />
-      </div>
+        
+        <div>
+          <h3 className="text-xl font-black uppercase tracking-tighter leading-tight">{title}</h3>
+          <p className="text-[10px] font-black opacity-70 uppercase tracking-widest mt-2">{description || buttonText}</p>
+        </div>
 
-      <div className="mt-4">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-          {title}
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-          {description}
-        </p>
+        <div className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all self-end">
+          <ChevronRight className="w-5 h-5" />
+        </div>
       </div>
-
-      <button
-        onClick={onClick}
-        className={`
-          mt-6 w-full py-3 rounded-xl font-semibold text-sm
-          bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900
-          transition-all duration-300 hover:opacity-95 active:scale-[0.98]
-          group-hover:bg-gradient-to-r ${styles.button}
-          group-hover:text-white
-        `}
-      >
-        {buttonText}
-      </button>
-    </div>
+    </button>
   );
 }
