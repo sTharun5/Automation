@@ -333,7 +333,7 @@ export default function StudentEvents() {
                                     </div>
 
                                     {/* Roster Live Matrix Preview */}
-                                    <div className="lg:w-80 bg-slate-50 dark:bg-slate-800/20 border-l border-slate-100 dark:border-slate-800 p-8 flex flex-col min-w-[320px]">
+                                    <div className="w-full lg:w-80 bg-slate-50 dark:bg-slate-800/20 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 p-8 flex flex-col min-w-0 lg:min-w-[320px]">
                                         <div className="flex justify-between items-center mb-8">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-indigo-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -382,4 +382,3 @@ export default function StudentEvents() {
         </div>
     );
 }
-

@@ -274,14 +274,17 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                                 id={`otp-log-${idx}`}
                                 name={`otp-log-${idx}`}
                                 ref={(el) => (inputRefs.current[idx] = el)}
-                                type="text"
+                                type="tel"
                                 inputMode="numeric"
-                                pattern="\d{1}"
+                                pattern="[0-9]*"
+                                autoComplete={idx === 0 ? "one-time-code" : "off"}
+                                enterKeyHint={idx === 5 ? "done" : "next"}
                                 maxLength={1}
                                 value={digit}
                                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                                 onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                                 disabled={processingScan || isProcessingOtp}
+                                aria-label={`OTP digit ${idx + 1}`}
                                 className="w-full h-14 sm:h-20 text-center text-3xl font-black font-mono bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                             />
                         ))}

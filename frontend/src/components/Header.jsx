@@ -121,7 +121,7 @@ export default function Header() {
                 </button>
 
                 {open && (
-                  <div className="absolute right-0 mt-4 w-72 rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50">
+                  <div className="absolute right-0 mt-4 w-[min(18rem,calc(100vw-2rem))] rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50">
                     <div className="p-8 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800">
                       <div className="flex items-center gap-5">
                         <div className="h-14 w-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-500/20">

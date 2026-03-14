@@ -126,19 +126,37 @@ export default function Login() {
 
   /* ================= OTP INPUT ================= */
   const handleOtpChange = (value, index) => {
-    if (!/^\d?$/.test(value)) return;
+    // Mobile keyboards can send non-digits; also support autofill/paste of multiple digits.
+    const digits = String(value ?? "").replace(/\D/g, "");
+
+    // Clear
+    if (!digits) {
+      const next = [...otp];
+      next[index] = "";
+      setOtp(next);
+      return;
+    }
 
     const next = [...otp];
-    next[index] = value;
+    if (digits.length === 1) {
+      next[index] = digits;
+      setOtp(next);
+
+      if (index < 5) otpRefs.current[index + 1]?.focus();
+      else verifyOTP(next.join(""));
+      return;
+    }
+
+    // Multi-digit input (paste/autofill) starting at the current index.
+    for (let offset = 0; offset < digits.length && index + offset < 6; offset++) {
+      next[index + offset] = digits[offset];
+    }
     setOtp(next);
 
-    if (value && index < 5) {
-      otpRefs.current[index + 1].focus();
-    }
+    const filledUntil = Math.min(index + digits.length - 1, 5);
+    otpRefs.current[filledUntil]?.focus();
 
-    if (index === 5 && value) {
-      verifyOTP(next.join(""));
-    }
+    if (next.join("").length === 6) verifyOTP(next.join(""));
   };
 
   const handleOtpKeyDown = (e, index) => {
@@ -148,11 +166,20 @@ export default function Login() {
   };
 
   const handleOtpPaste = (e) => {
-    const pasted = e.clipboardData.getData("text").slice(0, 6).split("");
-    if (pasted.length === 6) {
-      setOtp(pasted);
-      verifyOTP(pasted.join(""));
-    }
+    e.preventDefault();
+    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!digits) return;
+
+    const next = Array(6).fill("");
+    digits.split("").forEach((d, i) => {
+      next[i] = d;
+    });
+    setOtp(next);
+
+    const focusIndex = Math.min(digits.length, 5);
+    otpRefs.current[focusIndex]?.focus();
+
+    if (digits.length === 6) verifyOTP(digits);
   };
 
   /* ================= SHAKE ================= */
@@ -263,11 +290,16 @@ export default function Login() {
                       <input
                         key={i}
                         ref={(el) => (otpRefs.current[i] = el)}
-                        type="text"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete={i === 0 ? "one-time-code" : "off"}
+                        enterKeyHint={i === 5 ? "done" : "next"}
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(e.target.value, i)}
                         onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                        aria-label={`OTP digit ${i + 1}`}
                         className={`
                           w-11 h-14 sm:w-14 sm:h-16 
                           text-center text-xl font-black 
