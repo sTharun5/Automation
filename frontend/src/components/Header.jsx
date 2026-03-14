@@ -14,8 +14,7 @@ import {
   X,
   Home,
   Bell,
-  Settings,
-  Sparkles
+  Settings
 } from "lucide-react";
 
 export default function Header() {
@@ -56,120 +55,99 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-white/10 dark:border-slate-800/50 transition-all duration-500">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-16 md:h-20">
 
             {/* Left: Branding */}
             <div
               onClick={handleDashboardClick}
-              className="flex items-center gap-4 min-w-0 cursor-pointer group"
+              className="flex items-center gap-3 min-w-0 cursor-pointer group"
             >
-              <div className="relative flex h-12 w-12 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl shadow-indigo-500/5 overflow-hidden transition-all duration-500 group-hover:scale-110 group-active:scale-95">
-                <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
-                <img src={logo} alt="BIT" className="relative h-[75%] w-[75%] object-contain" />
+              <div className="flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm overflow-hidden transform transition-transform group-hover:scale-105">
+                <img src={logo} alt="BIT" className="h-full w-full object-contain" />
               </div>
               <div className="min-w-0 flex flex-col justify-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:text-indigo-400">
-                    Neural
-                  </span>
-                  <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                </div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-none mt-1">
-                  Smart OD
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 truncate">
+                  BIT / OD Portal
+                </p>
+                <h1 className="text-base sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white truncate tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+                  SMART OD
                 </h1>
               </div>
             </div>
 
             {/* Right: Actions (Desktop) */}
-            <div className="hidden md:flex items-center gap-6">
-              <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50">
-                <NotificationBell />
-                
-                <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+            <div className="hidden md:flex items-center gap-2 lg:gap-4 pl-6 border-l border-slate-200 dark:border-slate-700 ml-6">
+              <NotificationBell />
 
-                <button
-                  onClick={toggleTheme}
-                  className="p-2.5 rounded-xl text-slate-500 hover:bg-white dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 dark:text-slate-400 transition-all duration-300 shadow-sm hover:shadow-indigo-500/10"
-                >
-                  {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                </button>
-              </div>
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </button>
 
               {/* Profile Dropdown */}
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setOpen(!open)}
-                  className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 pr-4 rounded-2xl hover:border-indigo-500/30 transition-all duration-300 shadow-xl shadow-slate-200/50 dark:shadow-none"
+                  className="flex items-center gap-3 rounded-full md:rounded-xl py-1 md:py-2 pl-1 md:pl-2 pr-1 md:pr-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
                 >
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/20 rotate-3 group-hover:rotate-0 transition-transform">
+                  <div className="h-9 w-9 md:h-10 md:w-10 rounded-full border-2 border-slate-100 dark:border-slate-700 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
                     {user.name?.charAt(0).toUpperCase() || "?"}
                   </div>
-                  <div className="hidden lg:block text-left min-w-0">
-                    <p className="text-xs font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
+                  <div className="hidden lg:block text-right">
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">
                       {user.name?.split(' ')[0]}
                     </p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                      {role === 'ADMIN' ? 'SYS_ADMIN' : role}
+                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate leading-tight uppercase tracking-wider">
+                      {role}
                     </p>
                   </div>
-                  <div className={`p-1 rounded-lg bg-slate-50 dark:bg-slate-800 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 hidden lg:block ${open ? 'rotate-180' : ''}`} />
                 </button>
 
                 {open && (
-                  <div className="absolute right-0 mt-4 w-[min(18rem,calc(100vw-2rem))] rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-none overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50">
-                    <div className="p-8 bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-5">
-                        <div className="h-14 w-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-xl shadow-indigo-500/20">
-                          {user.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-base font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
-                            {user.name}
-                          </p>
-                          <p className="text-[10px] font-bold text-slate-400 truncate uppercase mt-1 tracking-widest">
-                            {user.email}
-                          </p>
-                        </div>
+                  <div className="absolute right-0 mt-3 w-72 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl overflow-hidden animate-fadeIn z-50 ring-1 ring-black/5">
+                    <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-sm">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate font-mono mt-1">
+                        {user.email}
+                      </p>
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${role === 'ADMIN' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                          role === 'FACULTY' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          }`}>
+                          {role}
+                        </span>
                       </div>
                     </div>
-                    <div className="p-4 space-y-2">
-                      <button
-                        onClick={() => { setOpen(false); navigate("/settings"); }}
-                        className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-black uppercase text-[10px] tracking-widest group"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-all">
-                          <Settings className="w-5 h-5" />
-                        </div>
-                        Kernel Settings
-                      </button>
-                      
+                    <div className="p-2 space-y-1">
                       {role !== "ADMIN" && (
                         <button
                           onClick={() => { setOpen(false); navigate("/help"); }}
-                          className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-black uppercase text-[10px] tracking-widest group"
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl flex items-center gap-3 transition-colors group"
                         >
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:text-amber-500 group-hover:bg-amber-50 transition-all">
-                            <HelpCircle className="w-5 h-5" />
-                          </div>
-                          Support Node
+                          <HelpCircle className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                          Help & Support
                         </button>
                       )}
-
-                      <div className="h-px bg-slate-100 dark:bg-slate-800 mx-4 my-2"></div>
-
                       <button
                         onClick={() => { setOpen(false); setShowLogout(true); }}
-                        className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all font-black uppercase text-[10px] tracking-widest group"
+                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl flex items-center gap-3 transition-colors"
                       >
-                        <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-400 group-hover:text-rose-600 transition-all">
-                          <LogOut className="w-5 h-5" />
-                        </div>
-                        Terminate Session
+                        <LogOut className="w-4 h-4" />
+                        Sign out
                       </button>
                     </div>
                   </div>
@@ -178,11 +156,12 @@ export default function Header() {
             </div>
 
             {/* Mobile Controls */}
-            <div className="flex md:hidden items-center gap-4">
+            <div className="flex md:hidden items-center gap-3">
               <NotificationBell />
+
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-95 transition-all shadow-sm"
+                className="p-2 -mr-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
                 <Menu className="w-6 h-6" />
               </button>
@@ -194,85 +173,91 @@ export default function Header() {
 
       {/* Mobile Menu Backdrop & Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] md:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-500"
+            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fadeIn"
             onClick={() => setMobileMenuOpen(false)}
           ></div>
 
-          <div className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white dark:bg-slate-950 shadow-[0_0_100px_rgba(0,0,0,0.3)] animate-in slide-in-from-right duration-500 flex flex-col">
-            <div className="p-8 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/50">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-lg">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Portal</p>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Navigation Unit</p>
-                </div>
-              </div>
+          {/* Drawer */}
+          <div className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col animate-slideInRight">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+              <span className="font-bold text-lg text-slate-900 dark:text-white">Menu</span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-rose-500 transition-colors"
+                className="p-2 -mr-2 text-slate-500 hover:text-slate-800 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-10">
-              {/* User Section */}
-              <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-center">
-                <div className="relative inline-block mb-4">
-                  <div className="h-20 w-20 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-3xl shadow-2xl rotate-6">
-                    {user.name?.charAt(0).toUpperCase()}
+            {/* Mobile Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* User Info */}
+              <div className="flex flex-col gap-3 pb-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                    {user.name?.charAt(0).toUpperCase() || "?"}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{user.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{role}</p>
                   </div>
                 </div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">{user.name}</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{role}</p>
-                <div className="mt-4 px-4 py-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate border border-slate-100 dark:border-slate-700">
-                  {user.email}
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <p className="text-xs font-mono text-slate-500 dark:text-slate-400 break-all">{user.email}</p>
                 </div>
               </div>
 
-              {/* Links */}
-              <nav className="space-y-4">
-                <QuickLink icon={<Home />} label="Control Center" onClick={handleDashboardClick} active />
-                <QuickLink icon={<Bell />} label="Transmissions" onClick={() => { navigate("/notifications"); setMobileMenuOpen(false); }} />
-                <QuickLink icon={<HelpCircle />} label="Tactical Support" onClick={() => { navigate("/help"); setMobileMenuOpen(false); }} />
-                <QuickLink icon={<Settings />} label="Core Settings" onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }} />
+              {/* Navigation Links */}
+              <nav className="space-y-2">
+                <button
+                  onClick={handleDashboardClick}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white font-medium active:scale-95 transition-all"
+                >
+                  <Home className="w-5 h-5" /> Dashboard
+                </button>
+                {role !== "ADMIN" && (
+                  <button
+                    onClick={() => { navigate("/help"); setMobileMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
+                  >
+                    <HelpCircle className="w-5 h-5" /> Help & Support
+                  </button>
+                )}
+                <button
+                  onClick={() => { navigate("/notifications"); setMobileMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all"
+                >
+                  <Bell className="w-5 h-5" /> Notifications
+                </button>
               </nav>
 
-              <div className="h-px bg-slate-100 dark:bg-slate-800"></div>
-
-              {/* Theme Selector */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-4">Ambient Mode</p>
-                <div className="flex gap-4">
+              {/* Theme Toggle Mobile */}
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Appearance</span>
                   <button
-                    onClick={() => { if(theme === 'dark') toggleTheme(); }}
-                    className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'light' ? 'bg-indigo-600 text-white border-indigo-600 border-indigo-500 shadow-xl' : 'bg-slate-50 dark:bg-slate-900 text-slate-400 border-transparent'}`}
+                    onClick={toggleTheme}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600"
                   >
-                    <Sun className="w-5 h-5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Day</span>
-                  </button>
-                  <button
-                    onClick={() => { if(theme === 'light') toggleTheme(); }}
-                    className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white border-indigo-500 shadow-xl' : 'bg-slate-50 dark:bg-slate-900 text-slate-400 border-transparent'}`}
-                  >
-                    <Moon className="w-5 h-5" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Night</span>
+                    <span className="text-lg">{theme === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{theme === "dark" ? "Dark" : "Light"}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="p-8 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30">
+            {/* Logout Mobile */}
+            <div className="p-5 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => { setMobileMenuOpen(false); setShowLogout(true); }}
-                className="w-full flex items-center justify-center gap-4 py-5 bg-rose-500 text-white font-black uppercase text-xs tracking-[0.2em] rounded-[2rem] shadow-xl shadow-rose-500/20 active:scale-95 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold rounded-xl active:scale-95 transition-all"
               >
                 <LogOut className="w-5 h-5" />
-                Terminate Link
+                Sign Out
               </button>
             </div>
           </div>
@@ -288,25 +273,5 @@ export default function Header() {
         }}
       />
     </>
-  );
-}
-
-function QuickLink({ icon, label, onClick, active = false }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-black uppercase text-[10px] tracking-widest group active:scale-[0.98] ${
-        active 
-          ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20' 
-          : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800'
-      }`}
-    >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-        active ? 'bg-white/20' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:text-indigo-500 group-hover:bg-indigo-50'
-      }`}>
-        {Object.cloneElement(icon, { className: "w-5 h-5" })}
-      </div>
-      {label}
-    </button>
   );
 }

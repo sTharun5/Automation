@@ -187,110 +187,95 @@ export default function UpdatePlacementStatus() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-5xl mx-auto w-full">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">Matrix Update</h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium mt-1">Synchronize student placement dossiers.</p>
-            </div>
-            <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-800 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm active:scale-95 group shrink-0"
-            >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
-            </button>
-        </div>
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-4xl mx-auto w-full">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-black uppercase tracking-widest text-xs"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 sm:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
-              
-              <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2 relative z-10">
-                <Briefcase className="w-4 h-4 text-indigo-500" /> Dispatch Update
-              </h2>
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-8">
+              Update Student Placement Status
+            </h2>
 
-              <div className="space-y-6 relative z-10">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Subject Identification *</label>
-                  <select
-                    value={form.studentId}
-                    onChange={(e) => handleStudentChange(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-black uppercase tracking-tight text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="" className="font-sans">Access Registry...</option>
-                    {students.map((s) => (
-                      <option key={s.id} value={s.id} className="font-sans">
-                        {s.rollNo} — {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student *</label>
+              <select
+                value={form.studentId}
+                onChange={(e) => handleStudentChange(e.target.value)}
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+              >
+                <option value="">Click to choose</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.rollNo} - {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Placement Dimension *</label>
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        status: e.target.value,
-                        companyId: "",
-                        placedDate: ""
-                      })
-                    }
-                    className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-black uppercase tracking-tight text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="" className="font-sans">Define Status...</option>
-                    <option value="PLACED" className="font-sans">Placed</option>
-                    <option value="YET_TO_BE_PLACED" className="font-sans">Yet to be Placed</option>
-                    <option value="NIP" className="font-sans">NIP (Not Interested in Placement)</option>
-                  </select>
-                </div>
-              </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Placement Status *</label>
+              <select
+                value={form.status}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    status: e.target.value,
+                    companyId: "",
+                    placedDate: ""
+                  })
+                }
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+              >
+                <option value="">Click to choose</option>
+                <option value="PLACED">Placed</option>
+                <option value="YET_TO_BE_PLACED">Yet to be Placed</option>
+                <option value="NIP">NIP</option>
+              </select>
             </div>
 
             {form.status === "PLACED" && (
-              <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 sm:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none animate-slide-up space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Company Host *</label>
+              <>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Company (Approved Only) *</label>
                   <select
                     value={form.companyId}
                     onChange={(e) =>
                       setForm({ ...form, companyId: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-black uppercase tracking-tight text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none appearance-none cursor-pointer"
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
                   >
-                    <option value="" className="font-sans">Sanctioned Corporations...</option>
+                    <option value="">Select an approved company</option>
                     {companies.map((c) => (
-                      <option key={c.id} value={c.id} className="font-sans">
+                      <option key={c.id} value={c.id}>
                         {c.name}
                       </option>
                     ))}
                   </select>
-                  <p className="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1">Access restricted to verified partners.</p>
+                  <p className="mt-2 text-xs text-slate-500 italic">Only companies approved by the admin are shown here.</p>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Comp Dimension (LPA)</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="e.g. 12"
-                      value={form.lpa}
-                      onChange={(e) =>
-                        setForm({ ...form, lpa: e.target.value })
-                      }
-                      className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-black uppercase tracking-tight text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none"
-                    />
-                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-indigo-500 uppercase tracking-widest">LPA</span>
-                  </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Salary Package (LPA)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 12"
+                    value={form.lpa}
+                    onChange={(e) =>
+                      setForm({ ...form, lpa: e.target.value })
+                    }
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
+                  />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Temporal Anchor *</label>
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Placed Date *</label>
                   <div
                     className="relative cursor-pointer"
                     onClick={() => dateRef.current?.showPicker()}
@@ -299,9 +284,9 @@ export default function UpdatePlacementStatus() {
                       readOnly
                       value={formatDate(form.placedDate)}
                       placeholder="DD-MM-YYYY"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl px-5 py-4 text-slate-900 dark:text-white font-black uppercase tracking-tight text-xs pr-12"
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 pr-10 cursor-pointer text-slate-900 dark:text-white"
                     />
-                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <span className="absolute right-3 top-3 text-slate-400 pointer-events-none">
                       <Calendar className="w-5 h-5" />
                     </span>
                     <input
@@ -315,69 +300,56 @@ export default function UpdatePlacementStatus() {
                     />
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 px-10 py-5 rounded-[1.5rem] font-black text-white uppercase tracking-[0.2em] text-[10px] sm:text-xs transition-all shadow-2xl shadow-indigo-500/30 active:scale-95 group"
+                className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold text-white transition-colors shadow-lg shadow-blue-500/20"
               >
-                {form.status === "PLACED" ? "Commit Placement Offer" : "Update Matrix Status"}
-                <CheckCircle2 className="w-4 h-4 inline-block ml-3 group-hover:scale-125 transition-transform" />
+                {form.status === "PLACED" ? "Add Placement Offer" : "Update Status"}
               </button>
             </div>
           </div>
 
           {/* Right Sidebar: History */}
-          <div className="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 dark:shadow-none h-fit">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-              <History className="w-4 h-4 text-indigo-500" /> Dossier Backlog
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors h-fit">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+              <History className="w-5 h-5 text-indigo-500" /> Placement History
             </h3>
             {!selectedStudent ? (
-              <div className="py-10 text-center">
-                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <GraduationCap className="w-6 h-6 text-slate-200 dark:text-slate-700" />
-                </div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">Select biological subject to access archives.</p>
-              </div>
+              <p className="text-sm text-slate-500 italic">Select a student to view history</p>
             ) : existingOffers.length > 0 ? (
               <div className="space-y-4">
                 {existingOffers.map((offer, idx) => (
-                  <div key={idx} className="group/offer p-5 bg-slate-50 dark:bg-slate-900/50 rounded-[1.5rem] border-2 border-slate-100 dark:border-slate-800/50 relative overflow-hidden transition-all hover:border-indigo-500/30">
+                  <div key={idx} className="group/offer p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 relative">
                     <button
                       onClick={() => handleRemoveOffer(offer.id)}
-                      className="absolute top-4 right-4 text-rose-500 opacity-0 group-hover/offer:opacity-100 transition-all p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl"
-                      title="Decommission Offer"
+                      className="absolute top-2 right-2 text-red-500 opacity-0 group-hover/offer:opacity-100 transition-all p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                      title="Delete Offer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <p className="font-black text-slate-900 dark:text-white pr-8 uppercase tracking-tight text-xs leading-tight mb-2">{offer.company.name}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{new Date(offer.placedDate).toLocaleDateString()}</span>
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-700">{offer.lpa} LPA</span>
+                    <p className="font-bold text-slate-900 dark:text-white pr-6">{offer.company.name}</p>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-xs text-slate-500">{new Date(offer.placedDate).toLocaleDateString('en-GB')}</span>
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{offer.lpa} LPA</span>
                     </div>
                   </div>
                 ))}
-                <div className="pt-4 text-center">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-800">Count: {existingOffers.length}</span>
-                </div>
+                <p className="text-[10px] text-slate-400 text-center uppercase tracking-widest font-bold">Total Offers: {existingOffers.length}</p>
               </div>
             ) : (
-              <div className="py-10 text-center">
-                 <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-6 h-6 text-slate-200 dark:text-slate-700" />
-                </div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">Null records found in current sector history.</p>
-              </div>
+              <p className="text-sm text-slate-500">No offers recorded yet for this student.</p>
             )}
 
             {selectedStudent && (
-              <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Live Status</p>
-                <span className={`text-[10px] font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xl border flex items-center justify-center w-full shadow-sm ${selectedStudent.placement_status === 'PLACED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                  selectedStudent.placement_status === 'NIP' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                    'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900 dark:border-slate-800'
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Current Status</p>
+                <span className={`text-xs font-black uppercase px-2 py-0.5 rounded ${selectedStudent.placement_status === 'PLACED' ? 'bg-green-100 text-green-700' :
+                  selectedStudent.placement_status === 'NIP' ? 'bg-amber-100 text-amber-700' :
+                    'bg-slate-100 text-slate-600'
                   }`}>
                   {selectedStudent.placement_status || 'YET_TO_BE_PLACED'}
                 </span>

@@ -169,279 +169,192 @@ export default function MentorAssignment() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors selection:bg-indigo-500 selection:text-white">
+        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
             <Header />
-            
-            <main className="flex-1 px-4 sm:px-8 md:px-12 py-12 md:py-20 max-w-[1400px] mx-auto w-full space-y-16">
-                
-                {/* Header Section */}
-                <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-10 px-4">
-                    <div className="space-y-6">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="group flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-indigo-500 transition-colors"
-                        >
-                            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 group-hover:bg-indigo-500/10 transition-colors">
-                                <ArrowLeft className="w-4 h-4" />
-                            </div>
-                            Return to Command
-                        </button>
-                        <div className="space-y-3">
-                            <h1 className="text-5xl md:text-6xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic leading-[0.8]">
-                                Mentor <span className="text-indigo-500">Assignment</span>
-                            </h1>
-                            <p className="text-sm font-bold text-slate-500 uppercase tracking-[0.05em] max-w-2xl">
-                                Strategic mentorship synchronization. Pair sector liaisons with subordinate entities to establish operational authorization and audit chains.
-                            </p>
-                        </div>
+            <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mentor Assignment</h1>
+                        <p className="text-slate-600 dark:text-slate-400">Assign faculty mentors to students in bulk.</p>
                     </div>
-
-                    <div className="hidden xl:flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-[2rem] bg-indigo-500/10 border-2 border-indigo-500/20 flex items-center justify-center text-indigo-500 animate-pulse">
-                            <UserCheck className="w-8 h-8" />
-                        </div>
-                    </div>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors bg-white dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm"
+                    >
+                        <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                    {/* STEP 1: SELECT FACULTY */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <div className="p-10 md:p-12 rounded-[4rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group/form">
-                           <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-[100px] -mr-24 -mt-24 group-hover/form:bg-indigo-500/10 transition-colors"></div>
-                           
-                           <div className="relative z-10 space-y-10">
-                                <div className="flex items-center gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-                                        <span className="text-xl font-[1000] italic">01</span>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-colors">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs">1</span>
+                            Faculty Mentor
+                        </h2>
+
+                        <SearchableSelect
+                            placeholder="Type faculty name or ID..."
+                            value={selectedFaculty?.id}
+                            isAsync={true}
+                            onSearch={async (q) => {
+                                const res = await api.get(`/admin/search-faculty?q=${q}`);
+                                return res.data.map(f => ({
+                                    value: f.id,
+                                    label: f.name,
+                                    sublabel: `${f.facultyId} • ${f.department || 'Faculty'}`,
+                                    icon: <GraduationCap className="w-4 h-4 text-blue-500" />,
+                                    original: f
+                                }));
+                            }}
+                            onChange={(val, opt) => {
+                                if (opt?.original) {
+                                    setSelectedFaculty(opt.original);
+                                }
+                            }}
+                        />
+
+                        {selectedFaculty && (
+                            <div className="mt-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                                        {selectedFaculty.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic">Liaison Authority</h2>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Select Primary Mentor</p>
+                                        <p className="font-bold text-slate-900 dark:text-white">{selectedFaculty.name}</p>
+                                        <p className="text-xs text-slate-500">{selectedFaculty.facultyId} • {selectedFaculty.department}</p>
                                     </div>
                                 </div>
-
-                                <div className="space-y-6">
-                                    <SearchableSelect
-                                        placeholder="ESTABLISH LINK: NAME OR ID..."
-                                        value={selectedFaculty?.id}
-                                        isAsync={true}
-                                        className="rounded-3xl bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 py-4"
-                                        onSearch={async (q) => {
-                                            const res = await api.get(`/admin/search-faculty?q=${q}`);
-                                            return res.data.map(f => ({
-                                                value: f.id,
-                                                label: f.name,
-                                                sublabel: `${f.facultyId} • ${f.department || 'GENERAL SECTOR'}`,
-                                                icon: <GraduationCap className="w-5 h-5 text-indigo-500" />,
-                                                original: f
-                                            }));
-                                        }}
-                                        onChange={(val, opt) => {
-                                            if (opt?.original) {
-                                                setSelectedFaculty(opt.original);
-                                            }
-                                        }}
-                                    />
-
-                                    {selectedFaculty && (
-                                        <div className="p-8 rounded-[2.5rem] bg-indigo-500/5 border-2 border-indigo-500/20 flex items-center justify-between group/card transition-all hover:bg-indigo-500/10">
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-white text-2xl font-[1000] italic shadow-xl shadow-indigo-500/20 transition-transform group-hover/card:scale-110">
-                                                    {selectedFaculty.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="text-lg font-[1000] text-slate-900 dark:text-white uppercase tracking-tight italic">{selectedFaculty.name}</p>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">{selectedFaculty.facultyId} • {selectedFaculty.department}</p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => setSelectedFaculty(null)}
-                                                className="p-3 rounded-xl hover:bg-rose-500/10 text-slate-300 hover:text-rose-500 transition-all"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                           </div>
-                        </div>
-
-                        {/* SUB-INFO BOX */}
-                        <div className="p-8 rounded-[3rem] bg-slate-900 border-2 border-white/5 text-white shadow-2xl shadow-indigo-500/10 relative overflow-hidden group/info">
-                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-[80px] -mr-16 -mt-16 group-hover/info:bg-indigo-500/10 transition-colors pointer-events-none"></div>
-                           <div className="flex items-center gap-6">
-                                <Users className="w-8 h-8 text-indigo-500" />
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Direct Command</p>
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mt-1 italic">Assigning a mentor establishes direct oversight over all selected student entities.</p>
-                                </div>
-                           </div>
-                        </div>
-                        </div>
+                                <button
+                                    onClick={() => setSelectedFaculty(null)}
+                                    className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline"
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* STEP 2: SELECT STUDENTS */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <div className="p-10 md:p-12 rounded-[4rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group/students">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-[100px] -mr-24 -mt-24 group-hover/students:bg-indigo-500/10 transition-colors"></div>
-                            
-                            <div className="relative z-10 space-y-10">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-                                            <span className="text-xl font-[1000] italic">02</span>
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic">Subordinate Entities</h2>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Select Targeted Students</p>
-                                        </div>
-                                    </div>
-                                    {selectedStudents.length > 0 && (
-                                        <div className="px-5 py-2 rounded-full bg-indigo-500 text-white text-[10px] font-[1000] uppercase tracking-widest animate-bounce">
-                                            {selectedStudents.length} Ready
-                                        </div>
-                                    )}
-                                </div>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm shadow-slate-200/50 dark:shadow-none transition-colors">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs">2</span>
+                            Select Students
+                        </h2>
 
-                                <div className="relative group/search">
-                                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-indigo-500 transition-colors pointer-events-none">
-                                        <Search className="w-5 h-5" />
-                                    </span>
-                                    <input
-                                        type="text"
-                                        placeholder="SEARCH NODES: ROLL NO OR NAME..."
-                                        value={studentQuery}
-                                        onChange={(e) => setStudentQuery(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-3xl pl-16 pr-6 py-5 text-sm font-bold placeholder:text-slate-300 focus:border-indigo-500/50 outline-none transition-all text-slate-900 dark:text-white italic"
-                                    />
-                                </div>
+                        <div className="relative group">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                                <Search className="w-4 h-4" />
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Search by Roll No or Name..."
+                                value={studentQuery}
+                                onChange={(e) => setStudentQuery(e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-3 text-sm font-bold placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
+                            />
+                        </div>
 
-                                <div className="space-y-4 max-h-[450px] overflow-y-auto pr-4 custom-scrollbar min-h-[200px] flex flex-col">
-                                    {isSearchingStudent ? (
-                                        <div className="flex-1 flex flex-col items-center justify-center py-20">
-                                            <RotateCcw className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] italic">Scanning Node Network...</p>
-                                        </div>
-                                    ) : students.length > 0 ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {students.map((s) => {
-                                                const isSelected = selectedStudents.find((sel) => sel.id === s.id);
-                                                return (
-                                                    <div
-                                                        key={s.id}
-                                                        onClick={() => toggleStudentSelection(s)}
-                                                        className={`p-6 rounded-3xl border-2 transition-all cursor-pointer group/item relative overflow-hidden ${isSelected
-                                                            ? "bg-indigo-500/5 border-indigo-500 shadow-xl shadow-indigo-500/10"
-                                                            : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800 hover:border-indigo-500/30"
-                                                        }`}
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar min-h-[100px] flex flex-col">
+                            {isSearchingStudent ? (
+                                <div className="flex-1 flex flex-col items-center justify-center py-12 text-blue-500 animate-pulse">
+                                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                                    <p className="text-xs font-bold uppercase tracking-widest">Searching Students...</p>
+                                </div>
+                            ) : students.length > 0 ? (
+                                students.map((s) => {
+                                    const isSelected = selectedStudents.find((sel) => sel.id === s.id);
+                                    return (
+                                        <div
+                                            key={s.id}
+                                            className={`p-3 border rounded-xl transition-all flex justify-between items-center ${isSelected
+                                                ? "bg-blue-50 border-blue-400 dark:bg-blue-900/40 dark:border-blue-500 shadow-sm"
+                                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-800"
+                                                }`}
+                                        >
+                                            <div onClick={() => toggleStudentSelection(s)} className="flex-1 cursor-pointer">
+                                                <p className="font-bold text-slate-900 dark:text-white capitalize">{s.name}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400">{s.rollNo} • {s.department}</p>
+                                                    {s.mentor && (
+                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold uppercase">
+                                                            Assigned: {s.mentor.name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {s.mentor && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveMentor(s.id);
+                                                        }}
+                                                        title="Remove Mentor"
+                                                        className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
                                                     >
-                                                        <div className="relative z-10 flex flex-col gap-4">
-                                                            <div className="flex justify-between items-start">
-                                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-[1000] italic transition-colors ${isSelected ? 'bg-indigo-500 text-white' : 'bg-white dark:bg-slate-900 text-indigo-500 border border-slate-100 dark:border-slate-800'}`}>
-                                                                    {s.name.charAt(0)}
-                                                                </div>
-                                                                <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500 text-white scale-110' : 'border-slate-200 dark:border-slate-700'}`}>
-                                                                    {isSelected && <CheckCircle2 className="w-3 h-3" />}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <p className={`font-[1000] uppercase tracking-tight italic transition-colors ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>{s.name}</p>
-                                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{s.rollNo} · {s.department}</p>
-                                                            </div>
-                                                            {s.mentor && (
-                                                                <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                                                                    <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                                                                        Linked: {s.mentor.name}
-                                                                    </span>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleRemoveMentor(s.id);
-                                                                        }}
-                                                                        className="ml-auto p-1 hover:text-rose-500 transition-colors"
-                                                                    >
-                                                                        <Trash2 className="w-3 h-3" />
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                <div
+                                                    onClick={() => toggleStudentSelection(s)}
+                                                    className={`h-5 w-5 rounded-md border flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "bg-blue-600 border-blue-600 text-white" : "border-slate-300 dark:border-slate-600"
+                                                        }`}>
+                                                    {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                </div>
+                                            </div>
                                         </div>
-                                    ) : studentQuery.length > 0 && studentQuery.length <= 2 ? (
-                                        <div className="flex-1 flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[3rem]">
-                                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] italic text-center px-10">Neural input too short. Continue scanning...</p>
-                                        </div>
-                                    ) : studentQuery.length > 2 ? (
-                                        <div className="flex-1 flex flex-col items-center justify-center py-20 border-2 border-dashed border-rose-500/20 rounded-[3rem]">
-                                            <ShieldAlert className="w-10 h-10 text-rose-500/30 mb-4" />
-                                            <p className="text-[10px] font-black text-rose-500/50 uppercase tracking-[0.4em] italic text-center px-10 text-balance">Negative search results. Profile "{studentQuery}" not found.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="flex-1 flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[3rem]">
-                                            <GraduationCap className="w-10 h-10 text-slate-200 dark:text-slate-800 mb-4" />
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic text-center px-10 text-balance">Awaiting neural query. Search Roll No or Name to begin node selection.</p>
-                                        </div>
-                                    )}
+                                    );
+                                })
+                            ) : studentQuery.length > 0 && studentQuery.length <= 2 ? (
+                                <p className="text-center text-slate-400 text-xs py-8 italic font-medium">Keep typing to search...</p>
+                            ) : studentQuery.length > 2 ? (
+                                <p className="text-center text-slate-500 text-sm py-8 font-medium">No students found matching "{studentQuery}"</p>
+                            ) : (
+                                <p className="text-center text-slate-500 text-sm py-8 font-medium">Type a name or Roll No above to find students</p>
+                            )}
+                        </div>
+
+                        {/* Selection Summary */}
+                        {selectedStudents.length > 0 && (
+                            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Selected ({selectedStudents.length})</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedStudents.map((s) => (
+                                        <span key={s.id} className="text-[10px] bg-white dark:bg-slate-900 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                                            {s.rollNo}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Final Action / Summary Layer */}
-                <div className="flex justify-center px-4">
-                    <div className="w-full max-w-4xl p-10 md:p-12 rounded-[4rem] bg-slate-900 border-2 border-white/5 text-white shadow-2xl shadow-indigo-500/20 relative overflow-hidden group/summary">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[120px] -mr-32 -mt-32"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[120px] -ml-32 -mb-32"></div>
-
-                        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
-                            <div className="space-y-4">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Directives Overview</p>
-                                <h3 className="text-3xl font-[1000] italic uppercase tracking-tighter">Synchronization <span className="text-indigo-500">Log</span></h3>
+                {/* Final Action */}
+                <div className="mt-10 flex flex-col items-center">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-lg shadow-slate-200/50 dark:shadow-none">
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-4 text-center">Summary</h4>
+                        <div className="space-y-3 text-sm mb-6">
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Mentor:</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{selectedFaculty?.name || "None Selected"}</span>
                             </div>
-
-                            <div className="space-y-6 md:border-x-2 md:border-white/5 px-8">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Authority</span>
-                                    <span className="text-sm font-black text-indigo-400 italic truncate ml-4">
-                                        {selectedFaculty?.name || "UNASSIGNED"}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sub-Entities</span>
-                                    <span className="text-sm font-black text-white italic">
-                                        {selectedStudents.length} NODES
-                                    </span>
-                                </div>
-                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-indigo-500 transition-all duration-1000" 
-                                        style={{ width: selectedFaculty && selectedStudents.length > 0 ? '100%' : '20%' }}
-                                    ></div>
-                                </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Students:</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{selectedStudents.length} selected</span>
                             </div>
-
-                            <button
-                                onClick={handleAssign}
-                                disabled={loading || !selectedFaculty || selectedStudents.length === 0}
-                                className={`group/btn relative overflow-hidden h-20 rounded-3xl font-[1000] uppercase tracking-[0.3em] text-[12px] italic transition-all active:scale-95 ${
-                                    loading || !selectedFaculty || selectedStudents.length === 0
-                                    ? "bg-white/5 text-white/20 cursor-not-allowed"
-                                    : "bg-indigo-500 text-white shadow-xl shadow-indigo-500/20 hover:bg-indigo-600"
-                                }`}
-                            >
-                                <span className="relative z-10 flex items-center justify-center gap-4">
-                                    {loading ? (
-                                        <RotateCcw className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <>Finalize Assignment <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform" /></>
-                                    )}
-                                </span>
-                            </button>
                         </div>
+                        <button
+                            onClick={handleAssign}
+                            disabled={loading || !selectedFaculty || selectedStudents.length === 0}
+                            className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-lg ${loading || !selectedFaculty || selectedStudents.length === 0
+                                ? "bg-slate-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                                }`}
+                        >
+                            {loading ? "Assigning..." : "Assign Mentor"}
+                        </button>
                     </div>
                 </div>
             </main>
@@ -450,6 +363,6 @@ export default function MentorAssignment() {
                 onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
             />
             <Footer />
-        </div>
+        </div >
     );
 }

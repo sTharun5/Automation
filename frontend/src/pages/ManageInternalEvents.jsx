@@ -24,20 +24,8 @@ import {
     User,
     GraduationCap,
     Bot,
-    Info,
-    Radio,
-    Zap,
-    Activity,
-    Terminal,
-    Layout,
-    Smartphone,
-    Search,
-    Calendar,
-    ChevronRight,
-    QrCode,
-    Sparkles
+    Info
 } from 'lucide-react';
-import Footer from '../components/Footer';
 
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
@@ -341,643 +329,543 @@ export default function ManageInternalEvents() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors selection:bg-indigo-500 selection:text-white">
-            <Header />
-            
-            <main className="flex-1 px-4 sm:px-8 md:px-12 py-10 md:py-20 max-w-[1600px] mx-auto w-full space-y-12">
-                
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="space-y-4">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="group flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] hover:text-indigo-600 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                            Command Hub
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
+            <Header title="Manage Internal Events" />
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+                {/* Header & Actions */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                    <div>
+                        <button onClick={() => navigate(-1)} className="text-slate-500 hover:text-indigo-600 mb-2 flex items-center gap-1 transition-colors text-sm font-bold uppercase tracking-wider">
+                            <ArrowLeft className="w-4 h-4" /> Back
                         </button>
-                        <div>
-                            <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none">
-                                Internal Ops
-                            </h1>
-                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
-                                <MonitorPlay className="w-3 h-3" /> Event Synchronization & Protocol Deployment
-                            </p>
-                        </div>
+                        <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Internal Events</h1>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium italic">Create and manage internal pre-registered OD sessions.</p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 px-6 py-4">
-                            <Clock className="w-5 h-5 text-indigo-500" />
-                            <div>
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Temporal mode</p>
-                                <p className="text-xl font-black text-slate-900 dark:text-white leading-none whitespace-nowrap">
-                                    {showPastEvents ? "ARCHIVE SCAN" : "LIVE PULSE"}
-                                </p>
-                            </div>
-                        </div>
-                        
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        {/* Toggle Past Events */}
                         <button
                             onClick={() => setShowPastEvents(!showPastEvents)}
-                            className={`px-6 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${showPastEvents
-                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-600/20'
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${showPastEvents
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20'
                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-indigo-500'
                                 }`}
                         >
-                            {showPastEvents ? "Active Stream" : "History Scan"}
+                            <Clock className="w-4 h-4" />
+                            <span>{showPastEvents ? "Showing All" : "Active Only"}</span>
                         </button>
 
                         <button
                             onClick={() => setIsCreating(!isCreating)}
-                            className={`group flex items-center gap-3 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 ${isCreating
-                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
-                                : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-slate-900/10 dark:shadow-none'
+                            className={`flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-[0.98] ${isCreating
+                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-none'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
                                 }`}
                         >
-                            {isCreating ? <><X className="w-4 h-4" /> Abort</> : <><Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" /> Deploy Event</>}
+                            {isCreating ? <><X className="w-4 h-4" /> Cancel</> : <><Plus className="w-4 h-4" /> Create Event</>}
                         </button>
                     </div>
                 </div>
 
                 {/* Creation Form */}
                 {isCreating && (
-                    <div className="bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                        
-                        <div className="relative space-y-12">
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-900 shadow-xl">
-                                    <Plus className="w-8 h-8" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">New Operation</h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1 italic">Define session parameters & credentials</p>
-                                </div>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm animate-slideDown">
+                        <h2 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Event Details</h2>
+                        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Event Name</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="e.g., Tech Symposium 2026"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
                             </div>
-
-                            <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                                <div className="md:col-span-2 group">
-                                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1 group-focus-within:text-indigo-500 transition-colors">Project Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="E.G., NEURAL SYMPOSIUM 2026"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-slate-100 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500/50 rounded-2xl px-6 py-5 text-slate-900 dark:text-white font-black uppercase tracking-wider outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
-                                    />
-                                </div>
-                                <div className="space-y-8">
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Initiation Time</label>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Start Time</label>
+                                <input
+                                    required
+                                    type="datetime-local"
+                                    value={formData.startDate}
+                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">End Time</label>
+                                <input
+                                    required
+                                    type="datetime-local"
+                                    value={formData.endDate}
+                                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">OD Value (Allocated Credit)</label>
+                                <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                    <div className="flex-1">
+                                        <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1 text-center">Hours</label>
                                         <input
-                                            required
-                                            type="datetime-local"
-                                            value={formData.startDate}
-                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                            className="w-full bg-slate-100 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500/50 rounded-2xl px-6 py-5 text-slate-900 dark:text-white font-black uppercase tracking-wider outline-none transition-all"
+                                            readOnly
+                                            type="number"
+                                            className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-center text-slate-500 dark:text-slate-400 font-bold cursor-not-allowed"
+                                            value={Math.floor(formData.allocatedHours)}
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Termination Time</label>
+                                    <div className="text-slate-300 dark:text-slate-600 font-bold">:</div>
+                                    <div className="flex-1">
+                                        <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1 text-center">Minutes</label>
                                         <input
-                                            required
-                                            type="datetime-local"
-                                            value={formData.endDate}
-                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                            className="w-full bg-slate-100 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500/50 rounded-2xl px-6 py-5 text-slate-900 dark:text-white font-black uppercase tracking-wider outline-none transition-all"
+                                            readOnly
+                                            type="number"
+                                            className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-center text-slate-500 dark:text-slate-400 font-bold cursor-not-allowed"
+                                            value={Math.round((formData.allocatedHours % 1) * 60)}
                                         />
                                     </div>
-                                </div>
-                                <div className="space-y-8">
-                                    <div className="bg-slate-900 dark:bg-slate-800 p-8 rounded-3xl space-y-6 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-4">
-                                            <Zap className="w-8 h-8 text-indigo-500 opacity-20" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-1">Calculated Credit</p>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-5xl font-[1000] text-white tracking-tighter italic">{Math.floor(formData.allocatedHours)}</span>
-                                                <span className="text-xl font-black text-indigo-500 uppercase tracking-widest italic">Hours</span>
-                                                <span className="text-3xl font-[1000] text-white tracking-tighter ml-2 italic">{Math.round((formData.allocatedHours % 1) * 60)}</span>
-                                                <span className="text-sm font-black text-indigo-500 uppercase tracking-widest italic">Mins</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-[2px] bg-gradient-to-r from-indigo-500 to-transparent w-full opacity-30"></div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase leading-relaxed tracking-wider">
-                                            TEMPORAL DRIFT DETECTED: AUTO-ALLOCATION ACTIVE. VALUES DERIVED FROM TIME SPAN DELTA.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">Max Bandwidth (Participants)</label>
-                                        <div className="relative">
-                                            <Users className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                            <input
-                                                type="number"
-                                                placeholder="UNLIMITED"
-                                                value={formData.maxParticipants}
-                                                onChange={(e) => setFormData({ ...formData, maxParticipants: e.target.value })}
-                                                className="w-full bg-slate-100 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500/50 rounded-2xl pl-16 pr-6 py-5 text-slate-900 dark:text-white font-black uppercase tracking-wider outline-none transition-all"
-                                            />
-                                        </div>
+                                    <div className="flex-[2] bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-2 text-center">
+                                        <p className="text-[10px] text-indigo-400 uppercase font-black tracking-widest mb-0.5">Total Credit</p>
+                                        <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">{Math.floor(formData.allocatedHours)}h {Math.round((formData.allocatedHours % 1) * 60)}m</p>
                                     </div>
                                 </div>
-
-                                <div className="md:col-span-1">
-                                    <SearchableSelect
-                                        label="Primary Supervisor (Staff)"
-                                        placeholder="SEARCH MENTOR ARCHIVE..."
-                                        value={formData.staffCoordinatorId}
-                                        onChange={(val) => setFormData({ ...formData, staffCoordinatorId: val })}
-                                        options={[
-                                            { value: "", label: "AUTONOMOUS MODE", sublabel: "NO SUPERVISOR REQUIRED", icon: <Bot className="w-4 h-4" /> },
-                                            ...faculties.map(fac => ({
-                                                value: String(fac.id),
-                                                label: fac.name.toUpperCase(),
-                                                sublabel: (fac.department || "CORE OPS").toUpperCase(),
-                                                icon: <GraduationCap className="w-4 h-4" />
-                                            }))
-                                        ]}
-                                    />
-                                </div>
-                                <div className="md:col-span-1">
-                                    <SearchableSelect
-                                        label="Protocol Lead (Student)"
-                                        placeholder="INPUT CREDENTIALS..."
-                                        value={formData.studentCoordinatorId}
-                                        isAsync={true}
-                                        onSearch={async (q) => {
-                                            const res = await api.get(`/admin/search-students?q=${q}`);
-                                            return res.data.map(s => ({
-                                                value: String(s.id),
-                                                label: s.name.toUpperCase(),
-                                                sublabel: `${s.rollNo} • ${s.department}`.toUpperCase(),
-                                                icon: <User className="w-4 h-4" />
-                                            }));
-                                        }}
-                                        onChange={(val) => setFormData({ ...formData, studentCoordinatorId: val })}
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 pt-10 flex justify-end">
-                                    <button 
-                                        type="submit" 
-                                        className="group relative flex items-center gap-4 px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl overflow-hidden"
-                                    >
-                                        <div className="absolute inset-0 bg-indigo-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                        <span className="relative z-10 group-hover:text-white">Authorize Deployment</span>
-                                        <ChevronRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-all group-hover:text-white" />
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                                <p className="text-[10px] text-slate-400 mt-2 px-1">Note: Minimum credit is 1 hour. Values are auto-calculated but can be overridden manually.</p>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Capacity (Max Students)</label>
+                                <input
+                                    type="number"
+                                    placeholder="0 for unlimited"
+                                    value={formData.maxParticipants}
+                                    onChange={(e) => setFormData({ ...formData, maxParticipants: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+                            <div>
+                                <SearchableSelect
+                                    label="Staff Coordinator"
+                                    placeholder="Select a mentor..."
+                                    value={formData.staffCoordinatorId}
+                                    onChange={(val) => setFormData({ ...formData, staffCoordinatorId: val })}
+                                    options={[
+                                        { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: <Bot className="w-4 h-4" /> },
+                                        ...faculties.map(fac => ({
+                                            value: String(fac.id),
+                                            label: fac.name,
+                                            sublabel: fac.department || "Faculty",
+                                            icon: <GraduationCap className="w-4 h-4" />
+                                        }))
+                                    ]}
+                                />
+                            </div>
+                            <div>
+                                <SearchableSelect
+                                    label="Student Coordinator"
+                                    placeholder="Type roll no or name..."
+                                    value={formData.studentCoordinatorId}
+                                    isAsync={true}
+                                    onSearch={async (q) => {
+                                        const res = await api.get(`/admin/search-students?q=${q}`);
+                                        return res.data.map(s => ({
+                                            value: String(s.id),
+                                            label: s.name,
+                                            sublabel: `${s.rollNo} • ${s.department}`,
+                                            icon: <User className="w-4 h-4" />
+                                        }));
+                                    }}
+                                    onChange={(val) => setFormData({ ...formData, studentCoordinatorId: val })}
+                                />
+                            </div>
+                            <div className="md:col-span-2 flex justify-end mt-4">
+                                <button type="submit" className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold uppercase tracking-wider rounded-xl hover:scale-[1.02] transition-transform">
+                                    Finalize Event
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
 
-                {/* Registry Section */}
-                <div className="space-y-8">
-                    <div className="flex items-center gap-4">
-                        <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent"></div>
-                        <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] whitespace-nowrap">Active Operations Cluster</h2>
-                        <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent"></div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {loading ? (
-                            Array(3).fill(0).map((_, i) => (
-                                <div key={i} className="h-[400px] bg-white dark:bg-slate-900 rounded-[2rem] border-2 border-slate-100 dark:border-slate-800 animate-pulse" />
-                            ))
-                        ) : events.length === 0 ? (
-                            <div className="col-span-full py-24 flex flex-col items-center justify-center text-center space-y-6 bg-white dark:bg-slate-900 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
-                                    <Mailbox className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+                {/* Active Events List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loading ? (
+                        <div className="col-span-full py-12 text-center text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">Loading Events...</div>
+                    ) : events.length === 0 ? (
+                        <div className="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                            <Mailbox className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">No active events</p>
+                        </div>
+                    ) : (
+                        events.map(event => (
+                            <div key={event.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col hover:border-indigo-500/30 transition-colors">
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-lg">Active</span>
+                                    <span className="text-xs font-bold text-slate-400">{event.eventId}</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <p className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">System Idle</p>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No active protocols detected in this sector</p>
+                                <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2 leading-tight">{event.name}</h3>
+                                <div className="space-y-1 mb-6 flex-1">
+                                    <p className="text-xs text-slate-500 font-medium">Starts: <span className="font-bold text-slate-700 dark:text-slate-300">{new Date(event.startDate).toLocaleString()}</span></p>
+                                    <p className="text-xs text-slate-500 font-medium">Ends: <span className="font-bold text-slate-700 dark:text-slate-300">{new Date(event.endDate).toLocaleString()}</span></p>
+                                    <p className="text-xs text-slate-500 font-medium">Value: <span className="font-bold text-indigo-500">{Math.floor(event.allocatedHours)}h {Math.round((event.allocatedHours % 1) * 60)}m</span></p>
+
+                                    <div className="space-y-3 mt-4">
+                                        {event.staffCoordinatorId && (
+                                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mentor (Staff)</p>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        Prof. {event.staffCoordinator?.name}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRevokeMentor(event)}
+                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors group"
+                                                    title="Revoke Mentor Access"
+                                                >
+                                                    <span className="text-xs font-black uppercase tracking-tighter group-hover:underline">Revoke</span>
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {event.studentCoordinatorId && (
+                                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lead (Student)</p>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                        {event.studentCoordinator?.name} <span className="text-[10px] font-medium text-slate-500">({event.studentCoordinator?.rollNo})</span>
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm("Revoke student coordinator access?")) {
+                                                            try {
+                                                                await api.put(`/events/internal/${event.id}`, { studentCoordinatorId: "" });
+                                                                showToast("Student coordinator revoked", "success");
+                                                                fetchEvents();
+                                                            } catch (err) {
+                                                                showToast("Failed to revoke student coordinator", "error");
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors group"
+                                                    title="Revoke Student Access"
+                                                >
+                                                    <span className="text-xs font-black uppercase tracking-tighter group-hover:underline">Revoke</span>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {event.staffCoordinatorId ? (
+                                        <p className="text-xs text-slate-500 font-medium">Roster Status:
+                                            {event.isRosterApproved ? (
+                                                <span className="font-bold text-green-500 ml-1">Approved</span>
+                                            ) : event.isRosterSubmitted ? (
+                                                <span className="font-bold text-amber-500 ml-1">Pending Approval</span>
+                                            ) : (
+                                                <span className="font-bold text-slate-400 ml-1">Not Submitted</span>
+                                            )}
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-slate-400 italic">No staff coordinator assigned.</p>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-auto">
+                                    <button
+                                        onClick={() => startProjection(event)}
+                                        className="col-span-2 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <MonitorPlay className="w-5 h-5" /> Project Live QR
+                                    </button>
+                                    <button
+                                        onClick={() => fetchAttendance(event)}
+                                        disabled={isFetchingAttendance}
+                                        className="py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
+                                        title="Attendance Log"
+                                    >
+                                        <Users className="w-3.5 h-3.5" /> Attendance
+                                    </button>
+                                    <button
+                                        onClick={() => handleViewRoster(event)}
+                                        className="py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-purple-600 hover:text-white dark:hover:bg-purple-500 dark:hover:text-white transition-colors flex items-center justify-center gap-1"
+                                        title="View Pre-Registered Roster"
+                                    >
+                                        <Eye className="w-3.5 h-3.5" /> Roster
+                                    </button>
+                                    <button
+                                        onClick={() => openEditModal(event)}
+                                        className="py-2.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-sky-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
+                                        title="Edit Event"
+                                    >
+                                        <Pencil className="w-3.5 h-3.5" /> Edit
+                                    </button>
+                                    <button
+                                        onClick={() => confirmDelete(event.id)}
+                                        className="py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
+                                        title="Delete Event"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                                    </button>
+                                    <button
+                                        onClick={() => { setLogEvent(event); setViewingLogs(true); }}
+                                        className="col-span-2 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-800"
+                                        title="View Administrative Logs"
+                                    >
+                                        <ScrollText className="w-3.5 h-3.5" /> Event Logs
+                                    </button>
                                 </div>
                             </div>
-                        ) : (
-                            events.map(event => (
-                                <div key={event.id} className="group relative bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-sm hover:border-indigo-600 dark:hover:border-indigo-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden flex flex-col">
-                                    {/* Glass reflection effect */}
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    
-                                    <div className="flex justify-between items-start mb-10">
-                                        <div className="space-y-1">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500 text-white text-[8px] font-[1000] uppercase tracking-widest rounded-full shadow-lg shadow-emerald-500/20 animate-pulse">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                                                Operational
-                                            </span>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{event.eventId}</p>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-500 transition-colors">
-                                            <Terminal className="w-5 h-5" />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 space-y-8 mb-10">
-                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight group-hover:text-indigo-600 transition-colors italic">
-                                            {event.name}
-                                        </h3>
-                                        
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-1.5">
-                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initiation</p>
-                                                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">
-                                                    {new Date(event.startDate).toLocaleDateString()}
-                                                    <br />
-                                                    <span className="text-indigo-500">{new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                </p>
-                                            </div>
-                                            <div className="space-y-1.5 text-right">
-                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Termination</p>
-                                                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">
-                                                    {new Date(event.endDate).toLocaleDateString()}
-                                                    <br />
-                                                    <span className="text-rose-500">{new Date(event.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-[9px] font-[1000] text-slate-400 uppercase tracking-widest">Allocated Credit</p>
-                                                <p className="text-sm font-black text-indigo-500 italic">
-                                                    {Math.floor(event.allocatedHours)}H {Math.round((event.allocatedHours % 1) * 60)}M
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-[9px] font-[1000] text-slate-400 uppercase tracking-widest">Auth Level</p>
-                                                <p className={`text-[9px] font-black uppercase tracking-widest ${event.staffCoordinatorId ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                                    {event.staffCoordinatorId ? "Supervised" : "Autonomous"}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4 pt-4 border-t-2 border-slate-100 dark:border-slate-800/50">
-                                            {event.staffCoordinator && (
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black text-[10px]">
-                                                            {event.staffCoordinator.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Mentor</p>
-                                                            <p className="text-[10px] font-black text-slate-700 dark:text-white uppercase truncate max-w-[120px]">PROF. {event.staffCoordinator.name}</p>
-                                                        </div>
-                                                    </div>
-                                                    <button onClick={() => handleRevokeMentor(event)} className="p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-500 rounded-xl transition-colors">
-                                                        <ShieldAlert className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {event.studentCoordinator && (
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-900 font-black text-[10px]">
-                                                            {event.studentCoordinator.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Lead</p>
-                                                            <p className="text-[10px] font-black text-slate-700 dark:text-white uppercase truncate max-w-[120px]">{event.studentCoordinator.name}</p>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-[8px] font-black text-slate-400">{event.studentCoordinator.rollNo}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => startProjection(event)}
-                                            className="col-span-2 py-5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl shadow-indigo-600/20 group/btn relative overflow-hidden flex items-center justify-center gap-3"
-                                        >
-                                            <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300"></div>
-                                            <MonitorPlay className="w-4 h-4" /> Link Visualizer
-                                        </button>
-                                        <button
-                                            onClick={() => fetchAttendance(event)}
-                                            className="py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-[1000] uppercase tracking-widest rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Users className="w-3.5 h-3.5" /> Intel
-                                        </button>
-                                        <button
-                                            onClick={() => handleViewRoster(event)}
-                                            className="py-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-[1000] uppercase tracking-widest rounded-2xl hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Eye className="w-3.5 h-3.5" /> Roster
-                                        </button>
-                                        <button
-                                            onClick={() => openEditModal(event)}
-                                            className="py-4 bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-[1000] uppercase tracking-widest rounded-2xl hover:bg-sky-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Pencil className="w-3.5 h-3.5" /> Reconfig
-                                        </button>
-                                        <button
-                                            onClick={() => confirmDelete(event.id)}
-                                            className="py-4 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-[1000] uppercase tracking-widest rounded-2xl hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" /> Purge
-                                        </button>
-                                        <button
-                                            onClick={() => { setLogEvent(event); setViewingLogs(true); }}
-                                            className="col-span-2 py-4 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 dark:border-slate-800"
-                                        >
-                                            <ScrollText className="w-3.5 h-3.5" /> Access Audit Trail
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                        ))
+                    )}
                 </div>
-            </main>
-
+            </div>
 
             {/* Event Logs Modal */}
-            {viewingLogs && logEvent && (
-                <div className="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] flex flex-col rounded-[3rem] shadow-2xl border-2 border-slate-900 dark:border-white animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 overflow-hidden">
+            {
+                viewingLogs && logEvent && (
+                    <div className="fixed inset-0 z-[100000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] flex flex-col rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 animate-slideUp overflow-hidden">
 
-                        {/* Modal Header */}
-                        <div className="px-10 py-8 border-b-2 border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <div>
-                                <h3 className="text-xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter">Event Audit Trail</h3>
-                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-2 italic">{logEvent.name}</p>
+                            {/* Header */}
+                            <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Event Audit Logs</h3>
+                                    <p className="text-xs font-bold text-slate-500 uppercase mt-1">{logEvent.name}</p>
+                                </div>
+                                <button
+                                    onClick={() => { setViewingLogs(false); setLogEvent(null); }}
+                                    className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => { setViewingLogs(false); setLogEvent(null); }}
-                                className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:rotate-90 transition-all shadow-sm"
-                            >
-                                <X className="w-6 h-6" />
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-8">
+                                {!logEvent.timeline || logEvent.timeline.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <ScrollText className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No administrative logs recorded yet.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {[...logEvent.timeline].reverse().map((log, idx) => (
+                                            <div key={idx} className="relative pl-8 border-l-2 border-slate-100 dark:border-slate-800 pb-2 last:pb-0">
+                                                {/* Dot */}
+                                                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 shadow-sm z-10" />
+
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${log.action === 'COORDINATOR_ASSIGNED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                            log.action === 'COORDINATOR_REVOKED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                                                                'bg-slate-100 text-slate-700 dark:bg-slate-800'
+                                                            }`}>
+                                                            {log.action.replace('_', ' ')}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-400">
+                                                            {new Date(log.time).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                        </span>
+                                                    </div>
+
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">
+                                                        By {log.performedBy.name} ({log.performedBy.facultyId})
+                                                    </p>
+
+                                                    <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                                                        <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                                                            <span className="font-bold text-slate-900 dark:text-white uppercase text-[9px] mr-1">Reason:</span>
+                                                            {log.details.reason}
+                                                        </p>
+                                                        {log.details.newCoordinator && (
+                                                            <p className="text-[10px] text-indigo-500 font-bold mt-1">
+                                                                New: {log.details.newCoordinator.name} ({log.details.newCoordinator.rollNo})
+                                                            </p>
+                                                        )}
+                                                        {log.details.revokedCoordinator && (
+                                                            <p className="text-[10px] text-rose-500 font-bold mt-1">
+                                                                Revoked: {log.details.revokedCoordinator.name} ({log.details.revokedCoordinator.rollNo})
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">End of Audit Trail</p>
+                            </div>
+
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* FULLSCREEN PROJECTION OVERLAY */}
+            {
+                projectingEvent && (
+                    <div className="fixed inset-0 z-[99999] bg-[#0f172a] flex flex-col items-center justify-center p-8 animate-fadeIn">
+
+                        {/* Top Bar */}
+                        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+                            <div>
+                                <span className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                    Live Projection
+                                </span>
+                            </div>
+                            <button onClick={stopProjection} className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-bold uppercase tracking-wider backdrop-blur-md transition-colors">
+                                End Projection
                             </button>
                         </div>
 
-                        {/* Modal Content */}
-                        <div className="flex-1 overflow-y-auto p-10 space-y-12">
-                            {!logEvent.timeline || logEvent.timeline.length === 0 ? (
-                                <div className="text-center py-20 space-y-6">
-                                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                                        <ScrollText className="w-8 h-8 text-slate-300" />
-                                    </div>
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest italic">No operational logs recorded</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-10 relative">
-                                    <div className="absolute left-[17px] top-2 bottom-2 w-[2px] bg-indigo-500/20"></div>
-                                    {[...logEvent.timeline].reverse().map((log, idx) => (
-                                        <div key={idx} className="relative pl-12">
-                                            {/* Status Indicator */}
-                                            <div className="absolute left-0 top-1 w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border-2 border-indigo-500 flex items-center justify-center z-10 shadow-lg shadow-indigo-500/10">
-                                                <div className={`w-2 h-2 rounded-full ${
-                                                    log.action.includes('ASSIGNED') ? 'bg-emerald-500 animate-pulse' : 
-                                                    log.action.includes('REVOKED') ? 'bg-rose-500' : 'bg-indigo-500'
-                                                }`}></div>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                                        {log.action.replace('_', ' ')}
-                                                    </span>
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                                        {new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.time).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-
-                                                <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800/50 space-y-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-6 h-6 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                                                            <User className="w-3 h-3 text-indigo-500" />
-                                                        </div>
-                                                        <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                                                            BY {log.performedBy.name} <span className="text-slate-400">({log.performedBy.facultyId})</span>
-                                                        </p>
-                                                    </div>
-                                                    
-                                                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-bold italic pl-9 relative">
-                                                        <div className="absolute left-0 top-0.5 text-indigo-500">“</div>
-                                                        {log.details.reason}
-                                                    </p>
-
-                                                    {(log.details.newCoordinator || log.details.revokedCoordinator) && (
-                                                        <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                                                            <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${
-                                                                log.details.newCoordinator ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
-                                                            }`}>
-                                                                {log.details.newCoordinator ? 'Assigned' : 'Revoked'}
-                                                            </div>
-                                                            <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tighter">
-                                                                {log.details.newCoordinator?.name || log.details.revokedCoordinator?.name}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="px-10 py-6 bg-slate-50 dark:bg-slate-900/50 border-t-2 border-slate-100 dark:border-slate-800">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] text-center">Protocol Integrity Verified</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* FULLSCREEN PROJECTION OVERLAY */}
-            {projectingEvent && (
-                <div className="fixed inset-0 z-[99999] bg-slate-950 flex flex-col items-center justify-center p-8 animate-in fade-in duration-500 overflow-hidden">
-                    {/* Background Grid/Effect */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)] pointer-events-none"></div>
-                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-
-                    {/* Top Protocol Bar */}
-                    <div className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center bg-gradient-to-b from-slate-950 to-transparent z-10">
-                        <div className="flex items-center gap-6">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                                <Radio className="w-6 h-6 text-indigo-500 animate-pulse" />
-                            </div>
-                            <div>
-                                <span className="px-3 py-1 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                    Broadcast Active
-                                </span>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={stopProjection} 
-                            className="group flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-rose-500/10 text-white/70 hover:text-rose-500 rounded-3xl border border-white/10 hover:border-rose-500/30 transition-all font-black uppercase tracking-widest text-[10px] backdrop-blur-xl"
-                        >
-                            <Zap className="w-4 h-4 group-hover:fill-current" />
-                            Terminate Session
-                        </button>
-                    </div>
-
-                    {/* Center Content */}
-                    <div className="relative z-10 text-center max-w-5xl w-full mx-auto flex flex-col items-center space-y-16">
-                        <div className="space-y-4">
-                            <h1 className="text-5xl sm:text-7xl md:text-8xl font-[1000] text-white uppercase tracking-tighter leading-none drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                        {/* Main Content */}
+                        <div className="text-center max-w-4xl w-full mx-auto flex flex-col items-center mt-12">
+                            <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tight mb-4 drop-shadow-2xl">
                                 {projectingEvent.name}
                             </h1>
-                            <div className="flex items-center justify-center gap-4 text-slate-500 font-black uppercase tracking-[0.4em] text-xs sm:text-sm">
-                                <span className="w-8 h-px bg-slate-800"></span>
-                                Attendance & Credit Logging
-                                <span className="w-8 h-px bg-slate-800"></span>
-                            </div>
-                        </div>
+                            <p className="text-lg md:text-2xl text-slate-300 font-medium mb-12">
+                                Scan to instantly log your attendance & OD.
+                            </p>
 
-                        <div className="flex flex-col lg:flex-row items-center justify-center gap-12 sm:gap-24 w-full">
-                            {/* QR Block - Premium Presentation */}
-                            <div className="relative group">
-                                <div className="absolute -inset-10 bg-indigo-500/20 blur-[100px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                                <div className="relative p-8 sm:p-12 bg-white rounded-[4rem] shadow-[0_0_80px_rgba(255,255,255,0.05)] flex flex-col items-center justify-center border-2 border-indigo-500/10">
+                            {/* The QR Code Wrapper */}
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+                                {/* QR Block */}
+                                <div className="relative p-6 bg-white rounded-[2rem] shadow-2xl shadow-indigo-500/20 flex flex-col items-center justify-center">
                                     {qrData ? (
-                                        <img src={qrData} alt="Live QR Code" className="w-[300px] sm:w-[400px] md:w-[450px] aspect-square object-contain rounded-2xl" />
+                                        <img src={qrData} alt="Live QR Code" className="w-[300px] md:w-[400px] h-[300px] md:h-[400px] object-contain rendering-pixelated" />
                                     ) : (
-                                        <div className="w-[300px] sm:w-[400px] md:w-[450px] aspect-square flex items-center justify-center">
+                                        <div className="w-[300px] md:w-[400px] h-[300px] md:h-[400px] flex items-center justify-center">
                                             <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
                                         </div>
                                     )}
-                                    <div className="absolute top-10 left-10 w-8 h-8 border-t-4 border-l-4 border-slate-900/10 rounded-tl-xl"></div>
-                                    <div className="absolute top-10 right-10 w-8 h-8 border-t-4 border-r-4 border-slate-900/10 rounded-tr-xl"></div>
-                                    <div className="absolute bottom-10 left-10 w-8 h-8 border-b-4 border-l-4 border-slate-900/10 rounded-bl-xl"></div>
-                                    <div className="absolute bottom-10 right-10 w-8 h-8 border-b-4 border-r-4 border-slate-900/10 rounded-br-xl"></div>
-                                </div>
-                            </div>
 
-                            {/* Verification Block */}
-                            {eventOtp && (
-                                <div className="flex flex-col items-center space-y-10">
-                                    <div className="space-y-4">
-                                        <p className="text-slate-500 font-black uppercase tracking-[0.5em] text-[10px]">Verification Protocol</p>
-                                        <div className="flex gap-2 sm:gap-4">
+                                    {/* Security Ring */}
+                                    <div className="absolute -inset-4 border-2 border-indigo-500/30 rounded-[2.5rem] pointer-events-none"></div>
+                                </div>
+
+                                {/* OTP Status Block */}
+                                {eventOtp && (
+                                    <div className="flex flex-col items-center p-8 bg-slate-900/50 backdrop-blur-md rounded-[2.5rem] border border-white/10 shadow-2xl">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">SCAN OR ENTER CODE</p>
+                                        <div className="flex gap-2 mb-4">
                                             {eventOtp.split('').map((char, index) => (
-                                                <div key={index} className="w-16 h-20 sm:w-20 sm:h-24 bg-slate-900 rounded-[1.5rem] border-2 border-slate-800 flex items-center justify-center text-4xl sm:text-6xl font-[1000] text-indigo-500 shadow-2xl shadow-indigo-500/5">
+                                                <div key={index} className="w-12 md:w-16 h-16 md:h-20 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center text-3xl md:text-5xl font-mono font-black text-indigo-400 shadow-inner">
                                                     {char}
                                                 </div>
                                             ))}
                                         </div>
+                                        <p className="text-indigo-300/60 text-xs font-mono">Refreshes dynamically</p>
                                     </div>
+                                )}
+                            </div>
 
-                                    <div className="flex items-center gap-4 text-slate-400 bg-white/5 px-8 py-5 rounded-[2rem] border border-white/10 backdrop-blur-xl">
-                                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
-                                            <ShieldAlert className="w-6 h-6 text-indigo-500" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Dynamic Session Locking</p>
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Codes rotate every 60 seconds</p>
-                                        </div>
-                                    </div>
+                            {/* Security Footer */}
+                            <div className="mt-12 flex items-center gap-3 text-slate-400 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
+                                <Lock className="w-6 h-6 text-indigo-400" />
+                                <div className="text-left">
+                                    <p className="text-xs font-bold uppercase tracking-widest">Temporal Security Active</p>
+                                    <p className="text-[10px] uppercase tracking-wider opacity-70">Code refreshes dynamically to prevent proxy scanning.</p>
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
 
-                    {/* Bottom Indicator */}
-                    <div className="absolute bottom-12 left-0 right-0 flex justify-center">
-                        <div className="flex items-center gap-3 text-slate-600 font-bold uppercase tracking-[0.4em] text-[8px]">
-                            <Activity className="w-3 h-3" /> System Operational • Secure Tunnel Established
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* EDIT EVENT MODAL */}
-            {editingEvent && (
-                <div className="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[3rem] shadow-2xl border-2 border-slate-900 dark:border-white animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 overflow-hidden">
-                        
-                        <div className="px-10 py-8 border-b-2 border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <div>
-                                <h3 className="text-xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic">Reconfigure</h3>
-                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-2 italic">Internal Modification</p>
+            {
+                editingEvent && (
+                    <div className="fixed inset-0 z-[100000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-slideUp overflow-y-auto max-h-[90vh]">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Edit Internal Event</h2>
+                                <button onClick={() => setEditingEvent(null)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
                             </div>
-                            <button
-                                onClick={() => setEditingEvent(null)}
-                                className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:rotate-90 transition-all"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleEditSubmit} className="p-10 space-y-8 overflow-y-auto max-h-[70vh]">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="md:col-span-2 space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Event Designation</label>
+                            <form onSubmit={handleEditSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Event Name</label>
                                     <input
                                         required
                                         type="text"
                                         value={editFormData.name}
                                         onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-6 py-4 text-slate-900 dark:text-white font-bold outline-none transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                                     />
                                 </div>
-                                
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Temporal Start</label>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Start Time</label>
                                     <input
                                         required
                                         type="datetime-local"
                                         value={editFormData.startDate}
                                         onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-6 py-4 text-slate-900 dark:text-white font-bold outline-none transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                                     />
                                 </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Temporal End</label>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">End Time</label>
                                     <input
                                         required
                                         type="datetime-local"
                                         value={editFormData.endDate}
                                         onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-6 py-4 text-slate-900 dark:text-white font-bold outline-none transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                                     />
                                 </div>
-
-                                <div className="md:col-span-2 space-y-6">
-                                    <div className="flex items-center justify-between px-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Resource Allocation</label>
-                                        <div className="px-3 py-1 bg-indigo-500 text-white text-[8px] font-black rounded uppercase tracking-widest">Calculated</div>
-                                    </div>
-                                    <div className="bg-slate-900 rounded-[2rem] p-8 flex items-center gap-12 border-2 border-slate-800">
-                                        <div className="flex-1 text-center">
-                                            <p className="text-4xl font-[1000] text-white italic">{Math.floor(editFormData.allocatedHours)}</p>
-                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Hours</p>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">OD Value (Allocated Credit)</label>
+                                    <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                        <div className="flex-1">
+                                            <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1 text-center">Hours</label>
+                                            <input
+                                                readOnly
+                                                type="number"
+                                                className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-center text-slate-500 dark:text-slate-400 font-bold cursor-not-allowed"
+                                                value={Math.floor(editFormData.allocatedHours)}
+                                            />
                                         </div>
-                                        <div className="w-px h-12 bg-slate-800"></div>
-                                        <div className="flex-1 text-center">
-                                            <p className="text-4xl font-[1000] text-indigo-500 italic">{Math.round((editFormData.allocatedHours % 1) * 60)}</p>
-                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Minutes</p>
+                                        <div className="text-slate-300 dark:text-slate-600 font-bold">:</div>
+                                        <div className="flex-1">
+                                            <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1 ml-1 text-center">Minutes</label>
+                                            <input
+                                                readOnly
+                                                type="number"
+                                                className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-lg px-3 py-2 text-center text-slate-500 dark:text-slate-400 font-bold cursor-not-allowed"
+                                                value={Math.round((editFormData.allocatedHours % 1) * 60)}
+                                            />
+                                        </div>
+                                        <div className="flex-[2] bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-2 text-center">
+                                            <p className="text-[10px] text-indigo-400 uppercase font-black tracking-widest mb-0.5">Total Credit</p>
+                                            <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">{Math.floor(editFormData.allocatedHours)}h {Math.round((editFormData.allocatedHours % 1) * 60)}m</p>
                                         </div>
                                     </div>
+                                    <p className="text-[10px] text-slate-400 mt-2 px-1">Note: Minimum credit is 1 hour. Values are auto-calculated but can be overridden manually.</p>
                                 </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Capacity</label>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Capacity (Max Students)</label>
                                     <input
                                         type="number"
                                         min="0"
                                         value={editFormData.maxParticipants}
                                         onChange={(e) => setEditFormData({ ...editFormData, maxParticipants: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-6 py-4 text-slate-900 dark:text-white font-bold outline-none transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                                     />
                                 </div>
-
-                                <div className="space-y-3">
+                                <div>
                                     <SearchableSelect
-                                        label="Overseer (Staff)"
+                                        label="Staff Coordinator"
+                                        placeholder="Select a mentor..."
                                         value={editFormData.staffCoordinatorId}
                                         onChange={(val) => setEditFormData({ ...editFormData, staffCoordinatorId: val })}
                                         options={[
-                                            { value: "", label: "No Overseer", sublabel: "Autonomous Mode", icon: <Bot className="w-4 h-4" /> },
+                                            { value: "", label: "Auto-Approval", sublabel: "No staff coordinator assigned", icon: <Bot className="w-4 h-4" /> },
                                             ...faculties.map(fac => ({
                                                 value: String(fac.id),
                                                 label: fac.name,
@@ -987,10 +875,10 @@ export default function ManageInternalEvents() {
                                         ]}
                                     />
                                 </div>
-
-                                <div className="md:col-span-2">
+                                <div>
                                     <SearchableSelect
-                                        label="Liaison (Student)"
+                                        label="Student Coordinator"
+                                        placeholder="Type roll no or name..."
                                         value={editFormData.studentCoordinatorId}
                                         isAsync={true}
                                         onSearch={async (q) => {
@@ -1005,180 +893,289 @@ export default function ManageInternalEvents() {
                                         onChange={(val) => setEditFormData({ ...editFormData, studentCoordinatorId: val })}
                                     />
                                 </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 pt-4">
-                                <button type="button" onClick={() => setEditingEvent(null)} className="flex-1 px-8 py-5 bg-slate-100 dark:bg-slate-800 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-                                    Abort
-                                </button>
-                                <button type="submit" className="flex-[2] px-8 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-xl">
-                                    Save Config
-                                </button>
-                            </div>
-                        </form>
+                                <div className="md:col-span-2 flex justify-end mt-4 gap-4">
+                                    <button type="button" onClick={() => setEditingEvent(null)} className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="px-6 py-3 bg-indigo-600 text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* DELETE CONFIRMATION MODAL */}
-            {isDeletingId && (
-                <div className="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[3.5rem] p-10 shadow-2xl border-2 border-slate-900 dark:border-white animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 text-center">
-                        <div className="w-20 h-20 rounded-[1.5rem] bg-rose-500/10 border-2 border-rose-500/20 flex items-center justify-center mx-auto mb-8 text-rose-500">
-                            <AlertCircle className="w-10 h-10" />
-                        </div>
-                        <h2 className="text-2xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic mb-4">Terminate Event?</h2>
-                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-wider mb-8">
-                            This will liquidate all attendance logs and roll back credit hours.
-                        </p>
-                        <div className="flex flex-col gap-4">
-                            <button onClick={() => handleDelete(isDeletingId)} className="w-full py-5 bg-rose-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-rose-600 transition-all">
-                                Confirm Termination
-                            </button>
-                            <button onClick={() => setIsDeletingId(null)} className="w-full py-5 bg-slate-100 dark:bg-slate-800 text-slate-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-slate-200 transition-all">
-                                Cancel
-                            </button>
+            {
+                isDeletingId && (
+                    <div className="fixed inset-0 z-[100000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all animate-slideUp">
+
+                            <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-6 text-red-600 dark:text-red-500">
+                                <AlertCircle className="w-8 h-8" />
+                            </div>
+
+                            <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Revoke & Delete Event</h2>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">
+                                Deleting this event will instantly <span className="text-red-500 font-bold">cancel all ODs</span> generated through this QR code and <span className="text-indigo-500 font-bold">refund the hours</span> back to the students' balances. This action is irreversible.
+                            </p>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setIsDeletingId(null)}
+                                    className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={executeDelete}
+                                    className="flex-1 py-3.5 bg-red-600 text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30"
+                                >
+                                    Confirm Delete
+                                </button>
+                            </div>
+
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
+
+            {/* DELETE ALL CONFIRMATION MODAL */}
+            {
+                isDeletingAll && (
+                    <div className="fixed inset-0 z-[100000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl border border-rose-200 dark:border-rose-900/50 transform transition-all animate-slideUp">
+
+                            <div className="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center mb-6 text-rose-600 dark:text-rose-500">
+                                <ShieldAlert className="w-8 h-8" />
+                            </div>
+
+                            <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Nuke All Events</h2>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-8 font-medium">
+                                You are about to delete <span className="text-rose-500 font-bold">ALL {events.length} active events</span>. This will immediately cancel all associated student ODs and refund their unspent hours. This absolute wipe cannot be undone.
+                            </p>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setIsDeletingAll(false)}
+                                    className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={executeDeleteAll}
+                                    className="flex-1 py-3.5 bg-rose-600 text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/30"
+                                >
+                                    Nuke Everything
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                )
+            }
 
             {/* ATTENDANCE MODAL */}
-            {attendanceData && (
-                <div className="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-5xl max-h-[90vh] flex flex-col rounded-[3rem] shadow-2xl border-2 border-slate-950 dark:border-white animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 overflow-hidden">
-                        
-                        <div className="px-10 py-8 border-b-2 border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <div>
-                                <h2 className="text-2xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic">
-                                    {attendanceData.event.name}
-                                </h2>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Verified: {attendanceData.attendance.filter(a => a.status === 'APPROVED').length}</span>
-                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">Provisional: {attendanceData.attendance.filter(a => a.status === 'PROVISIONAL').length}</span>
-                                </div>
-                            </div>
-                            <button onClick={() => setAttendanceData(null)} className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all">
-                                <X className="w-7 h-7" />
-                            </button>
-                        </div>
+            {
+                attendanceData && (
+                    <div className="fixed inset-0 z-[100000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] flex flex-col rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 animate-slideUp overflow-hidden">
 
-                        <div className="flex-1 overflow-y-auto p-10 space-y-6">
-                            {attendanceData.attendance.length === 0 ? (
-                                <div className="text-center py-20 space-y-6">
-                                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto">
-                                        <Mailbox className="w-8 h-8 text-slate-300" />
-                                    </div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-center mx-auto max-w-xs leading-relaxed">System waiting for scan incoming protocol...</p>
+                            {/* Header */}
+                            <div className="px-6 md:px-8 py-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                                <div>
+                                    <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">
+                                        {attendanceData.event.name}
+                                    </h2>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
+                                        <span className="font-bold text-green-600 dark:text-green-400">{attendanceData.attendance.filter(a => a.status === 'APPROVED').length}</span> attended • <span className="font-bold text-amber-600 dark:text-amber-400">{attendanceData.attendance.filter(a => a.status === 'PROVISIONAL').length}</span> gate pass verified
+                                    </p>
                                 </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {attendanceData.attendance.map(record => (
-                                        <div key={record.odId} className="group bg-slate-50 dark:bg-slate-800/40 p-6 rounded-[2rem] border-2 border-transparent hover:border-indigo-500/20 transition-all flex items-center justify-between gap-6">
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-[1000] text-slate-900 dark:text-white uppercase tracking-tight truncate">{record.student.name}</p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <span className="text-[9px] font-black text-indigo-500 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10 italic">{record.student.rollNo}</span>
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">{record.student.department} • SEM {record.student.semester}</span>
+                                <button
+                                    onClick={() => setAttendanceData(null)}
+                                    className="w-10 h-10 shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* List */}
+                            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50/50 dark:bg-slate-900/50">
+                                {attendanceData.attendance.length === 0 ? (
+                                    <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                                        <Mailbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                        <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">No scans recorded yet</p>
+                                        <p className="text-xs text-slate-400 mt-2 font-medium">Students need to scan the live projection to appear here.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {attendanceData.attendance.map(record => (
+                                            <div key={record.odId} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-4 hover:border-indigo-500/30 transition-colors">
+                                                <div>
+                                                    <p className="font-bold text-slate-900 dark:text-white capitalize">{record.student.name.toLowerCase()}</p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-500/20">
+                                                            {record.student.rollNo}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold uppercase text-slate-500">
+                                                            {record.student.department} • Semester {record.student.semester}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right flex flex-col justify-center items-end shrink-0">
+                                                    {record.status === 'APPROVED' ? (
+                                                        <>
+                                                            <span className="text-[10px] font-black uppercase text-green-500 bg-green-50 dark:bg-green-500/10 px-2 py-1 rounded-lg border border-green-100 dark:border-green-500/20 mb-1 flex items-center gap-1">
+                                                                <CheckCircle2 className="w-3 h-3" /> Attended
+                                                            </span>
+                                                            <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">
+                                                                {new Date(record.scanTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </>
+                                                    ) : record.status === 'PROVISIONAL' ? (
+                                                        <>
+                                                            <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-500/20 mb-1 flex items-center gap-1">
+                                                                <MonitorPlay className="w-3 h-3" /> Gate Pass
+                                                            </span>
+                                                            {(() => {
+                                                                const verifierEntries = record.timeline?.filter(t => t.label === "Gate Pass Authorized") || [];
+                                                                return verifierEntries.length > 0 ? (
+                                                                    <div className="flex flex-col items-end gap-1">
+                                                                        {verifierEntries.map((entry, idx) => (
+                                                                            <div key={idx} className="flex flex-col items-end leading-none border-b border-slate-100 dark:border-slate-800 pb-1 last:border-0">
+                                                                                <span className="text-[9px] text-slate-400 font-bold">By {entry.description?.split("Prof. ")[1]?.split(" (")[0] || "Staff"}</span>
+                                                                                <span className="text-[8px] text-slate-400 font-medium">{new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-[10px] text-slate-400 font-bold">Authorized</span>
+                                                                );
+                                                            })()}
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-slate-400 italic">{record.status}</span>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <div className="shrink-0 flex flex-col items-end">
-                                                {record.status === 'APPROVED' ? (
-                                                    <div className="flex flex-col items-end gap-1.5">
-                                                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-[0.2em] rounded-lg flex items-center gap-1.5">
-                                                            <CheckCircle2 className="w-3 h-3" /> Attended
-                                                        </span>
-                                                        <span className="text-[9px] font-black text-slate-400">{new Date(record.scanTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    </div>
-                                                ) : record.status === 'PROVISIONAL' ? (
-                                                    <div className="flex flex-col items-end gap-1.5">
-                                                        <span className="px-3 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-[0.2em] rounded-lg flex items-center gap-1.5">
-                                                            <MonitorPlay className="w-3 h-3" /> Gate Pass
-                                                        </span>
-                                                        <span className="text-[8px] font-black text-slate-400 uppercase">Authorized Hub</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[9px] font-black text-slate-400 italic uppercase">{record.status}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {/* VIEW ROSTER MODAL */}
-            {viewingRoster && (
-                <div className="fixed inset-0 z-[100000] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-[3rem] shadow-2xl border-2 border-slate-950 dark:border-white animate-in zoom-in-95 duration-500 overflow-hidden">
-                        
-                        <div className="px-10 py-8 border-b-2 border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <div>
-                                <h2 className="text-2xl font-[1000] text-slate-900 dark:text-white uppercase tracking-tighter italic">Participant Roster</h2>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Population: <span className="text-indigo-500">{rosterData.count}</span></span>
-                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                    {rosterData.isApproved ? (
-                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-500 font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] italic">Locked & Verified</span>
-                                    ) : (
-                                        <span className="text-[8px] bg-amber-500/10 text-amber-500 font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] animate-pulse italic">Awaiting Finalization</span>
+            {/* View Roster Modal */}
+            {
+                viewingRoster && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                                        📋 Participant Roster
+                                        {!rosterData.isApproved && !selectedEvent?.isRosterSubmitted && (
+                                            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold px-2 py-1 rounded uppercase tracking-widest">
+                                                Not Submitted Yet
+                                            </span>
+                                        )}
+                                        {!rosterData.isApproved && selectedEvent?.isRosterSubmitted && (
+                                            <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold px-2 py-1 rounded uppercase tracking-widest animate-pulse">
+                                                Pending Approval
+                                            </span>
+                                        )}
+                                        {rosterData.isApproved && (
+                                            <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 font-bold px-2 py-1 rounded uppercase tracking-widest">
+                                                Approved & Locked
+                                            </span>
+                                        )}
+                                    </h2>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-1">
+                                        Total Participants: <span className="font-bold text-slate-900 dark:text-white">{rosterData.count}</span>
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {!rosterData.isApproved && (
+                                        <button
+                                            onClick={handleApproveRoster}
+                                            disabled={!selectedEvent?.isRosterSubmitted}
+                                            className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${selectedEvent?.isRosterSubmitted
+                                                ? "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200 dark:shadow-none"
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                                                }`}
+                                        >
+                                            {selectedEvent?.isRosterSubmitted ? <><CheckCircle2 className="w-4 h-4" /> Approve Roster</> : <><Clock className="w-4 h-4" /> Awaiting Submission</>}
+                                        </button>
                                     )}
+                                    <button
+                                        onClick={() => setViewingRoster(false)}
+                                        className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                {!rosterData.isApproved && selectedEvent?.isRosterSubmitted && (
-                                    <button onClick={handleApproveRoster} className="px-6 py-3 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
-                                        Authorize Roster
-                                    </button>
+
+                            {!rosterData.isApproved && !selectedEvent?.isRosterSubmitted && (
+                                <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-2xl flex items-center gap-3">
+                                    <Info className="w-5 h-5 text-indigo-500" />
+                                    <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                                        The roster has not been submitted by the <span className="font-bold">Student Coordinator</span> yet. You can approve it once they finalize the list.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="p-6 max-h-[60vh] overflow-y-auto">
+                                {rosterLoading ? (
+                                    <div className="py-12 text-center animate-pulse text-sm font-bold text-slate-400 uppercase tracking-widest">
+                                        Loading Roster Data...
+                                    </div>
+                                ) : !rosterData.roster || rosterData.roster.length === 0 ? (
+                                    <div className="py-12 text-center text-slate-500 font-bold uppercase tracking-wider">
+                                        No students mapped to this event yet.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <div className="flex text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                            <div className="w-12">No.</div>
+                                            <div className="flex-1">Student</div>
+                                            <div className="w-24 text-right">Dept</div>
+                                        </div>
+                                        {rosterData.roster && rosterData.roster.map((student, idx) => (
+                                            <div key={student.rollNo} className="flex items-center text-sm px-4 py-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+                                                <div className="w-12 font-bold text-slate-400">{idx + 1}</div>
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-slate-900 dark:text-white capitalize">{student.name.toLowerCase()}</p>
+                                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{student.rollNo}</p>
+                                                </div>
+                                                <div className="w-24 text-right font-bold text-slate-600 dark:text-slate-400 text-xs uppercase">
+                                                    {student.department}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
-                                <button onClick={() => setViewingRoster(false)} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all">
-                                    <X className="w-6 h-6" />
+                            </div>
+
+                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                    Total: {rosterData.roster?.length || 0}
+                                </span>
+                                <button
+                                    onClick={() => setViewingRoster(false)}
+                                    className="px-6 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors"
+                                >
+                                    Close
                                 </button>
                             </div>
                         </div>
-
-                        <div className="p-10 space-y-6 max-h-[60vh] overflow-y-auto">
-                            {!rosterData.roster || rosterData.roster.length === 0 ? (
-                                <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/20 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                    <Users className="w-10 h-10 text-slate-300 mx-auto mb-4" />
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Protocol registry currently empty...</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    <div className="flex items-center text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] px-6 pb-2">
-                                        <div className="w-12">REF</div>
-                                        <div className="flex-1">Identity</div>
-                                        <div className="w-24 text-right">Segment</div>
-                                    </div>
-                                    {rosterData.roster.map((student, idx) => (
-                                        <div key={student.rollNo} className="flex items-center px-6 py-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-transparent hover:border-indigo-500/10 transition-all">
-                                            <div className="w-12 text-[10px] font-black text-slate-300 italic">{String(idx + 1).padStart(2, '0')}</div>
-                                            <div className="flex-1">
-                                                <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{student.name}</p>
-                                                <p className="text-[9px] font-bold text-indigo-500 italic mt-0.5">{student.rollNo}</p>
-                                            </div>
-                                            <div className="w-24 text-right text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                                                {student.department}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="px-10 py-6 bg-slate-50 dark:bg-slate-900/50 border-t-2 border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Protocol Verified</p>
-                            <button onClick={() => setViewingRoster(false)} className="px-6 py-2 text-[9px] font-black text-slate-900 dark:text-white uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all">Close</button>
-                        </div>
                     </div>
-                </div>
-            )}
-
-            <Footer />
+                )}
         </div>
     );
 }

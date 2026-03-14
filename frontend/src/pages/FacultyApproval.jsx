@@ -67,58 +67,54 @@ export default function FacultyApproval() {
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
             <Header />
             <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">OD Verifications</h1>
-                        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-medium mt-1">Audit and validate student off-duty requests.</p>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">OD Approvals</h1>
+                        <p className="text-slate-600 dark:text-slate-400">Review and approve OD requests from your mentored students.</p>
                     </div>
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-500 hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-800 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm active:scale-95 group"
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors font-medium border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 shadow-sm"
                     >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
+                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                 </div>
 
                 {ods.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-12 sm:p-24 text-center border-2 border-dashed border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center">
-                        <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-[2rem] flex items-center justify-center mb-6 animate-bounce-slow">
-                            <Sparkles className="w-10 h-10 text-emerald-500" />
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl p-20 text-center border border-dashed border-slate-300 dark:border-slate-700 shadow-sm">
+                        <div className="flex justify-center mb-6">
+                            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center">
+                                <Sparkles className="w-8 h-8 text-emerald-500" />
+                            </div>
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Queue Decimated</h3>
-                        <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-[0.2em] mt-3">All requests have been successfully audited.</p>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">All caught up!</h3>
+                        <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">No pending OD requests at the moment.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* List */}
-                        <div className="lg:col-span-1 space-y-4 max-h-[70vh] lg:max-h-none overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="lg:col-span-1 space-y-4">
                             {ods.map((od) => (
                                 <div
                                     key={od.id}
                                     onClick={() => setSelectedOd(od)}
-                                    className={`p-5 rounded-[1.5rem] border-2 cursor-pointer transition-all active:scale-[0.98] ${selectedOd?.id === od.id
-                                        ? "bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800 shadow-lg shadow-indigo-500/5"
-                                        : "bg-white border-slate-100 dark:bg-slate-900 dark:border-slate-800 hover:border-indigo-300 shadow-sm"
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedOd?.id === od.id
+                                        ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
+                                        : "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-blue-300 shadow-sm"
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex flex-col">
-                                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${selectedOd?.id === od.id ? 'text-indigo-600' : 'text-slate-400'}`}>Request ID</span>
-                                            <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{od.trackerId}</span>
-                                        </div>
-                                        <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest flex items-center gap-1.5 ${selectedOd?.id === od.id ? 'bg-indigo-600 text-white' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{od.trackerId}</span>
+                                        <span className="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold flex items-center gap-1.5">
                                             <Clock className="w-3 h-3" /> {od.status.replace("_", " ")}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-black transition-colors ${selectedOd?.id === od.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                                            {od.student?.name?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h4 className="font-black text-slate-900 dark:text-white truncate text-xs sm:text-sm uppercase tracking-tight">{od.student?.name}</h4>
-                                            <p className="text-[10px] sm:text-xs font-bold text-slate-400 truncate uppercase tracking-widest">{od.student?.rollNo}</p>
-                                        </div>
-                                    </div>
+                                    <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <User className="w-3.5 h-3.5 text-slate-400" /> {od.student?.name}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-1">
+                                        <Calendar className="w-3 h-3" /> {od.student?.rollNo} • {od.duration} days
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -126,29 +122,25 @@ export default function FacultyApproval() {
                         {/* Detail View */}
                         <div className="lg:col-span-2">
                             {selectedOd ? (
-                                <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden animate-slide-up sticky top-8">
-                                    <div className="px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-                                        <div className="min-w-0">
-                                            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">Review Dossier</h3>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest truncate">{selectedOd.trackerId}</p>
-                                        </div>
-                                        <div className="text-[9px] sm:text-[10px] font-black text-slate-500 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm shrink-0 uppercase tracking-widest">
-                                            Activity: <span className="text-indigo-600 dark:text-indigo-400">{selectedOd.activityId}</span>
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-fadeIn">
+                                    <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                        <h3 className="font-bold text-slate-900 dark:text-white tracking-tight">Review OD - {selectedOd.trackerId}</h3>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                                            Activity ID: <span className="font-mono text-blue-600 dark:text-blue-400">{selectedOd.activityId}</span>
                                         </div>
                                     </div>
 
-                                    <div className="p-6 sm:p-8 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                                        {/* AI Verification Results */}
-                                        <div className="bg-slate-50 dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 border border-slate-100 dark:border-slate-800 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
-                                            <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
-                                                <ShieldCheck className="w-4 h-4 text-emerald-500" /> AI Diagnostic Analysis
+                                    <div className="p-6 space-y-6">
+                                        {/* OCR Results Badge */}
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800/50">
+                                            <h4 className="text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
+                                                <ShieldCheck className="w-4 h-4" /> AI Verification Results
                                             </h4>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 relative z-10">
+                                            <div className="grid grid-cols-3 gap-2">
                                                 {Object.entries(selectedOd.verificationDetails || {}).map(([key, val]) => (
-                                                    <div key={key} className="bg-white dark:bg-slate-800/50 p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center">
-                                                        <p className="text-[9px] uppercase text-slate-400 font-black tracking-widest mb-2">{key}</p>
-                                                        <span className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest ${val ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30'}`}>
+                                                    <div key={key} className="text-center">
+                                                        <p className="text-[10px] uppercase text-slate-500 font-bold mb-1">{key}</p>
+                                                        <span className={`text-xs px-2 py-1 rounded-md font-bold ${val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                             {val ? 'MAPPED' : 'FAILED'}
                                                         </span>
                                                     </div>
@@ -157,100 +149,82 @@ export default function FacultyApproval() {
                                         </div>
 
                                         {/* Student Info */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Primary Subject</label>
-                                                <p className="font-black text-slate-900 dark:text-white uppercase tracking-tight text-sm sm:text-base leading-tight">{selectedOd.student?.name}</p>
-                                                <p className="text-[11px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{selectedOd.student?.rollNo} • {selectedOd.student?.department}</p>
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div>
+                                                <label className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">Student Name</label>
+                                                <p className="font-medium text-slate-900 dark:text-white">{selectedOd.student?.name}</p>
                                             </div>
-                                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Time Dimension</label>
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4 text-indigo-500" />
-                                                    <p className="font-black text-slate-900 dark:text-white text-sm sm:text-base tracking-tight uppercase">
-                                                        {new Date(selectedOd.startDate).toLocaleDateString()} — {new Date(selectedOd.endDate).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                                <p className="text-[11px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{selectedOd.duration} Lunar Cycles Duration</p>
+                                            <div>
+                                                <label className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">Period</label>
+                                                <p className="font-medium text-slate-900 dark:text-white">
+                                                    {new Date(selectedOd.startDate).toLocaleDateString()} - {new Date(selectedOd.endDate).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
 
                                         {/* Documents */}
                                         <div>
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-4">Verification Attachments</label>
-                                            <div className="flex flex-col sm:flex-row gap-4">
+                                            <label className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold block mb-2">Attached Documents</label>
+                                            <div className="flex gap-4">
                                                 <a
                                                     href={`${BASE_URL}/${selectedOd.proofFile}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex-1 p-5 bg-white dark:bg-slate-900 rounded-[1.5rem] border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all flex items-center justify-between group active:scale-[0.98] shadow-sm"
+                                                    className="flex-1 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm text-slate-700 dark:text-slate-300 group"
                                                 >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-                                                            <FileText className="w-5 h-5 text-indigo-600" />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-tight block">Aim & Objective</span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Primary Documentation</span>
-                                                        </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <FileText className="w-5 h-5 text-blue-500" />
+                                                        <span className="font-bold">Aim & Objective</span>
                                                     </div>
-                                                    <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                                                    <ExternalLink className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </a>
                                                 <a
                                                     href={`${BASE_URL}/${selectedOd.offerFile}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex-1 p-5 bg-white dark:bg-slate-900 rounded-[1.5rem] border-2 border-slate-100 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all flex items-center justify-between group active:scale-[0.98] shadow-sm"
+                                                    className="flex-1 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between text-sm text-slate-700 dark:text-slate-300 group"
                                                 >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 bg-purple-50 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                                                            <FileText className="w-5 h-5 text-purple-600" />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm uppercase tracking-tight block">Offer Letter</span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Validation Key</span>
-                                                        </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <FileText className="w-5 h-5 text-indigo-500" />
+                                                        <span className="font-bold">Offer Letter</span>
                                                     </div>
-                                                    <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-purple-500 transition-colors" />
+                                                    <ExternalLink className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </a>
                                             </div>
                                         </div>
 
                                         {/* Actions */}
-                                        <div className="pt-8 border-t border-slate-100 dark:border-slate-800 space-y-6">
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-3">Auditor Remarks</label>
-                                                <textarea
-                                                    value={remarks}
-                                                    onChange={(e) => setRemarks(e.target.value)}
-                                                    placeholder="Input validation notes or rejection reasoning..."
-                                                    className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all outline-none text-sm font-medium resize-none min-h-[120px]"
-                                                />
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                                            <textarea
+                                                value={remarks}
+                                                onChange={(e) => setRemarks(e.target.value)}
+                                                placeholder="Add remarks for approval/rejection..."
+                                                className="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                                            />
+                                            <div className="flex gap-4">
                                                 <button
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "REJECTED")}
-                                                    className="flex-1 py-4 px-8 rounded-2xl border-2 border-rose-100 dark:border-rose-900/30 text-rose-600 font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-rose-500/5"
+                                                    className="flex-1 py-4 px-6 rounded-xl border-2 border-red-100 dark:border-red-900/30 text-red-600 font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    <XCircle className="w-5 h-5" /> Deny Access
+                                                    <XCircle className="w-5 h-5" /> Reject Request
                                                 </button>
                                                 <button
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "MENTOR_APPROVED")}
-                                                    className="flex-2 sm:flex-[1.5] py-4 px-8 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-indigo-700 shadow-2xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                                                    className="flex-1 py-4 px-6 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" /> Confirm Verification
+                                                    <CheckCircle2 className="w-5 h-5" /> Approve Training
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="h-full bg-slate-50 dark:bg-slate-950 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-12 text-center min-h-[400px] group transition-all hover:bg-white dark:hover:bg-slate-900">
-                                    <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
-                                        <ArrowLeftCircle className="w-12 h-12 text-slate-200 dark:text-slate-700" />
+                                <div className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed flex flex-col items-center justify-center p-12 text-center text-slate-500 shadow-sm min-h-[400px]">
+                                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
+                                        <ArrowLeftCircle className="w-10 h-10 text-slate-300 animate-pulse" />
                                     </div>
-                                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Access Selection Required</h3>
-                                    <p className="max-w-xs mt-3 text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Choose an available OD application dossier from the registry to initiate verification.</p>
+                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Select a request</h3>
+                                    <p className="max-w-xs mt-2 font-medium">Choose an OD application from the list to review the details and verify documents.</p>
                                 </div>
                             )}
                         </div>

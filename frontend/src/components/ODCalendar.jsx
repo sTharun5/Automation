@@ -25,6 +25,7 @@ export default function ODCalendar({ history = [] }) {
     const getODForDate = (date) => {
         if (!history || !Array.isArray(history)) return null;
 
+        // precise filtering and priority logic
         const dayODs = history.filter(od => {
             try {
                 const start = format(parseISO(od.startDate), 'yyyy-MM-dd');
@@ -32,30 +33,35 @@ export default function ODCalendar({ history = [] }) {
                 const checkDate = format(date, 'yyyy-MM-dd');
                 return checkDate >= start && checkDate <= end;
             } catch (e) {
+                console.error(e);
                 return false;
             }
         });
 
         if (dayODs.length === 0) return null;
 
+        // Priority: Approved > Pending > Rejected
         const approved = dayODs.find(od => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
         if (approved) return approved;
 
         const pending = dayODs.find(od => ["PENDING", "DOCS_VERIFIED"].includes(od.status));
         if (pending) return pending;
 
-        return dayODs[0];
+        return dayODs[0]; // Likely Rejected
     };
 
+    // Helper to find overlapping event
     const getEventForDate = (date) => {
         if (!events || !Array.isArray(events)) return null;
         return events.find(e => {
             try {
+                // Ignore time, use YYYY-MM-DD for comparison
                 const checkDate = format(date, 'yyyy-MM-dd');
                 const start = format(parseISO(e.startDate), 'yyyy-MM-dd');
                 const end = format(parseISO(e.endDate), 'yyyy-MM-dd');
                 return checkDate >= start && checkDate <= end;
             } catch (err) {
+                console.error(err);
                 return false;
             }
         });
@@ -63,11 +69,12 @@ export default function ODCalendar({ history = [] }) {
 
     const tileClassName = ({ date, view }) => {
         if (view === 'month') {
+            // Check for Events First (Priority Display)
             const event = getEventForDate(date);
             if (event) {
                 if (event.type === 'EXAM') return 'highlight-purple';
                 if (event.type === 'HOLIDAY') return 'highlight-blue';
-                return 'highlight-blue';
+                return 'highlight-blue'; // Default event
             }
 
             const od = getODForDate(date);
@@ -86,8 +93,10 @@ export default function ODCalendar({ history = [] }) {
             if (event) {
                 return (
                     <div className="flex justify-center mt-1 group relative">
-                        <div className={`w-1.5 h-1.5 rounded-full ${event.type === 'EXAM' ? 'bg-purple-600' : 'bg-blue-500'} shadow-[0_0_8px_rgba(37,99,235,0.4)]`} />
-                        <div className="absolute bottom-full mb-3 hidden group-hover:block w-max max-w-[150px] bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest rounded-xl px-3 py-2 z-[100] text-center shadow-2xl border border-slate-700 pointer-events-none animate-fadeIn">
+                        <div className={`w-2 h-2 rounded-full ${event.type === 'EXAM' ? 'bg-purple-600' : 'bg-blue-500'
+                            }`} />
+                        {/* Simple Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:block w-max max-w-[150px] bg-slate-800 text-white text-[10px] rounded px-2 py-1 z-50 text-center shadow-lg pointer-events-none">
                             {event.title}
                         </div>
                     </div>
@@ -98,9 +107,9 @@ export default function ODCalendar({ history = [] }) {
             if (od) {
                 return (
                     <div className="flex justify-center mt-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${['APPROVED', 'MENTOR_APPROVED'].includes(od.status) ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' :
-                            od.status === 'REJECTED' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' :
-                                'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                        <div className={`w-1.5 h-1.5 rounded-full ${['APPROVED', 'MENTOR_APPROVED'].includes(od.status) ? 'bg-emerald-500' :
+                            od.status === 'REJECTED' ? 'bg-red-500' :
+                                'bg-amber-500'
                             }`} />
                     </div>
                 );
@@ -110,38 +119,34 @@ export default function ODCalendar({ history = [] }) {
     };
 
     return (
-        <div className="p-8 sm:p-10 bg-white dark:bg-slate-900 rounded-[3.5rem] border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
-            
-            <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 mb-8 uppercase tracking-[0.3em] flex items-center gap-2 relative z-10 px-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div> Temporal Log Console
+        <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-6 uppercase tracking-wider">
+                OD Calendar
             </h3>
-            
-            <div className="calendar-container relative z-10">
+            <div className="calendar-container">
                 <Calendar
                     onChange={onChange}
                     value={value}
                     tileClassName={tileClassName}
                     tileContent={tileContent}
-                    className="w-full border-none bg-transparent text-slate-800 dark:text-slate-200 font-black uppercase tracking-tight text-xs"
+                    className="w-full border-none bg-transparent text-slate-700 dark:text-slate-300"
                 />
             </div>
 
-            <div className="mt-10 grid grid-cols-2 gap-6 relative z-10 border-t-2 border-slate-100 dark:border-slate-800 pt-8 px-2">
-                <LegendItem color="bg-emerald-500" label="Approved" />
-                <LegendItem color="bg-amber-500" label="Pending" />
-                <LegendItem color="bg-purple-600" label="Exam Cycle" />
-                <LegendItem color="bg-blue-500" label="Recess Day" />
+            <div className="mt-4 flex gap-4 justify-center text-xs text-slate-500">
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" /> Approved
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-amber-500" /> Pending
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-purple-600" /> Exam
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" /> Holiday
+                </div>
             </div>
         </div>
     );
-}
-
-function LegendItem({ color, label }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`w-2.5 h-2.5 rounded-full ${color} shadow-lg shadow-${color.split('-')[1]}-500/30 ring-2 ring-white dark:ring-slate-900`} />
-      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
-    </div>
-  );
 }

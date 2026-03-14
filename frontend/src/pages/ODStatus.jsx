@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { useToast } from "../context/ToastContext";
 import {
     ArrowLeft,
     ChevronRight,
@@ -18,7 +17,6 @@ import {
 export default function ODStatus() {
     const [activeODs, setActiveODs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchODs = async () => {
@@ -40,154 +38,127 @@ export default function ODStatus() {
         };
 
         fetchODs();
-        const interval = setInterval(fetchODs, 10000); // 10s is better for resource management
+        fetchODs();
+        const interval = setInterval(fetchODs, 3000);
         return () => clearInterval(interval);
     }, []);
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
             <Header />
-            <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-5xl mx-auto w-full">
-                {/* Header Section */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10 sm:mb-12">
-                    <div className="flex items-center gap-5">
+            <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                    <div className="flex items-center gap-4">
                         <Link
                             to="/student/dashboard"
-                            className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:scale-110 active:scale-95 transition-all text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 group"
+                            className="inline-flex items-center justify-center bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500 transition-colors"
                         >
-                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         </Link>
                         <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Active Transmit</h1>
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-[0.3em]">Real-time Telemetry & Status Node</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Live OD Tracker</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">Real-time status of your active applications</p>
                         </div>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none">
-                        <div className="w-16 h-16 border-[6px] border-indigo-500/10 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 animate-pulse">Establishing Secure Sync...</p>
+                    <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+                        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Syncing Status...</p>
                     </div>
                 ) : activeODs.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-8">
+                    <div className="space-y-6">
                         {activeODs.map((od) => (
-                            <div key={od.id} className="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden p-6 sm:p-10 transition-all hover:border-indigo-500/30 relative">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none group-hover:bg-indigo-500/10 transition-all"></div>
-                                
-                                <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:gap-0 mb-10 relative z-10">
+                            <div key={od.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden p-6">
+                                <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                                            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                                                {(od.type || "OD").toLowerCase()} Protocol
-                                            </span>
-                                            <span className="px-3 py-1 text-[10px] font-black uppercase rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 border border-indigo-100 dark:border-indigo-800/50 tracking-widest">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-lg font-bold text-slate-900 dark:text-white capitalize">{(od.type || "OD").toLowerCase()} OD</span>
+                                            <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
                                                 #{od.trackerId}
                                             </span>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-4 h-4 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                                    <Clock className="w-2.5 h-2.5" />
-                                                </div>
-                                                <span>
-                                                    {od.type === 'INTERNAL' 
-                                                        ? `${od.event?.name || "Internal Event"}`
-                                                        : (od.offer?.company?.name || "Corporate Vector")}
-                                                </span>
-                                            </div>
-                                            <div className="w-1.5 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full hidden sm:block"></div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-4 h-4 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                                    <FileText className="w-2.5 h-2.5" />
-                                                </div>
-                                                <span>
-                                                    {od.type === 'INTERNAL' 
-                                                        ? (() => {
-                                                            const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
-                                                            const h = Math.floor(hrs);
-                                                            const m = Math.round((hrs % 1) * 60);
-                                                            return m > 0 ? `${h}h ${m}m` : `${h}h Cycle`;
-                                                          })()
-                                                        : `${od.duration} Day Window`}
-                                                </span>
-                                            </div>
-                                        </div>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            {od.type === 'INTERNAL' ? (
+                                                <>
+                                                    {od.event?.name || "Internal Event"} • {(() => {
+                                                        const hrs = od.event?.allocatedHours || od.allocatedHours || 0;
+                                                        const h = Math.floor(hrs);
+                                                        const m = Math.round((hrs % 1) * 60);
+                                                        return m > 0 ? `${h}h ${m}m` : `${h} Hours`;
+                                                    })()}
+                                                </>
+                                            ) : (od.offer?.company?.name || "Company OD")} • {od.type !== 'INTERNAL' && `${od.duration} Days`}
+                                        </p>
                                     </div>
                                     <Link
                                         to={`/student/od/${od.id}`}
-                                        className="w-full sm:w-auto flex items-center justify-center gap-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 dark:hover:bg-indigo-500 dark:hover:text-white transition-all shadow-xl shadow-slate-200/50 dark:shadow-none hover:scale-[1.05] active:scale-[0.98]"
+                                        className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                                     >
-                                        Inspect Matrix <ChevronRight className="w-4 h-4" />
+                                        View Details <ChevronRight className="w-3 h-3" />
                                     </Link>
                                 </div>
 
-                                {/* Premium Step Tracker */}
-                                <div className="space-y-6 relative z-10">
-                                    <div className="flex justify-between items-end mb-2 px-1">
-                                        <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${od.status === 'REJECTED' ? 'text-rose-500' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                                            {od.status === 'REJECTED' ? 'Critical Failure' : getProgressLabel(od.status)}
+                                {/* Step Tracker */}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-end mb-1">
+                                        <span className={`text-xs font-bold uppercase tracking-widest ${od.status === 'REJECTED' ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>
+                                            {od.status === 'REJECTED' ? 'Application Rejected' : getProgressLabel(od.status)}
                                         </span>
-                                        <span className="text-[10px] font-mono font-bold text-slate-400">
-                                            {calculateProgress(od.status)}% DATA SYNC
+                                        <span className="text-xs font-mono text-slate-400">
+                                            {calculateProgress(od.status)}%
                                         </span>
                                     </div>
-                                    <div className="relative h-4 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden p-1">
+                                    <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                         <div
-                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${od.status === 'REJECTED' ? 'bg-rose-500 shadow-rose-500/20' : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 shadow-indigo-500/20'}`}
+                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}`}
                                             style={{ width: `${calculateProgress(od.status)}%` }}
-                                        >
-                                            <div className="absolute inset-0 bg-white/20 animate-shimmer"></div>
-                                        </div>
+                                        ></div>
                                     </div>
-                                    <div className="grid grid-cols-3 w-full px-2 pt-2">
-                                        <Step label="Initialized" status={getStepStatus(od.status, 0)} />
-                                        <Step label="AI Verified" status={getStepStatus(od.status, 1)} />
-                                        <Step label="Authorized" status={getStepStatus(od.status, 2)} />
+                                    <div className="flex justify-between pt-2">
+                                        <div className="flex justify-between pt-2">
+                                            <Step label="Applied" status={getStepStatus(od.status, 0)} />
+                                            <Step label="AI Verified" status={getStepStatus(od.status, 1)} />
+                                            <Step label="Approved" status={getStepStatus(od.status, 2)} />
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Status Intelligence Message */}
-                                <div className={`mt-12 p-6 rounded-[2rem] border transition-all ${od.status === 'REJECTED'
-                                    ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30'
-                                    : 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-50 dark:border-indigo-900/20'
+                                {/* Current Status Message */}
+                                <div className={`mt-6 p-4 rounded-xl border flex items-start gap-3 ${od.status === 'REJECTED'
+                                    ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
+                                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800'
                                     }`}>
-                                    <div className="flex items-start gap-4">
-                                        <div className={`p-3 rounded-2xl ${od.status === 'REJECTED' ? 'bg-rose-100/50 dark:bg-rose-900/30 text-rose-500' : 'bg-indigo-100/50 dark:bg-indigo-900/30 text-indigo-500'}`}>
-                                            {od.status === 'REJECTED' ? <XCircle className="w-5 h-5" /> : <Info className="w-5 h-5" />}
-                                        </div>
-                                        <div>
-                                            <h4 className={`font-black text-[10px] uppercase tracking-widest mb-2 ${od.status === 'REJECTED' ? 'text-rose-700 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
-                                                Satellite Intelligence: {(od.status || "IDLE").replace(/_/g, " ")}
-                                            </h4>
-                                            <p className={`text-xs font-bold leading-relaxed ${od.status === 'REJECTED' ? 'text-rose-600 dark:text-rose-300' : 'text-slate-500 dark:text-slate-400'}`}>
-                                                {getStatusMessage(od.status)}
-                                            </p>
-                                        </div>
+                                    <div className="shrink-0">
+                                        {od.status === 'REJECTED' ? <XCircle className="w-5 h-5 text-red-500" /> : <Info className="w-5 h-5 text-blue-500" />}
+                                    </div>
+                                    <div>
+                                        <h4 className={`font-bold text-sm mb-1 ${od.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
+                                            Status: {(od.status || "Unknown").replace(/_/g, " ")}
+                                        </h4>
+                                        <p className={`text-xs ${od.status === 'REJECTED' ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                                            {getStatusMessage(od.status)}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-24 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden relative">
-                        <div className="absolute inset-0 bg-indigo-500/5 dark:bg-indigo-500/2 pointer-events-none"></div>
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl shadow-indigo-500/10 rotate-3">
-                                <CheckCircle2 className="w-12 h-12 text-indigo-600" />
-                            </div>
-                            <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">System Nominal</h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10 max-w-sm mx-auto leading-relaxed">No pending transmissions detected in your local sector. You are all caught up.</p>
-                            <Link
-                                to="/od-history"
-                                className="group inline-flex items-center gap-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-indigo-600 dark:hover:bg-indigo-500 dark:hover:text-white transition-all shadow-2xl shadow-slate-200/50 dark:shadow-none"
-                            >
-                                Access History <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                    <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
                         </div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">All Caught Up!</h3>
+                        <p className="text-slate-500 dark:text-slate-400 mb-6">You have no pending applications directly requiring your attention.</p>
+                        <Link
+                            to="/od-history"
+                            className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            View History Archive
+                        </Link>
                     </div>
                 )}
             </main>

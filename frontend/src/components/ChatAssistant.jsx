@@ -6,11 +6,10 @@ import {
     Send,
     Paperclip,
     User,
+    Bot,
     CheckCircle,
     AlertCircle,
-    Pin,
-    Sparkles,
-    BotMessageSquare
+    Pin
 } from "lucide-react";
 
 import api from "../api/axios";
@@ -37,6 +36,9 @@ export default function ChatAssistant() {
 
     const [attachments, setAttachments] = useState([]);
     const fileInputRef = useRef(null);
+
+    // Custom Disha Avatar
+    const dishaAvatar = "https://cdn-icons-png.flaticon.com/512/6997/6997662.png";
 
     /* =========================================
        📎 ATTACHMENT HANDLERS
@@ -362,28 +364,23 @@ export default function ChatAssistant() {
                 className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col overflow-hidden shadow-2xl
                 ${isExpanded
                         ? "inset-0 w-full h-full rounded-none"
-                        : `bottom-0 sm:bottom-24 right-0 sm:right-6 w-full sm:w-96 max-h-[100dvh] sm:max-h-[600px] h-[calc(100dvh-0px)] sm:h-[500px] rounded-t-3xl sm:rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
+                        : `bottom-24 right-6 w-96 max-h-[600px] h-[500px] rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
                     }
-                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t sm:border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
+                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
             `}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shrink-0">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-inner overflow-hidden">
-                            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 drop-shadow-md" />
-                            {/* Animated gradient overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
+                <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 rounded-full border-2 border-white/30 overflow-hidden bg-white/10 backdrop-blur-sm">
+                            <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-sm sm:text-base tracking-wide flex items-center gap-1.5 sm:gap-2 drop-shadow-sm">
+                            <h3 className="font-bold text-base tracking-wide flex items-center gap-2">
                                 Disha 2.0
-                                <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
-                                </span>
+                                <span className="bg-green-400/90 w-2 h-2 rounded-full animate-pulse shadow-green-400/50 shadow-lg"></span>
                             </h3>
-                            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest opacity-90 font-semibold text-blue-100">AI Assistant</p>
+                            <p className="text-[10px] uppercase tracking-wider opacity-90 font-medium">Smart Assistant</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -410,38 +407,38 @@ export default function ChatAssistant() {
                 </div>
 
                 {/* Messages Body */}
-                <div className="flex-1 overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50 dark:bg-slate-900 border-x border-slate-200/50 dark:border-slate-800 space-y-5">
+                <div className="flex-1 overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50 space-y-4">
                     {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                             {msg.type === "bot" && (
-                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shrink-0 border border-indigo-400/30">
-                                    <Sparkles className="w-4.5 h-4.5 text-white" />
+                                <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
+                                    <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                                 </div>
                             )}
-                            <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-[15px] leading-relaxed shadow-sm
+                            <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
                                 ${msg.type === "user"
-                                    ? "bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl rounded-br-sm shadow-slate-300/20"
-                                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-sm border border-slate-200 dark:border-slate-700 shadow-sm"
+                                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
+                                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50 shadow-slate-200/50 dark:shadow-none"
                                 }`}>
                                 <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
                             </div>
                             {msg.type === "user" && (
-                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0 border border-slate-300 dark:border-slate-600">
-                                    <User className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
+                                    <User className="w-4 h-4 text-slate-500" />
                                 </div>
                             )}
                         </div>
                     ))}
                     {isTyping && (
                         <div className="flex justify-start items-end gap-2">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shrink-0 border border-indigo-400/30">
-                                <Sparkles className="w-4.5 h-4.5 text-white animate-pulse" />
+                            <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
+                                <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                             </div>
-                            <div className="bg-white dark:bg-slate-800 px-4 py-4 rounded-2xl rounded-bl-sm shadow-sm border border-slate-200 dark:border-slate-700">
-                                <div className="flex gap-1.5 items-center h-2">
-                                    <span className="w-2 h-2 bg-indigo-500/80 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                    <span className="w-2 h-2 bg-indigo-500/80 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                    <span className="w-2 h-2 bg-indigo-500/80 rounded-full animate-bounce"></span>
+                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-700/50">
+                                <div className="flex gap-1.5">
+                                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                    <span className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"></span>
                                 </div>
                             </div>
                         </div>
@@ -467,20 +464,20 @@ export default function ChatAssistant() {
                     )}
 
                     {/* Quick Chips */}
-                    <div className="px-5 pt-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                    <div className="px-4 pt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
                         {QUICK_CHIPS.map((chip, i) => (
                             <button
                                 key={i}
                                 onClick={() => handleSend(chip)}
-                                className="whitespace-nowrap px-4 py-2 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-[13px] font-medium rounded-full border border-slate-200 dark:border-slate-600 shadow-sm transition-all active:scale-95 flex items-center gap-1.5"
+                                className="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
                             >
-                                <BotMessageSquare className="w-3.5 h-3.5 opacity-70" /> {chip}
+                                {chip}
                             </button>
                         ))}
                     </div>
 
                     {/* Input Field */}
-                    <div className="p-4 flex items-center gap-2">
+                    <div className="p-4 flex items-center gap-3">
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -490,27 +487,27 @@ export default function ChatAssistant() {
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="p-3 text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-all active:scale-95 shadow-sm"
+                            className="p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500 rounded-xl transition-all active:scale-95"
                             title="Attach PDF"
                         >
-                            <Paperclip className="w-5 h-5" />
+                            <Paperclip className="w-5.5 h-5.5" />
                         </button>
 
-                        <div className="flex-1 relative flex items-center">
+                        <div className="flex-1 relative">
                             <input
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder="Message Disha..."
-                                className="w-full bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 rounded-xl pl-4 pr-14 py-3.5 text-[15px] text-slate-800 dark:text-white placeholder:text-slate-500 shadow-inner transition-all focus:outline-none"
+                                placeholder="Ex: Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus"
+                                className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
                             />
                             <button
                                 onClick={() => handleSend()}
-                                disabled={!input.trim() && attachments.length === 0}
-                                className="absolute right-2 p-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center"
+                                disabled={!input.trim()}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center"
                             >
-                                <Send className="w-4.5 h-4.5" />
+                                <Send className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -519,23 +516,19 @@ export default function ChatAssistant() {
 
             {/* Floating Action Button (FAB) */}
             {!isExpanded && (
-                <div className={`fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0 translate-y-4" : "visible opacity-100 translate-y-0"}`}>
-                    <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur shadow-2xl border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white px-5 py-3 rounded-full text-sm font-semibold hidden md:flex items-center gap-2 animate-bounce">
-                        <Sparkles className="w-4 h-4 text-indigo-500" /> Need Help? Chat with Disha
+                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0" : "visible opacity-100"}`}>
+                    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white px-5 py-2.5 rounded-full shadow-xl border border-white/20 dark:border-slate-700 text-sm font-semibold animate-bounce hidden sm:block">
+                        Chat with Disha 2.0 👋
                     </div>
                     <button
                         onClick={() => openChat()}
-                        className="group relative h-14 w-14 sm:h-[68px] sm:w-[68px] rounded-2xl shadow-2xl shadow-indigo-500/30 flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 active:scale-95 ring-4 ring-white dark:ring-slate-900 border border-white/10 overflow-hidden"
+                        className="group relative h-16 w-16 rounded-full shadow-2xl flex items-center justify-center bg-white border-2 border-indigo-500 transition-all duration-500 transform hover:scale-110 active:scale-95 ring-4 ring-indigo-200 dark:ring-indigo-900/40 overflow-hidden"
                     >
-                        {/* Shimmer effect inside button */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 translate-x-[-150%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                        
-                        <Sparkles className="w-8 h-8 text-yellow-300 drop-shadow-md z-10" />
-                        
+                        <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                         {/* Ping effect */}
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 z-20">
+                        <span className="absolute top-2 right-2 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white dark:border-slate-800"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
                         </span>
                     </button>
                 </div>
