@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export default function InstallPWA() {
   const [supportsPWA, setSupportsPWA] = useState(false);
   const [promptInstall, setPromptInstall] = useState(null);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const handler = e => {
@@ -15,12 +16,13 @@ export default function InstallPWA() {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    return () => window.removeEventListener("transitionend", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const onClick = evt => {
     evt.preventDefault();
     if (!promptInstall) {
+      showToast("App is already installed, or your browser requires manual installation (e.g., iOS Safari 'Add to Home Screen').", "info");
       return;
     }
     promptInstall.prompt();
@@ -34,10 +36,7 @@ export default function InstallPWA() {
     });
   };
 
-  if (!supportsPWA || isDismissed) {
-    return null;
-  }
-
+// Button is always visible now. Fallback toast handles unsupported states.
   return (
     <button
       onClick={onClick}
