@@ -194,23 +194,24 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
-    // Enforce single active session per account (role + id).
+    // Single-session enforcement: block second login unless forced
+    const { force } = req.body;
+    const existingSession = await prisma.activesession.findUnique({
+      where: { userId_role: { userId: user.id, role } }
+    });
+
+    if (existingSession && !force) {
+      return res.status(409).json({
+        code: "SESSION_CONFLICT",
+        message: "This account is already logged in on another device."
+      });
+    }
+
     const sessionId = uuidv4();
     await prisma.activesession.upsert({
-      where: {
-        userId_role: {
-          userId: user.id,
-          role
-        }
-      },
-      create: {
-        userId: user.id,
-        role,
-        sessionId
-      },
-      update: {
-        sessionId
-      }
+      where: { userId_role: { userId: user.id, role } },
+      create: { userId: user.id, role, sessionId },
+      update: { sessionId }
     });
 
     const token = jwt.sign(

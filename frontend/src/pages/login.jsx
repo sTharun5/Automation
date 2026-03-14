@@ -26,6 +26,8 @@ export default function Login() {
   const [canResend, setCanResend] = useState(false);
   const [shake, setShake] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [sessionConflict, setSessionConflict] = useState(false);
+  const [pendingOtp, setPendingOtp] = useState("");
 
   const otpRefs = useRef([]);
 
@@ -84,34 +86,24 @@ export default function Login() {
 
       const res = await api.post("/auth/verify-otp", {
         email,
-        otp: finalOtp
+        otp: finalOtp,
+        force: false
       });
 
-      /* ================= STORE AUTH ================= */
-      sessionStorage.setItem("role", res.data.role);
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
-      sessionStorage.setItem("token", res.data.token);
-
-      setSuccess(true);
-
-      /* ================= ROLE BASED REDIRECT ================= */
-      setTimeout(() => {
-        if (res.data.role === "STUDENT") {
-          navigate("/student/dashboard", { replace: true });
-        } else if (res.data.role === "FACULTY") {
-          navigate("/faculty/dashboard", { replace: true });
-        } else if (res.data.role === "ADMIN") {
-          navigate("/admin/dashboard", { replace: true });
-        }
-      }, 900);
+      handleLoginSuccess(res);
 
     } catch (err) {
+      if (err.response?.status === 409 && err.response?.data?.code === "SESSION_CONFLICT") {
+        // Show the conflict dialog instead of shaking
+        setPendingOtp(finalOtp);
+        setSessionConflict(true);
+        return;
+      }
       const errorMsg = err.response?.data?.message || "Invalid OTP";
       triggerShake(errorMsg);
       setOtp(Array(6).fill(""));
 
       if (errorMsg.includes("Maximum attempts reached")) {
-        // Kick them back to email entry step after a delay to read the message
         setTimeout(() => {
           setStep(1);
           setEmail("");
@@ -122,6 +114,37 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /* ================= FORCE LOGIN (kick other device) ================= */
+  const forceLogin = async () => {
+    setSessionConflict(false);
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/verify-otp", {
+        email,
+        otp: pendingOtp,
+        force: true
+      });
+      handleLoginSuccess(res);
+    } catch (err) {
+      triggerShake(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= HANDLE SUCCESS ================= */
+  const handleLoginSuccess = (res) => {
+    sessionStorage.setItem("role", res.data.role);
+    sessionStorage.setItem("user", JSON.stringify(res.data.user));
+    sessionStorage.setItem("token", res.data.token);
+    setSuccess(true);
+    setTimeout(() => {
+      if (res.data.role === "STUDENT") navigate("/student/dashboard", { replace: true });
+      else if (res.data.role === "FACULTY") navigate("/faculty/dashboard", { replace: true });
+      else if (res.data.role === "ADMIN") navigate("/admin/dashboard", { replace: true });
+    }, 900);
   };
 
   /* ================= OTP INPUT ================= */
@@ -179,6 +202,35 @@ export default function Login() {
       {loading && (
         <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
           <Loader2 className="w-14 h-14 text-white animate-spin" />
+        </div>
+      )}
+
+      {/* SESSION CONFLICT MODAL */}
+      {sessionConflict && (
+        <div className="absolute inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 mx-auto mb-4">
+              <Lock className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Account Already In Use</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              This account is currently logged in on another device. Would you like to log them out and continue?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setSessionConflict(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={forceLogin}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors shadow-sm"
+              >
+                Yes, Log Them Out
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
