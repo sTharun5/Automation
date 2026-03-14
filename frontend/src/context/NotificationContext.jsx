@@ -63,11 +63,22 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
-    // Poll every 15 seconds
+    // Poll every 30 seconds (reduced from 15s to lower DB load)
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        const role = sessionStorage.getItem("role");
+        if (!role) return; // Don't even start polling if not logged in
+
         fetchNotifications(); // Initial fetch
-        const interval = setInterval(fetchNotifications, 15000);
+        const interval = setInterval(() => {
+            // Re-check on every tick — stop polling if user logged out
+            if (!sessionStorage.getItem("role")) {
+                clearInterval(interval);
+                setNotifications([]);
+                setUnreadCount(0);
+                return;
+            }
+            fetchNotifications();
+        }, 30000);
         return () => clearInterval(interval);
     }, []);
 

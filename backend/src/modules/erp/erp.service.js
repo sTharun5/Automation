@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx');

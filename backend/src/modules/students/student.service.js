@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 
 /* =====================================================
    LIST ALL STUDENTS (FOR DROPDOWNS / ADMIN / OD APPLY)

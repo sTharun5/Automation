@@ -1,7 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 const pdf = require("pdf-parse");
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 const notificationService = require("../notification/notification.service");
 const sendEmail = require("../../utils/sendEmail");
 const { syncAttendanceToErp } = require("../erp/erp.service");
@@ -358,6 +357,7 @@ exports.applyOD = async (req, res) => {
       !offerId
     ) {
       return res.status(400).json({
+        message: "All fields are required: studentId, industry, campusType, startDate, endDate, duration, offerId"
       });
     }
 

@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 const { v4: uuidv4 } = require("uuid");
 const { validateInternshipFile } = require("../../utils/fileValidator");
 const { getOfferById } = require("../students/offer.service");

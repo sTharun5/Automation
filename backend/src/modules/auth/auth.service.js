@@ -1,8 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../../utils/sendEmail");
 
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 
 /* ===============================
    SEND OTP

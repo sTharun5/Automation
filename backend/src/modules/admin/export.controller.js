@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
 const xlsx = require("xlsx");
-const prisma = new PrismaClient();
+const prisma = require("../../config/db");
 
 exports.exportODsToExcel = async (req, res) => {
   try {
