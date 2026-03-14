@@ -141,9 +141,11 @@ export default function Login() {
     sessionStorage.setItem("token", res.data.token);
     setSuccess(true);
     setTimeout(() => {
-      if (res.data.role === "STUDENT") navigate("/student/dashboard", { replace: true });
-      else if (res.data.role === "FACULTY") navigate("/faculty/dashboard", { replace: true });
-      else if (res.data.role === "ADMIN") navigate("/admin/dashboard", { replace: true });
+      // Force a full hardware reload instead of React Router navigation
+      // to ensure all Contexts (Notification, Chat, etc.) mount with the new token.
+      if (res.data.role === "STUDENT") window.location.href = "/student/dashboard";
+      else if (res.data.role === "FACULTY") window.location.href = "/faculty/dashboard";
+      else if (res.data.role === "ADMIN") window.location.href = "/admin/dashboard";
     }, 900);
   };
 
