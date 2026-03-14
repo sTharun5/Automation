@@ -3,57 +3,87 @@
 /* Tailwind v4: dark mode driven by .dark class on html */
 @custom-variant dark (&&:where(.dark, .dark *));
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
+/* ================================================
+   CUSTOM CURSOR — premium dot + ring design
+================================================ */
+*, *::before, *::after {
+  cursor: none !important;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+#cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 8px;
+  height: 8px;
+  background: #1d4ed8;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s, transform 0.1s;
+}
+
+#cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease, width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
+  opacity: 0.7;
+}
+
+/* Cursor hover states — applied via JS class on #cursor-ring */
+#cursor-ring.hovering {
+  width: 48px;
+  height: 48px;
+  border-color: #6366f1;
+  opacity: 1;
+}
+
+#cursor-ring.clicking {
+  width: 20px;
+  height: 20px;
+  border-color: #f59e0b;
+}
+
+/* Hide custom cursor on touch devices */
+@media (pointer: coarse) {
+  #cursor-dot, #cursor-ring { display: none; }
+  *, *::before, *::after { cursor: auto !important; }
+}
+
+/* ================================================
+   ANIMATIONS
+================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
-}
+.animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+.animate-slideUp { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
-.animate-slideUp {
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* ================================================
+   CUSTOM SCROLLBAR
+================================================ */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 
-/* Custom Scrollbar for modern look */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
-/* global theme handling - light mode when html does NOT have .dark */
+/* ================================================
+   GLOBAL THEME
+================================================ */
 html:not(.dark),
 html:not(.dark) body,
 html:not(.dark) #root {
@@ -64,11 +94,8 @@ html:not(.dark) #root {
   max-width: 100vw;
 }
 
-html:not(.dark) #root {
-  min-height: 100vh;
-}
+html:not(.dark) #root { min-height: 100vh; }
 
-/* dark mode - when html has class "dark" */
 html.dark,
 html.dark body,
 html.dark #root {
@@ -79,6 +106,36 @@ html.dark #root {
   max-width: 100vw;
 }
 
-html.dark #root {
-  min-height: 100vh;
+html.dark #root { min-height: 100vh; }
+
+/* ================================================
+   MOBILE GLOBAL FIXES
+================================================ */
+/* Smooth momentum scrolling on iOS */
+.overflow-y-auto,
+.overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent content from jumping when scrollbar appears */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Larger tap targets on mobile */
+@media (max-width: 640px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+}
+
+/* Better text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }

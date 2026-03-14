@@ -36,8 +36,56 @@
 </head>
 
 <body>
+  <!-- Custom Cursor Elements -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Custom Cursor JS -->
+  <script>
+    (function () {
+      const dot = document.getElementById('cursor-dot');
+      const ring = document.getElementById('cursor-ring');
+      if (!dot || !ring) return;
+
+      let mouseX = 0, mouseY = 0;
+      let ringX = 0, ringY = 0;
+
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        dot.style.left = mouseX + 'px';
+        dot.style.top = mouseY + 'px';
+      });
+
+      // Smooth ring follow with lerp
+      function animate() {
+        ringX += (mouseX - ringX) * 0.15;
+        ringY += (mouseY - ringY) * 0.15;
+        ring.style.left = ringX + 'px';
+        ring.style.top = ringY + 'px';
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      // Hover state on interactive elements
+      document.addEventListener('mouseover', (e) => {
+        const el = e.target;
+        if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'INPUT' ||
+            el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' ||
+            el.getAttribute('role') === 'button' || el.closest('button') || el.closest('a')) {
+          ring.classList.add('hovering');
+        }
+      });
+      document.addEventListener('mouseout', () => ring.classList.remove('hovering'));
+
+      // Click shrink effect
+      document.addEventListener('mousedown', () => ring.classList.add('clicking'));
+      document.addEventListener('mouseup', () => ring.classList.remove('clicking'));
+    })();
+  </script>
 </body>
 
 </html>
