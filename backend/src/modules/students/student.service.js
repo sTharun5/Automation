@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
-
 const prisma = require("../../config/db");
+
 
 /* =====================================================
    LIST ALL STUDENTS (FOR DROPDOWNS / ADMIN / OD APPLY)
 ===================================================== */
-export const listStudentsService = async () => {
+const listStudentsService = async () => {
   return await prisma.student.findMany({
     orderBy: { name: "asc" },
     select: {
@@ -22,7 +21,7 @@ export const listStudentsService = async () => {
 /* =====================================================
    SEARCH STUDENTS (NAME / ROLLNO / EMAIL)
 ===================================================== */
-export const searchStudentsService = async (query) => {
+const searchStudentsService = async (query) => {
   if (!query || query.trim() === "") return [];
 
   return await prisma.student.findMany({
@@ -48,7 +47,7 @@ export const searchStudentsService = async (query) => {
 /* =====================================================
    GET STUDENT BY ID
 ===================================================== */
-export const getStudentByIdService = async (id) => {
+const getStudentByIdService = async (id) => {
   return await prisma.student.findUnique({
     where: { id: Number(id) },
     include: {
@@ -65,7 +64,7 @@ export const getStudentByIdService = async (id) => {
 /* =====================================================
    CREATE STUDENT (ADMIN)
 ===================================================== */
-export const createStudentService = async (data) => {
+const createStudentService = async (data) => {
   return await prisma.student.create({
     data: {
       rollNo: data.rollNo,
@@ -80,7 +79,7 @@ export const createStudentService = async (data) => {
 /* =====================================================
    UPDATE STUDENT
 ===================================================== */
-export const updateStudentService = async (id, data) => {
+const updateStudentService = async (id, data) => {
   return await prisma.student.update({
     where: { id: Number(id) },
     data
@@ -90,8 +89,17 @@ export const updateStudentService = async (id, data) => {
 /* =====================================================
    DELETE STUDENT
 ===================================================== */
-export const deleteStudentService = async (id) => {
+const deleteStudentService = async (id) => {
   return await prisma.student.delete({
     where: { id: Number(id) }
   });
+};
+
+module.exports = {
+  listStudentsService,
+  searchStudentsService,
+  getStudentByIdService,
+  createStudentService,
+  updateStudentService,
+  deleteStudentService
 };

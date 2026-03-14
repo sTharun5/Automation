@@ -1,4 +1,3 @@
-const { PrismaClient } = require('@prisma/client');
 const prisma = require("../../config/db");
 const notificationService = require('../notification/notification.service');
 
