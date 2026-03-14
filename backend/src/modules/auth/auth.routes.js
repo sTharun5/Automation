@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const otp = require("./otp.controller");
-const { getMe } = require("./auth.controller");
+const { getMe, logout } = require("./auth.controller");
 const { verifyToken } = require("../../middlewares/auth.middleware");
 
 const rateLimit = require("express-rate-limit");
@@ -14,5 +14,6 @@ const authLimiter = rateLimit({
 router.post("/send-otp", authLimiter, otp.sendOTP);
 router.post("/verify-otp", authLimiter, otp.verifyOTP);
 router.get("/me", verifyToken, getMe);
+router.post("/logout", verifyToken, logout);
 
 module.exports = router;

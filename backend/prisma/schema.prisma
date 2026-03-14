@@ -158,6 +158,20 @@ model notification {
   @@index([email])
 }
 
+/// *
+/// * ================= ACTIVE SESSION (Single-login) =================
+model activesession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  role      String
+  sessionId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, role])
+  @@index([sessionId])
+}
+
 enum od_type {
   INTERNAL
   INTERNSHIP

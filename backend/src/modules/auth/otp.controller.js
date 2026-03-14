@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 const sendEmail = require("../../utils/sendEmail");
 
 /* =========================
@@ -193,8 +194,27 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
+    // Enforce single active session per account (role + id).
+    const sessionId = uuidv4();
+    await prisma.activesession.upsert({
+      where: {
+        userId_role: {
+          userId: user.id,
+          role
+        }
+      },
+      create: {
+        userId: user.id,
+        role,
+        sessionId
+      },
+      update: {
+        sessionId
+      }
+    });
+
     const token = jwt.sign(
-      { email, role, id: user.id },
+      { email, role, id: user.id, sid: sessionId },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );

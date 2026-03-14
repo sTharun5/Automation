@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import api from "../api/axios";
 import logo from "../assets/bit-logo.jpg";
 import NotificationBell from "./NotificationBell";
 import ConfirmLogoutModal from "./ConfirmLogoutModal";
@@ -267,7 +268,11 @@ export default function Header() {
       <ConfirmLogoutModal
         open={showLogout}
         onClose={() => setShowLogout(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
+          // Best-effort server logout (also clears HttpOnly cookie + invalidates active session).
+          try {
+            await api.post("/auth/logout");
+          } catch { }
           sessionStorage.clear();
           navigate("/", { replace: true });
         }}
