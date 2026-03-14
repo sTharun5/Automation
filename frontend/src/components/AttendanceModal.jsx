@@ -107,12 +107,14 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
             });
 
             await stopScanner();
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success vibration
             showToast(res.data.message || "Attendance verified successfully!", "success");
             if (onSuccess) onSuccess();
             onClose();
 
         } catch (error) {
             console.error("Scan processing error:", error);
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Error vibration
             showToast(error.response?.data?.message || "Invalid or Expired QR Code.", "error");
             setProcessingScan(false);
 
@@ -180,10 +182,12 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                 otp: otpValue
             });
             await stopScanner();
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success vibration
             showToast(res.data.message || "Attendance authenticated!", "success");
             if (onSuccess) onSuccess();
             onClose();
         } catch (err) {
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Error vibration
             setOtpError(err.response?.data?.message || "Invalid or expired code.");
             setOtp(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();

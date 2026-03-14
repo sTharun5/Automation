@@ -73,6 +73,8 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             // 2. Hit the Backend Verification Gateway
             const response = await api.post("/od/verify-gate-pass", { odId: payload.odId });
 
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success pattern
+
             setScanResult({
                 success: true,
                 message: response.data.message,
@@ -81,6 +83,7 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             });
 
         } catch (err) {
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Error pattern
             setScanResult({
                 success: false,
                 message: err.response?.data?.message || err.message || "Failed to verify pass."

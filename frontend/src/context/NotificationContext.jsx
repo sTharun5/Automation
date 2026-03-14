@@ -19,7 +19,15 @@ export const NotificationProvider = ({ children }) => {
 
             const res = await api.get("/notifications");
             setNotifications(res.data);
-            setUnreadCount(res.data.filter((n) => !n.read).length); // Count unread locally
+            
+            const newUnreadCount = res.data.filter((n) => !n.read).length;
+            // Vibrate if there are NEW unread notifications compared to current state
+            setUnreadCount((prevCount) => {
+                if (newUnreadCount > prevCount && navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]); // Short double pulse for notification
+                }
+                return newUnreadCount;
+            });
         } catch (error) {
             console.error("Failed to fetch notifications", error);
         }

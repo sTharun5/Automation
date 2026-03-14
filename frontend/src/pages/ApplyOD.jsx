@@ -138,12 +138,16 @@ export default function ApplyOD() {
         }
       );
 
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success vibration
+
 
       // ✅ ONLY NEW FUNCTIONALITY (NO UI CHANGE)
       const odId = res.data.od.id;
       navigate(`/student/od/${odId}`);
 
     } catch (err) {
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Error vibration
+      
       const errorData = err.response?.data;
       if (errorData?.verificationDetails) {
         setVerificationDetails(errorData.verificationDetails);
