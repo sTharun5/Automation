@@ -31,7 +31,6 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ChatProvider } from "./context/ChatContext";
 import ChatAssistant from "./components/ChatAssistant";
-import InstallPWA from "./components/InstallPWA";
 
 // Page-level loading fallback
 const PageLoader = () => (
@@ -68,7 +67,6 @@ const Layout = ({ children }) => {
   return (
     <>
       {children}
-      <InstallPWA />
       {showChat && <ChatAssistant />}
     </>
   );

@@ -5,6 +5,7 @@ import api from "../api/axios";
 import logo from "../assets/bit-logo.jpg";
 import NotificationBell from "./NotificationBell";
 import ConfirmLogoutModal from "./ConfirmLogoutModal";
+import InstallPWA from "./InstallPWA";
 import {
   Sun,
   Moon,
@@ -80,6 +81,7 @@ export default function Header() {
 
             {/* Right: Actions (Desktop) */}
             <div className="hidden md:flex items-center gap-2 lg:gap-4 pl-6 border-l border-slate-200 dark:border-slate-700 ml-6">
+              <InstallPWA />
               <NotificationBell />
 
               {/* Theme Toggle */}
@@ -234,6 +236,9 @@ export default function Header() {
                 >
                   <Bell className="w-5 h-5" /> Notifications
                 </button>
+                <div className="px-4 py-2">
+                   <InstallPWA />
+                </div>
               </nav>
 
               {/* Theme Toggle Mobile */}
