@@ -148,53 +148,33 @@ exports.verifyOTP = async (req, res) => {
       }
     }
 
-    // Success! Clear the OTP
-    await prisma.emailotp.deleteMany({ where: { email } });
-
+    // Detect role BEFORE deleting OTP so we can check session conflicts first
     let role = null;
     let user = null;
 
     /* 🔴 ADMIN (highest priority) */
-    const admin = await prisma.admin.findUnique({
-      where: { email }
-    });
-
-    if (admin) {
-      role = "ADMIN";
-      user = admin;
-    }
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    if (admin) { role = "ADMIN"; user = admin; }
 
     /* 🟡 FACULTY */
     if (!role) {
-      const faculty = await prisma.faculty.findUnique({
-        where: { email }
-      });
-
-      if (faculty) {
-        role = "FACULTY";
-        user = faculty;
-      }
+      const faculty = await prisma.faculty.findUnique({ where: { email } });
+      if (faculty) { role = "FACULTY"; user = faculty; }
     }
 
     /* 🟢 STUDENT */
     if (!role) {
-      const student = await prisma.student.findUnique({
-        where: { email }
-      });
-
-      if (student) {
-        role = "STUDENT";
-        user = student;
-      }
+      const student = await prisma.student.findUnique({ where: { email } });
+      if (student) { role = "STUDENT"; user = student; }
     }
 
     if (!role) {
-      return res.status(403).json({
-        message: "Email not registered in system"
-      });
+      return res.status(403).json({ message: "Email not registered in system" });
     }
 
-    // Single-session enforcement: block second login unless forced
+    // Single-session enforcement: block second login unless forced.
+    // IMPORTANT: Do NOT delete OTP yet — if we return SESSION_CONFLICT,
+    // the user needs the OTP to still be valid for the force-login retry.
     const { force } = req.body;
     const existingSession = await prisma.activesession.findUnique({
       where: { userId_role: { userId: user.id, role } }
@@ -206,6 +186,9 @@ exports.verifyOTP = async (req, res) => {
         message: "This account is already logged in on another device."
       });
     }
+
+    // All checks passed — now safe to delete the OTP
+    await prisma.emailotp.deleteMany({ where: { email } });
 
     const sessionId = uuidv4();
     await prisma.activesession.upsert({
@@ -220,19 +203,14 @@ exports.verifyOTP = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Secure HttpOnly Cookie Attachment
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000 // 1 Day
+      maxAge: 24 * 60 * 60 * 1000
     });
 
-    res.json({
-      role,
-      user,
-      token
-    });
+    res.json({ role, user, token });
 
   } catch (err) {
     console.error("VERIFY OTP ERROR:", err);
