@@ -12,11 +12,10 @@
   <!-- Early Backend Wake-up (Render Cold Start Fix) -->
   <script>
     (function() {
-      // Proactively ping the backend to start the spin-up process
-      // while the browser handles the initial HTML/JS parsing.
-      const API_URL = "https://automation-main.onrender.com"; // User should verify this matches Render URL
+      // Use the correct backend URL — matches VITE_API_URL env var
+      const API_URL = "https://automation-f8jn.onrender.com";
       fetch(API_URL + "/api/ping").catch(() => {});
-      console.log("%c[System] Initializing Neural Link... Backend pinged.", "color: #6366f1; font-weight: bold;");
+      console.log("%c[System] Backend pinged for warm-up.", "color: #6366f1; font-weight: bold;");
     })();
   </script>
 

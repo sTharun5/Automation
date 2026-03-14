@@ -1,8 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
 const { authenticator } = require('otplib');
 const qrcode = require('qrcode');
 
 const prisma = require("../../config/db");
+
 
 // Configure TOTP constraints (30 second default window, but we update UI every 15)
 authenticator.options = { step: 30 };
