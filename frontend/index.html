@@ -50,40 +50,76 @@
       const ring = document.getElementById('cursor-ring');
       if (!dot || !ring) return;
 
+      // Skip on touch devices
+      if (window.matchMedia('(pointer: coarse)').matches) return;
+
       let mouseX = 0, mouseY = 0;
       let ringX = 0, ringY = 0;
+      let isHovering = false;
 
       document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
+        // Dot follows instantly — no lag
         dot.style.left = mouseX + 'px';
         dot.style.top = mouseY + 'px';
       });
 
-      // Smooth ring follow with lerp
+      // Smooth ring follow with lerp (faster = more premium)
       function animate() {
-        ringX += (mouseX - ringX) * 0.15;
-        ringY += (mouseY - ringY) * 0.15;
+        ringX += (mouseX - ringX) * 0.12;
+        ringY += (mouseY - ringY) * 0.12;
         ring.style.left = ringX + 'px';
         ring.style.top = ringY + 'px';
         requestAnimationFrame(animate);
       }
       animate();
 
-      // Hover state on interactive elements
+      // Hover detect on interactive elements
       document.addEventListener('mouseover', (e) => {
         const el = e.target;
-        if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'INPUT' ||
-            el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' ||
-            el.getAttribute('role') === 'button' || el.closest('button') || el.closest('a')) {
+        const isInteractive =
+          ['BUTTON','A','INPUT','SELECT','TEXTAREA','LABEL'].includes(el.tagName) ||
+          el.getAttribute('role') === 'button' ||
+          el.closest('button, a, [role="button"]');
+        if (isInteractive) {
           ring.classList.add('hovering');
+          isHovering = true;
         }
       });
-      document.addEventListener('mouseout', () => ring.classList.remove('hovering'));
 
-      // Click shrink effect
-      document.addEventListener('mousedown', () => ring.classList.add('clicking'));
-      document.addEventListener('mouseup', () => ring.classList.remove('clicking'));
+      document.addEventListener('mouseout', (e) => {
+        const el = e.target;
+        const isInteractive =
+          ['BUTTON','A','INPUT','SELECT','TEXTAREA','LABEL'].includes(el.tagName) ||
+          el.getAttribute('role') === 'button' ||
+          el.closest('button, a, [role="button"]');
+        if (isInteractive) {
+          ring.classList.remove('hovering');
+          isHovering = false;
+        }
+      });
+
+      // Click flash (gold glow on both dot and ring)
+      document.addEventListener('mousedown', () => {
+        ring.classList.add('clicking');
+        dot.classList.add('clicking');
+      });
+      document.addEventListener('mouseup', () => {
+        ring.classList.remove('clicking');
+        dot.classList.remove('clicking');
+        if (isHovering) ring.classList.add('hovering');
+      });
+
+      // Hide cursor when leaving window
+      document.addEventListener('mouseleave', () => {
+        dot.style.opacity = '0';
+        ring.style.opacity = '0';
+      });
+      document.addEventListener('mouseenter', () => {
+        dot.style.opacity = '1';
+        ring.style.opacity = '1';
+      });
     })();
   </script>
 </body>
