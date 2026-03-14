@@ -192,22 +192,28 @@ export default function Login() {
   };
 
   return (
+    <>
+    {/* FIXED background — covers entire screen even when keyboard opens */}
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      className="fixed inset-0 bg-cover bg-center"
       style={{ backgroundImage: `url(${bg})` }}
-    >
-      <div className="absolute inset-0 bg-blue-900/70"></div>
+    />
+    {/* Overlay */}
+    <div className="fixed inset-0 bg-blue-900/70" />
+
+    {/* Scrollable container so card is always reachable when keyboard is open */}
+    <div className="relative z-10 min-h-screen flex items-center justify-center p-4 py-8">
 
       {/* LOADER */}
       {loading && (
-        <div className="absolute inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
           <Loader2 className="w-14 h-14 text-white animate-spin" />
         </div>
       )}
 
       {/* SESSION CONFLICT MODAL */}
       {sessionConflict && (
-        <div className="absolute inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 mx-auto mb-4">
               <Lock className="w-7 h-7 text-amber-600 dark:text-amber-400" />
@@ -234,19 +240,19 @@ export default function Login() {
         </div>
       )}
 
+      {/* CARD */}
       <div
-        className={`relative z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden ${shake ? "animate-shake" : ""
-          }`}
+        className={`w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden ${shake ? "animate-shake" : ""}`}
       >
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 text-center">
-          <img src={logo} alt="BIT" className="mx-auto h-14 mb-3" />
-          <h1 className="text-white text-xl font-bold">BIP OD Portal</h1>
-          <p className="text-blue-200 text-sm">Secure OTP Login</p>
+        {/* HEADER — compact on mobile */}
+        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 px-6 py-4 sm:py-6 text-center">
+          <img src={logo} alt="BIT" className="mx-auto h-10 sm:h-14 mb-2 sm:mb-3" />
+          <h1 className="text-white text-lg sm:text-xl font-bold">BIP OD Portal</h1>
+          <p className="text-blue-200 text-xs sm:text-sm">Secure OTP Login</p>
         </div>
 
         {/* BODY */}
-        <div className="p-4 sm:p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-4">
           {step === 1 && (
             <>
               <div className="relative">
@@ -256,12 +262,13 @@ export default function Login() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                  onKeyDown={(e) => e.key === "Enter" && sendOTP()}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm sm:text-base"
                 />
               </div>
               <button
                 onClick={sendOTP}
-                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 <Zap className="w-4 h-4" /> Send OTP
               </button>
@@ -282,12 +289,12 @@ export default function Login() {
                     value={digit}
                     onChange={(e) => handleOtpChange(e.target.value, i)}
                     onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                    className="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-bold border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    className="flex-1 min-w-0 h-11 sm:h-12 text-center text-lg sm:text-xl font-bold border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 ))}
               </div>
 
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs sm:text-sm">
                 <span className="text-slate-600 dark:text-slate-400">
                   {canResend ? "Didn't get OTP?" : (
                     <span className="flex items-center gap-1.5">
@@ -298,8 +305,7 @@ export default function Login() {
                 <button
                   onClick={resendOTP}
                   disabled={!canResend}
-                  className={`font-semibold ${canResend ? "text-blue-700 dark:text-blue-400" : "text-gray-400"
-                    }`}
+                  className={`font-semibold ${canResend ? "text-blue-700 dark:text-blue-400" : "text-gray-400"}`}
                 >
                   Resend OTP
                 </button>
@@ -308,13 +314,13 @@ export default function Login() {
               <button
                 onClick={() => verifyOTP(otp.join(""))}
                 disabled={otp.join("").length !== 6}
-                className={`w-full mt-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2
+                className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base
                   ${otp.join("").length === 6
                     ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
               >
-                <ShieldCheck className="w-5 h-5" /> Verify & Login
+                <ShieldCheck className="w-5 h-5" /> Verify &amp; Login
               </button>
             </>
           )}
@@ -331,5 +337,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    </>
   );
 }
