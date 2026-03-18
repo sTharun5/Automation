@@ -200,6 +200,8 @@ exports.verifyOTP = async (req, res) => {
     try {
       const { browserHint } = req.body;
       const ua = req.headers["user-agent"];
+      console.log(`[AUTH] Login Audit - Hint: ${browserHint}, UA: ${ua}`);
+      
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
 
