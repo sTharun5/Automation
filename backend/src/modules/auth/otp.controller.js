@@ -201,17 +201,17 @@ exports.verifyOTP = async (req, res) => {
     try {
       const ua = req.headers["user-agent"];
       const parser = new UAParser(ua);
-      const res = parser.getResult();
+      const uaResult = parser.getResult();
 
-      await prisma.loginHistory.create({
+      await prisma.loginhistory.create({
         data: {
           email,
           role,
           ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
           userAgent: ua,
-          deviceName: res.device.model || res.device.vendor || "Desktop",
-          browser: `${res.browser.name || "Unknown"} ${res.browser.version || ""}`.trim(),
-          os: `${res.os.name || "Unknown"} ${res.os.version || ""}`.trim()
+          deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
+          browser: `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
+          os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim()
         }
       });
     } catch (historyErr) {

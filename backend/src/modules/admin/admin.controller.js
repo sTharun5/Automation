@@ -544,7 +544,7 @@ exports.getPlacementMapData = async (req, res) => {
 ===================================================== */
 exports.getLoginHistory = async (req, res) => {
   try {
-    const history = await prisma.loginHistory.findMany({
+    const history = await prisma.loginhistory.findMany({
       orderBy: { createdAt: "desc" },
       take: 500 // Limit to last 500 logins for performance
     });
