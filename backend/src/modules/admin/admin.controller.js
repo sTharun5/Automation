@@ -543,13 +543,18 @@ exports.getLoginHistory = async (req, res) => {
   try {
     console.log("FETCHING LOGIN HISTORY - Requested by:", req.user?.email);
     
-    // Check if prisma.loginhistory exists
-    if (!prisma.loginhistory) {
-      console.error("PRISMA MODEL loginhistory IS UNDEFINED");
-      return res.status(500).json({ message: "Prisma model loginhistory not found in client" });
+    // Check if prisma.loginHistory exists (standard camelCase for model LoginHistory)
+    const historyModel = prisma.loginHistory || prisma.loginhistory;
+    
+    if (!historyModel) {
+      console.error("PRISMA MODEL LoginHistory IS UNDEFINED IN CLIENT");
+      return res.status(500).json({ 
+        message: "Prisma model LoginHistory not found in client. Please run prisma generate.",
+        availableModels: Object.keys(prisma).filter(k => !k.startsWith('$') && !k.startsWith('_'))
+      });
     }
 
-    const history = await prisma.loginhistory.findMany({
+    const history = await historyModel.findMany({
       orderBy: { createdAt: "desc" },
       take: 500
     });
@@ -561,7 +566,8 @@ exports.getLoginHistory = async (req, res) => {
     res.status(500).json({ 
       message: "Failed to fetch login history", 
       error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+      code: error.code,
+      meta: error.meta // Prisma specific error metadata
     });
   }
 };
