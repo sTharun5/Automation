@@ -1,0 +1,14 @@
+-- Enable Row Level Security on the emailotp table.
+-- This resolves the Supabase security advisory:
+--   "Table public.emailotp is public, but RLS has not been enabled."
+--
+-- WHY this is safe:
+--   Prisma connects using the Supabase `service_role` key, which BYPASSES RLS
+--   entirely. All backend operations (create, read, delete OTPs) continue to
+--   work exactly as before.
+--
+-- WHAT this blocks:
+--   Any direct PostgREST (REST API) access to this table by clients using
+--   the `anon` or `authenticated` JWT. No permissive policies are added,
+--   so the default deny-all behaviour of RLS applies to all non-service-role clients.
+ALTER TABLE "public"."emailotp" ENABLE ROW LEVEL SECURITY;
