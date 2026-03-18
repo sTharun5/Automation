@@ -14,7 +14,8 @@ import {
   Loader2,
   ShieldCheck,
   UserCircle,
-  GraduationCap
+  GraduationCap,
+  MapPin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -144,6 +145,7 @@ export default function LoginHistory() {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider uppercase">
                     <th className="px-6 py-4">User Details</th>
+                    <th className="px-6 py-4">Location</th>
                     <th className="px-6 py-4">Device & OS</th>
                     <th className="px-6 py-4">Browser</th>
                     <th className="px-6 py-4">IP Address</th>
@@ -170,6 +172,14 @@ export default function LoginHistory() {
                               {item.role}
                             </p>
                           </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-rose-400" />
+                          <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                            {item.location || "Unknown"}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

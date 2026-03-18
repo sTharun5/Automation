@@ -8,6 +8,7 @@ CREATE TABLE "public"."loginhistory" (
     "deviceName" TEXT,
     "browser" TEXT,
     "os" TEXT,
+    "location" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "loginhistory_pkey" PRIMARY KEY ("id")

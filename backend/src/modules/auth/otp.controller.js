@@ -1,4 +1,5 @@
 const prisma = require("../../config/db");
+const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const { UAParser } = require("ua-parser-js");
@@ -205,6 +206,20 @@ exports.verifyOTP = async (req, res) => {
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
 
+      // Get location from IP (non-blocking)
+      let location = "Unknown";
+      try {
+        const ip = req.ip || req.headers["x-forwarded-for"]?.split(",")[0];
+        if (ip && ip !== '::1' && ip !== '127.0.0.1') {
+          const geoRes = await axios.get(`http://ip-api.com/json/${ip}?fields=city,country`);
+          if (geoRes.data && geoRes.data.status === 'success') {
+            location = `${geoRes.data.city}, ${geoRes.data.country}`;
+          }
+        }
+      } catch (geoErr) {
+        console.error("GEOLOCATION FAILED:", geoErr.message);
+      }
+
       await prisma.loginhistory.create({
         data: {
           email,
@@ -213,7 +228,8 @@ exports.verifyOTP = async (req, res) => {
           userAgent: ua,
           deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
           browser: browserHint || `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
-          os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim()
+          os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim(),
+          location
         }
       });
     } catch (historyErr) {

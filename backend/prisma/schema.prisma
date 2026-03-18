@@ -253,6 +253,7 @@ model loginhistory {
   deviceName String?
   browser    String?
   os         String?
+  location   String?
   createdAt  DateTime @default(now())
 
   @@index([email])
