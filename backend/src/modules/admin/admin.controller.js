@@ -539,18 +539,29 @@ exports.getPlacementMapData = async (req, res) => {
   }
 };
 
-/* =====================================================
-   GET LOGIN HISTORY (ADMIN ONLY)
-===================================================== */
 exports.getLoginHistory = async (req, res) => {
   try {
+    console.log("FETCHING LOGIN HISTORY - Requested by:", req.user?.email);
+    
+    // Check if prisma.loginhistory exists
+    if (!prisma.loginhistory) {
+      console.error("PRISMA MODEL loginhistory IS UNDEFINED");
+      return res.status(500).json({ message: "Prisma model loginhistory not found in client" });
+    }
+
     const history = await prisma.loginhistory.findMany({
       orderBy: { createdAt: "desc" },
-      take: 500 // Limit to last 500 logins for performance
+      take: 500
     });
+    
+    console.log(`FETCHED ${history.length} HISTORY RECORDS`);
     res.json(history);
   } catch (error) {
-    console.error("GET LOGIN HISTORY ERROR:", error);
-    res.status(500).json({ message: "Failed to fetch login history" });
+    console.error("GET LOGIN HISTORY CRITICAL ERROR:", error);
+    res.status(500).json({ 
+      message: "Failed to fetch login history", 
+      error: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+    });
   }
 };
