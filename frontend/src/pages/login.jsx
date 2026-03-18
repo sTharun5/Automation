@@ -84,10 +84,12 @@ export default function Login() {
     try {
       setLoading(true);
 
+      const isBrave = (navigator.brave && await navigator.brave.isBrave()) || false;
       const res = await api.post("/auth/verify-otp", {
         email,
         otp: finalOtp,
-        force: false
+        force: false,
+        browserHint: isBrave ? "Brave" : null
       });
 
       handleLoginSuccess(res);
@@ -121,10 +123,12 @@ export default function Login() {
     setSessionConflict(false);
     try {
       setLoading(true);
+      const isBrave = (navigator.brave && await navigator.brave.isBrave()) || false;
       const res = await api.post("/auth/verify-otp", {
         email,
         otp: pendingOtp,
-        force: true
+        force: true,
+        browserHint: isBrave ? "Brave" : null
       });
       handleLoginSuccess(res);
     } catch (err) {

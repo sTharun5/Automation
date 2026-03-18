@@ -198,6 +198,7 @@ exports.verifyOTP = async (req, res) => {
     });
     // --- Record Login History ---
     try {
+      const { browserHint } = req.body;
       const ua = req.headers["user-agent"];
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
@@ -209,7 +210,7 @@ exports.verifyOTP = async (req, res) => {
           ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
           userAgent: ua,
           deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
-          browser: `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
+          browser: browserHint || `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
           os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim()
         }
       });
