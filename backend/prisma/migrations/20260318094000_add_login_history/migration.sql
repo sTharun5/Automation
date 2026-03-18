@@ -18,3 +18,7 @@ CREATE INDEX "loginhistory_email_idx" ON "public"."loginhistory"("email");
 
 -- CreateIndex
 CREATE INDEX "loginhistory_createdAt_idx" ON "public"."loginhistory"("createdAt");
+
+-- Enable Row Level Security (RLS)
+-- This follows the security pattern established in previous migrations.
+ALTER TABLE "public"."loginhistory" ENABLE ROW LEVEL SECURITY;
