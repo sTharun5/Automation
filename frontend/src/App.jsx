@@ -25,6 +25,7 @@ const ODHistory             = lazy(() => import("./pages/ODHistory"));
 const Notifications         = lazy(() => import("./pages/Notifications"));
 const ODStatus              = lazy(() => import("./pages/ODStatus"));
 const HelpSupport           = lazy(() => import("./pages/HelpSupport"));
+const LoginHistory          = lazy(() => import("./pages/LoginHistory"));
 
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -108,6 +109,7 @@ export default function App() {
                   <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageCompanies /></ProtectedRoute>} />
                   <Route path="/admin/manage-ods" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageODs /></ProtectedRoute>} />
                   <Route path="/admin/internal-events" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ManageInternalEvents /></ProtectedRoute>} />
+                  <Route path="/admin/login-history" element={<ProtectedRoute allowedRoles={["ADMIN"]}><LoginHistory /></ProtectedRoute>} />
                   <Route path="/notifications" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><Notifications /></ProtectedRoute>} />
                   <Route path="/faculty/approvals" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyApproval /></ProtectedRoute>} />
                   <Route path="/faculty/events" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyEvents /></ProtectedRoute>} />

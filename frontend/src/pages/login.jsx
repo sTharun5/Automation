@@ -140,6 +140,7 @@ export default function Login() {
     sessionStorage.setItem("user", JSON.stringify(res.data.user));
     sessionStorage.setItem("token", res.data.token);
     setSuccess(true);
+    setLoading(true); // Keep loader during redirect
     setTimeout(() => {
       // Force a full hardware reload instead of React Router navigation
       // to ensure all Contexts (Notification, Chat, etc.) mount with the new token.
@@ -208,8 +209,9 @@ export default function Login() {
 
       {/* LOADER */}
       {loading && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center flex-col gap-4">
           <Loader2 className="w-14 h-14 text-white animate-spin" />
+          {success && <p className="text-white font-bold animate-pulse">Redirecting...</p>}
         </div>
       )}
 

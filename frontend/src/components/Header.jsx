@@ -27,6 +27,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const profileRef = useRef(null);
 
   useEffect(() => {
@@ -272,14 +273,20 @@ export default function Header() {
 
       <ConfirmLogoutModal
         open={showLogout}
-        onClose={() => setShowLogout(false)}
+        loading={loggingOut}
+        onClose={() => !loggingOut && setShowLogout(false)}
         onConfirm={async () => {
-          // Best-effort server logout (also clears HttpOnly cookie + invalidates active session).
           try {
+            setLoggingOut(true);
             await api.post("/auth/logout");
-          } catch { }
-          sessionStorage.clear();
-          navigate("/", { replace: true });
+          } catch (err) {
+            console.error("Logout failed:", err);
+          } finally {
+            sessionStorage.clear();
+            setLoggingOut(false);
+            setShowLogout(false);
+            window.location.href = "/"; // Force full reload to clear all state
+          }
         }}
       />
     </>

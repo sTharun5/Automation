@@ -18,7 +18,8 @@ import {
   ShieldAlert,
   CalendarCheck,
   Globe,
-  ChevronRight
+  ChevronRight,
+  Activity
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -176,6 +177,22 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-bold mb-1 relative z-10">Internal Events</h3>
                 <p className="text-sm text-indigo-100 relative z-10">Create auto-approved internal events and project Live QRs.</p>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
+              </div>
+
+              {/* ✅ New Login History Card */}
+              <div
+                onClick={() => navigate("/admin/login-history")}
+                className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-slate-600 dark:text-slate-400">
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">Login History</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Monitor user login activity and device information.</p>
+                <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-slate-500/5 rounded-full blur-xl group-hover:bg-slate-500/10 transition-colors" />
               </div>
             </div>
           </div>

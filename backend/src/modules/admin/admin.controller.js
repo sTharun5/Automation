@@ -538,3 +538,19 @@ exports.getPlacementMapData = async (req, res) => {
     res.status(500).json({ message: "Failed to aggregate map data" });
   }
 };
+
+/* =====================================================
+   GET LOGIN HISTORY (ADMIN ONLY)
+===================================================== */
+exports.getLoginHistory = async (req, res) => {
+  try {
+    const history = await prisma.loginHistory.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 500 // Limit to last 500 logins for performance
+    });
+    res.json(history);
+  } catch (error) {
+    console.error("GET LOGIN HISTORY ERROR:", error);
+    res.status(500).json({ message: "Failed to fetch login history" });
+  }
+};

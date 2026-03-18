@@ -1,6 +1,7 @@
 const prisma = require("../../config/db");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
+const { UAParser } = require("ua-parser-js");
 const sendEmail = require("../../utils/sendEmail");
 
 /* =========================
@@ -195,6 +196,28 @@ exports.verifyOTP = async (req, res) => {
       create: { userId: user.id, role, sessionId },
       update: { sessionId }
     });
+
+    // --- Record Login History ---
+    try {
+      const ua = req.headers["user-agent"];
+      const parser = new UAParser(ua);
+      const res = parser.getResult();
+
+      await prisma.loginHistory.create({
+        data: {
+          email,
+          role,
+          ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
+          userAgent: ua,
+          deviceName: res.device.model || res.device.vendor || "Desktop",
+          browser: `${res.browser.name || "Unknown"} ${res.browser.version || ""}`.trim(),
+          os: `${res.os.name || "Unknown"} ${res.os.version || ""}`.trim()
+        }
+      });
+    } catch (historyErr) {
+      console.error("LOGIN HISTORY RECORDING FAILED:", historyErr);
+      // Non-blocking, don't fail login
+    }
 
     const token = jwt.sign(
       { email, role, id: user.id, sid: sessionId },

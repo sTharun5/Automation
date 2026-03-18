@@ -241,3 +241,20 @@ enum ErpSyncStatus {
   SYNCED
   FAILED
 }
+
+/// *
+/// * ================= LOGIN HISTORY =================
+model LoginHistory {
+  id         Int      @id @default(autoincrement())
+  email      String
+  role       String
+  ip         String?
+  userAgent  String?
+  deviceName String?
+  browser    String?
+  os         String?
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
