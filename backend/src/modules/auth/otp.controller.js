@@ -196,29 +196,23 @@ exports.verifyOTP = async (req, res) => {
       create: { userId: user.id, role, sessionId },
       update: { sessionId }
     });
-
     // --- Record Login History ---
     try {
       const ua = req.headers["user-agent"];
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
 
-      const historyModel = prisma.loginHistory || prisma.loginhistory;
-      if (historyModel) {
-        await historyModel.create({
-          data: {
-            email,
-            role,
-            ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
-            userAgent: ua,
-            deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
-            browser: `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
-            os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim()
-          }
-        });
-      } else {
-        console.error("PRISMA MODEL LoginHistory IS UNDEFINED IN verifyOTP");
-      }
+      await prisma.loginhistory.create({
+        data: {
+          email,
+          role,
+          ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
+          userAgent: ua,
+          deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
+          browser: `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),
+          os: `${uaResult.os.name || "Unknown"} ${uaResult.os.version || ""}`.trim()
+        }
+      });
     } catch (historyErr) {
       console.error("LOGIN HISTORY RECORDING FAILED:", historyErr);
       // Non-blocking, don't fail login

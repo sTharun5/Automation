@@ -541,33 +541,17 @@ exports.getPlacementMapData = async (req, res) => {
 
 exports.getLoginHistory = async (req, res) => {
   try {
-    console.log("FETCHING LOGIN HISTORY - Requested by:", req.user?.email);
-    
-    // Check if prisma.loginHistory exists (standard camelCase for model LoginHistory)
-    const historyModel = prisma.loginHistory || prisma.loginhistory;
-    
-    if (!historyModel) {
-      console.error("PRISMA MODEL LoginHistory IS UNDEFINED IN CLIENT");
-      return res.status(500).json({ 
-        message: "Prisma model LoginHistory not found in client. Please run prisma generate.",
-        availableModels: Object.keys(prisma).filter(k => !k.startsWith('$') && !k.startsWith('_'))
-      });
-    }
-
-    const history = await historyModel.findMany({
+    const history = await prisma.loginhistory.findMany({
       orderBy: { createdAt: "desc" },
       take: 500
     });
-    
-    console.log(`FETCHED ${history.length} HISTORY RECORDS`);
     res.json(history);
   } catch (error) {
     console.error("GET LOGIN HISTORY CRITICAL ERROR:", error);
     res.status(500).json({ 
       message: "Failed to fetch login history", 
       error: error.message,
-      code: error.code,
-      meta: error.meta // Prisma specific error metadata
+      code: error.code
     });
   }
 };
