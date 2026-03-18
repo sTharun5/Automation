@@ -199,21 +199,36 @@ exports.verifyOTP = async (req, res) => {
     });
     // --- Record Login History ---
     try {
-      const { browserHint } = req.body;
+      const { browserHint, lat, lon } = req.body;
       const ua = req.headers["user-agent"];
-      console.log(`[AUTH] Login Audit - Hint: ${browserHint}, UA: ${ua}`);
+      console.log(`[AUTH] Login Audit - Hint: ${browserHint}, Lat: ${lat}, Lon: ${lon}, UA: ${ua}`);
       
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
 
-      // Get location from IP (non-blocking)
+      // Get location (non-blocking)
       let location = "Unknown";
       try {
-        const ip = req.ip || req.headers["x-forwarded-for"]?.split(",")[0];
-        if (ip && ip !== '::1' && ip !== '127.0.0.1') {
-          const geoRes = await axios.get(`http://ip-api.com/json/${ip}?fields=city,country`);
-          if (geoRes.data && geoRes.data.status === 'success') {
-            location = `${geoRes.data.city}, ${geoRes.data.country}`;
+        if (lat && lon) {
+          // 1. High-accuracy reverse geocoding from coordinates
+          const geoRes = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`, {
+            headers: { 'User-Agent': 'Automation-App/1.0' }
+          });
+          if (geoRes.data && geoRes.data.address) {
+            const addr = geoRes.data.address;
+            location = `${addr.city || addr.town || addr.village || addr.suburb || "Unknown"}, ${addr.country || "Unknown"}`;
+          }
+        } else {
+          // 2. Fallback to IP-based geolocation
+          const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip || req.connection.remoteAddress;
+          // Clean up IPv6-mapped IPv4 addresses
+          const cleanIp = ip.replace(/^.*:/, '');
+          
+          if (cleanIp && cleanIp !== '1' && cleanIp !== '127.0.0.1') {
+            const geoRes = await axios.get(`http://ip-api.com/json/${cleanIp}?fields=city,country`);
+            if (geoRes.data && geoRes.data.status === 'success') {
+              location = `${geoRes.data.city}, ${geoRes.data.country}`;
+            }
           }
         }
       } catch (geoErr) {
@@ -224,7 +239,7 @@ exports.verifyOTP = async (req, res) => {
         data: {
           email,
           role,
-          ip: req.ip || req.headers["x-forwarded-for"]?.split(",")[0],
+          ip: req.headers["x-forwarded-for"]?.split(",")[0] || req.ip,
           userAgent: ua,
           deviceName: uaResult.device.model || uaResult.device.vendor || "Desktop",
           browser: browserHint || `${uaResult.browser.name || "Unknown"} ${uaResult.browser.version || ""}`.trim(),

@@ -70,6 +70,21 @@ export default function Login() {
     }
   };
 
+  /* ================= GEOLOCATION HELPER ================= */
+  const getCoordinates = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        () => resolve(null),
+        { timeout: 5000 }
+      );
+    });
+  };
+
   /* ================= VERIFY OTP ================= */
   const verifyOTP = async (finalOtp) => {
     if (loading) return;
@@ -84,13 +99,17 @@ export default function Login() {
     try {
       setLoading(true);
 
-      // Robust Brave detection
+      // Robust Brave detection + Geolocation
       const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function' && await navigator.brave.isBrave()) || false;
+      const coords = await getCoordinates();
+
       const res = await api.post("/auth/verify-otp", {
         email,
         otp: finalOtp,
         force: false,
-        browserHint: isBrave ? "Brave" : null
+        browserHint: isBrave ? "Brave" : null,
+        lat: coords?.lat,
+        lon: coords?.lon
       });
 
       handleLoginSuccess(res);
@@ -124,13 +143,17 @@ export default function Login() {
     setSessionConflict(false);
     try {
       setLoading(true);
-      // Robust Brave detection
+      // Robust Brave detection + Geolocation
       const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function' && await navigator.brave.isBrave()) || false;
+      const coords = await getCoordinates();
+
       const res = await api.post("/auth/verify-otp", {
         email,
         otp: pendingOtp,
         force: true,
-        browserHint: isBrave ? "Brave" : null
+        browserHint: isBrave ? "Brave" : null,
+        lat: coords?.lat,
+        lon: coords?.lon
       });
       handleLoginSuccess(res);
     } catch (err) {
