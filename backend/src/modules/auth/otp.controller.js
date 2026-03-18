@@ -201,7 +201,6 @@ exports.verifyOTP = async (req, res) => {
     try {
       const { browserHint, lat, lon } = req.body;
       const ua = req.headers["user-agent"];
-      console.log(`[AUTH] Login Audit - Hint: ${browserHint}, Lat: ${lat}, Lon: ${lon}, UA: ${ua}`);
       
       const parser = new UAParser(ua);
       const uaResult = parser.getResult();
@@ -214,26 +213,40 @@ exports.verifyOTP = async (req, res) => {
           const geoRes = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`, {
             headers: { 'User-Agent': 'Automation-App/1.0' }
           });
+          
           if (geoRes.data && geoRes.data.address) {
             const addr = geoRes.data.address;
-            location = `${addr.city || addr.town || addr.village || addr.suburb || "Unknown"}, ${addr.country || "Unknown"}`;
+            console.log("[AUTH] Geocode Address Details:", JSON.stringify(addr));
+            
+            // Be more exhaustive with city fallback
+            const city = addr.city || addr.town || addr.village || addr.suburb || 
+                         addr.city_district || addr.state_district || addr.county || 
+                         addr.state || "Unknown City";
+            
+            location = `${city}, ${addr.country || "Unknown Country"}`;
           }
         } else {
           // 2. Fallback to IP-based geolocation
           const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip || req.connection.remoteAddress;
-          // Clean up IPv6-mapped IPv4 addresses
           const cleanIp = ip.replace(/^.*:/, '');
           
+          console.log(`[AUTH] Geolocation Fallback - IP: ${cleanIp}`);
+
           if (cleanIp && cleanIp !== '1' && cleanIp !== '127.0.0.1') {
-            const geoRes = await axios.get(`http://ip-api.com/json/${cleanIp}?fields=city,country`);
+            const geoRes = await axios.get(`http://ip-api.com/json/${cleanIp}?fields=status,message,city,regionName,country`);
             if (geoRes.data && geoRes.data.status === 'success') {
-              location = `${geoRes.data.city}, ${geoRes.data.country}`;
+              const city = geoRes.data.city || geoRes.data.regionName || "Unknown City";
+              location = `${city}, ${geoRes.data.country}`;
+            } else {
+              console.log("[AUTH] ip-api Error:", geoRes.data.message);
             }
           }
         }
       } catch (geoErr) {
         console.error("GEOLOCATION FAILED:", geoErr.message);
       }
+
+      console.log(`[AUTH] Final Login Record - Hint: ${browserHint}, Location: ${location}, UA: ${ua}`);
 
       await prisma.loginhistory.create({
         data: {
