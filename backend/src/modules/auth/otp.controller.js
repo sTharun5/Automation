@@ -83,20 +83,7 @@ exports.sendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const result = await sendEmail(
-      email,
-      "SMART OD Login OTP",
-      OTP_EMAIL_HTML.replace("{{OTP}}", otp)
-    );
-
-    if (!result) {
-      return res.status(500).json({
-        message: "Email delivery failed. Please check Render logs."
-      });
-    }
-
-    console.log("OTP Email Sent via Brevo");
-
+    // 1. Perform DB operations first to ensure they succeed
     await prisma.emailotp.deleteMany({ where: { email } });
 
     await prisma.emailotp.create({
@@ -107,6 +94,20 @@ exports.sendOTP = async (req, res) => {
       }
     });
 
+    // 2. Send email asynchronously to prevent frontend timeout
+    // We don't await this so the response returns instantly
+    sendEmail(
+      email,
+      "SMART OD Login OTP",
+      OTP_EMAIL_HTML.replace("{{OTP}}", otp)
+    )
+      .then(result => {
+        if (!result) console.error("[AUTH] Email delivery returned null.");
+        else console.log("[AUTH] OTP Email Sent via Brevo asynchronously");
+      })
+      .catch(err => console.error("[AUTH] Email Delivery Failed:", err));
+
+    // 3. Return success immediately
     res.json({ message: "OTP sent successfully" });
 
   } catch (err) {
