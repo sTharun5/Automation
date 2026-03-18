@@ -27,11 +27,9 @@ exports.searchStudents = async (req, res) => {
         semester: true,
         placement_status: true,
         offers: {
-          include: {
-            company: true
-          }
+          include: { company: true }
         },
-        ods: true, // ✅ Added to calculate stats
+        _count: { select: { ods: true } }, // ✅ count only, no full OD rows loaded
         mentor: {
           select: {
             id: true,
@@ -43,20 +41,25 @@ exports.searchStudents = async (req, res) => {
       take: 10
     });
 
-    // Calculate Remaining Days for each student
-    const studentsWithStats = students.map(student => {
-      const approvedODs = student.ods.filter((od) => ["APPROVED", "MENTOR_APPROVED"].includes(od.status));
-      const totalOdDays = approvedODs.reduce((sum, od) => sum + od.duration, 0);
-      const remainingDays = 60 - totalOdDays;
-
-      return {
-        ...student,
-        odStats: {
-          usedDays: totalOdDays,
-          remainingDays: remainingDays
-        }
-      };
-    });
+    // Calculate stats using aggregated counts from DB
+    const studentsWithStats = await Promise.all(
+      students.map(async (student) => {
+        // Aggregate approved OD duration in one DB call instead of loading all ODs
+        const agg = await prisma.od.aggregate({
+          where: {
+            studentId: student.id,
+            status: { in: ["APPROVED", "MENTOR_APPROVED"] }
+          },
+          _sum: { duration: true }
+        });
+        const usedDays = agg._sum.duration ?? 0;
+        const { _count, ...rest } = student;
+        return {
+          ...rest,
+          odStats: { usedDays, remainingDays: 60 - usedDays }
+        };
+      })
+    );
 
     return res.json(studentsWithStats);
   } catch (error) {
@@ -256,32 +259,35 @@ exports.getStudentOffers = async (req, res) => {
 ===================================================== */
 exports.addOffer = async (req, res) => {
   try {
-    // Link check for faculty
+    let cachedStudent = null;
+
+    // Link check for faculty — cache student here so we can reuse it below
     if (req.user.role !== "ADMIN") {
       const faculty = await prisma.faculty.findUnique({ where: { email: req.user.email } });
       if (!faculty) return res.status(403).json({ message: "Access denied" });
 
-      const student = await prisma.student.findUnique({ where: { id: Number(req.body.studentId) } });
-      if (!student) return res.status(404).json({ message: "Student not found" });
+      cachedStudent = await prisma.student.findUnique({ where: { id: Number(req.body.studentId) } });
+      if (!cachedStudent) return res.status(404).json({ message: "Student not found" });
 
-      if (student.mentorId !== faculty.id) {
+      if (cachedStudent.mentorId !== faculty.id) {
         return res.status(403).json({ message: "Unauthorized: You are not the mentor of this student" });
       }
     }
 
     const offer = await offerService.addOffer(req.body);
 
-    // Also update student placement_status if it's their first offer or as requested
+    // Update student placement_status to PLACED
     await prisma.student.update({
       where: { id: Number(req.body.studentId) },
       data: { placement_status: "PLACED" }
     });
 
-    // Notify Student
-    const student = await prisma.student.findUnique({ where: { id: Number(req.body.studentId) } });
-    if (student) {
+    // Reuse cached student (Faculty path) or fetch once (Admin path) — no duplicate DB call
+    const notifyStudent = cachedStudent ?? await prisma.student.findUnique({ where: { id: Number(req.body.studentId) } });
+
+    if (notifyStudent) {
       await notificationService.createNotification(
-        student.email,
+        notifyStudent.email,
         `Congratulations! Offer from ${offer.company.name} 🎉`,
         `We are thrilled to inform you that you have secured an offer from ${offer.company.name} with a package of ${offer.lpa} LPA! 🚀`,
         "SUCCESS"

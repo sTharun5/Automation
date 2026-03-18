@@ -1,7 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../../config/db"); // ✅ use shared singleton, not new PrismaClient()
 
 exports.verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1] || req.cookies?.token;

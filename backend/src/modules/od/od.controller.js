@@ -27,7 +27,7 @@ const generateActivityId = () => {
 async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true }) {
   try {
     const { PDFParse } = pdf;
-    const dataBuffer = fs.readFileSync(filePath);
+    const dataBuffer = await fs.promises.readFile(filePath); // ✅ async — no longer blocks event loop
     const parser = new PDFParse({ data: dataBuffer });
     const data = await parser.getText();
     const text = data.text.toLowerCase().replace(/\s+/g, " ");
@@ -580,8 +580,6 @@ exports.applyOD = async (req, res) => {
     const offerFilePath = req.files.offerFile[0].path;
 
     /* ===== SMART OCR VERIFICATION ===== */
-    /* ===== SMART OCR VERIFICATION ===== */
-
     // 1. Verify AIM/OBJECTIVE (ITI) -> Strict Roll No Check
     const aimResult = await verifyDocumentContent(
       aimFilePath,

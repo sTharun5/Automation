@@ -1,15 +1,15 @@
 const { PrismaClient } = require("@prisma/client");
 
-// Global singleton to prevent multiple connection pools
-// This is critical in production to avoid MaxClientsInSessionMode errors
+// Global singleton — prevents multiple connection pools on hot-reload
 const globalForPrisma = global;
 
-const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["error"] : ["error"],
-});
+const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["query", "error"] : ["error"],
+  });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Cache in all environments (not just dev) to guard against accidental re-requires
+globalForPrisma.prisma = prisma;
 
 module.exports = prisma;

@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const compression = require("compression");
 const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
@@ -18,9 +20,6 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Log for debugging (Check Render logs to see this!)
-        console.log(`[CORS DEBUG] Request from Origin: ${origin}`);
-
         // 1. Allow if no origin (local/mobile)
         if (!origin) return callback(null, true);
 
@@ -29,21 +28,28 @@ app.use(cors({
             return callback(null, true);
         }
 
-        // 3. Allow any Vercel subdomain (very important for preview links)
+        // 3. Allow any Vercel subdomain (preview + production links)
         if (origin.toLowerCase().includes("vercel.app")) {
             return callback(null, true);
         }
 
-        // 5. Check explicit allowed list
+        // 4. Check explicit allowed list
         if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
             return callback(null, true);
         }
 
-        console.error(`CORS Blocked for origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
     },
     credentials: true
 }));
+
+// Security headers
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" } // Allow file/upload serving
+}));
+
+// Gzip compress all responses
+app.use(compression());
 
 app.use(cookieParser());
 
