@@ -1,5 +1,14 @@
 import { useEffect } from "react";
 
+/**
+ * ConfirmLogoutModal component - A security-focused modal to confirm user sign-out.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal (cancel)
+ * @param {Function} props.onConfirm - Function to trigger the sign-out process
+ * @param {boolean} props.loading - Loading state during sign-out
+ */
 export default function ConfirmLogoutModal({ open, onClose, onConfirm, loading }) {
   useEffect(() => {
     const handleEscape = (e) => {
