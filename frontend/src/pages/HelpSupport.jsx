@@ -17,7 +17,8 @@ import {
 /**
  * HelpSupport component - Integrated user assistance and ticketing system.
  * Allows students and faculty to submit support queries with optional file attachments,
- * which are then routed to administrators for resolution tracking and historical logging.
+ * which are then routed to administrators for resolution tracking, historical logging,
+ * and multi-channel notification support.
  */
 export default function HelpSupport() {
     const navigate = useNavigate();
