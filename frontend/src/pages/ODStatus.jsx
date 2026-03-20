@@ -105,22 +105,28 @@ export default function ODStatus() {
                                     </Link>
                                 </div>
 
-                                {/* Step Tracker */}
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-end mb-1">
-                                        <span className={`text-xs font-bold uppercase tracking-widest ${od.status === 'REJECTED' ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>
-                                            {od.status === 'REJECTED' ? 'Application Rejected' : getProgressLabel(od.status)}
-                                        </span>
-                                        <span className="text-xs font-mono text-slate-400">
-                                            {calculateProgress(od.status)}%
-                                        </span>
-                                    </div>
-                                    <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <div
-                                            className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}`}
-                                            style={{ width: `${calculateProgress(od.status)}%` }}
-                                        ></div>
-                                    </div>
+                                 {/* Step Tracker */}
+                                 <div className="space-y-2" aria-label={`Progress for OD request ${od.trackerId}`}>
+                                     <div className="flex justify-between items-end mb-1">
+                                         <span className={`text-xs font-bold uppercase tracking-widest ${od.status === 'REJECTED' ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>
+                                             {od.status === 'REJECTED' ? 'Application Rejected' : getProgressLabel(od.status)}
+                                         </span>
+                                         <span className="text-xs font-mono text-slate-400">
+                                             {calculateProgress(od.status)}%
+                                         </span>
+                                     </div>
+                                     <div 
+                                         className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+                                         role="progressbar"
+                                         aria-valuenow={calculateProgress(od.status)}
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"
+                                     >
+                                         <div
+                                             className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}`}
+                                             style={{ width: `${calculateProgress(od.status)}%` }}
+                                         ></div>
+                                     </div>
                                     <div className="flex justify-between pt-2">
                                         <div className="flex justify-between pt-2">
                                             <Step label="Applied" status={getStepStatus(od.status, 0)} />
