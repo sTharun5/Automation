@@ -282,9 +282,10 @@ export default function ManageCompanies() {
                                                     <button
                                                         onClick={() => handleEditClick(company)}
                                                         className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                        aria-label={`Edit company ${company.name}`}
                                                         title="Edit Company"
                                                     >
-                                                        <Edit3 className="w-4 h-4" />
+                                                        <Edit3 className="w-4 h-4" aria-hidden="true" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleApproval(company.id, company.isApproved)}
@@ -292,15 +293,17 @@ export default function ManageCompanies() {
                                                             ? "text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
                                                             : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                                                             }`}
+                                                        aria-label={company.isApproved ? `Revoke approval for ${company.name}` : `Approve ${company.name}`}
                                                     >
                                                         {company.isApproved ? "Revoke Approval" : "Approve"}
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteCompany(company.id, company.name)}
                                                         className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                        aria-label={`Delete company ${company.name}`}
                                                         title="Delete Company"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                                                     </button>
                                                 </div>
                                             </td>
