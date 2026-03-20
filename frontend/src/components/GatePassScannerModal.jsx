@@ -30,23 +30,6 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
         return () => stopScanner();
     }, [isOpen, startScanner]);
 
-    const startScanner = useCallback(async () => {
-        try {
-            if (!html5QrCode.current) {
-                html5QrCode.current = new Html5Qrcode("faculty-scanner-reader");
-            }
-            await html5QrCode.current.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                () => { /* Ignore frame errors */ }
-            );
-        } catch (err) {
-            console.error("Scanner Error:", err);
-            setError("Please allow camera permissions to scan.");
-        }
-    }, [onScanSuccess]);
-
     const stopScanner = useCallback(async () => {
         try {
             if (html5QrCode.current && html5QrCode.current.isScanning) {
@@ -100,6 +83,23 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             setIsProcessing(false);
         }
     }, [isProcessing, stopScanner]);
+
+    const startScanner = useCallback(async () => {
+        try {
+            if (!html5QrCode.current) {
+                html5QrCode.current = new Html5Qrcode("faculty-scanner-reader");
+            }
+            await html5QrCode.current.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                () => { /* Ignore frame errors */ }
+            );
+        } catch (err) {
+            console.error("Scanner Error:", err);
+            setError("Please allow camera permissions to scan.");
+        }
+    }, [onScanSuccess]);
 
     const resetScanner = () => {
         setScanResult(null);
