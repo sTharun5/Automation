@@ -17,7 +17,8 @@ import {
 /**
  * ODStatus component - Live dashboard for tracking active application progress.
  * Real-time monitoring of document verification, mentor approvals, and final 
- * administrative decisions with a visual step-progress indicator.
+ * administrative decisions with a visual step-progress indicator and automated 
+ * status synchronization.
  */
 export default function ODStatus() {
     const [activeODs, setActiveODs] = useState([]);
