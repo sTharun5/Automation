@@ -31,7 +31,7 @@ export default function Hero({ student, dashboardData }) {
     <section className="animate-fadeIn">
       <div className="mb-8">
         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
-          {greeting}
+          Welcome back
         </p>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mt-1 tracking-tight">
           {greeting}, {name}!

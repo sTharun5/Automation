@@ -98,7 +98,7 @@ export default function AdminDashboard() {
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
               <p className="text-lg text-slate-900 dark:text-white">
-                {greeting}, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name}</span>
+                Welcome back, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name}</span>
               </p>
               <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">Welcome to your Administrator Control Center</p>
             </div>
