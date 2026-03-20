@@ -15,6 +15,10 @@ import {
 import api from "../api/axios";
 import { useChat } from "../context/ChatContext"; // ✅ Import Hook
 
+/**
+ * ChatAssistant component - An AI-powered virtual assistant (Disha 2.0) that handles
+ * natural language queries for OD applications and provides status updates.
+ */
 export default function ChatAssistant() {
     const { isOpen, openChat, closeChat } = useChat(); // ✅ Use Context
     // const [isOpen, setIsOpen] = useState(false); // ❌ Remove local state
