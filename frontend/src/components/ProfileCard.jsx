@@ -8,6 +8,11 @@ import {
   Key
 } from "lucide-react";
 
+/**
+ * ProfileCard component - Reusable UI element for visualizing user identity metadata.
+ * Adapts dynamically to STUDENT, FACULTY, and ADMIN roles to display relevant 
+ * personal and institutional credentials.
+ */
 export default function ProfileCard({ student }) {
   if (!student) return null;
 
