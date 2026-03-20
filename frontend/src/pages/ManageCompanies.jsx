@@ -241,65 +241,70 @@ export default function ManageCompanies() {
                         </button>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <div className="overflow-x-auto text-sm">
+                        <table className="w-full text-left" aria-label="Corporate partner directory">
                             <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider">
-                                    <th className="px-6 py-4 font-semibold">Company Name</th>
-                                    <th className="px-6 py-4 font-semibold">Location</th>
-                                    <th className="px-6 py-4 font-semibold text-center">Status</th>
-                                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                                    <th className="px-6 py-4 font-black">Company Name</th>
+                                    <th className="px-6 py-4 font-black">Location</th>
+                                    <th className="px-6 py-4 font-black text-center">Eligibility</th>
+                                    <th className="px-6 py-4 font-black text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-10 text-center text-slate-500">Loading...</td>
+                                        <td colSpan="4" className="px-6 py-10 text-center text-blue-500 animate-pulse font-bold uppercase tracking-widest text-[10px]">Loading industrial database...</td>
                                     </tr>
                                 ) : companies.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-10 text-center text-slate-500">No companies found</td>
+                                        <td colSpan="4" className="px-6 py-10 text-center text-slate-500 italic">No partnerships found matching your criteria.</td>
                                     </tr>
                                 ) : (
                                     companies.map((company) => (
-                                        <tr key={company.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                        <tr key={company.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                            <td className="px-6 py-4 font-bold text-slate-900 dark:text-white capitalize truncate max-w-[200px]">
                                                 {company.name}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-sm">
-                                                {company.location || <span className="italic opacity-50">Unknown</span>}
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                                                {company.location ? (
+                                                    <span className="flex items-center gap-1.5 uppercase tracking-tight">
+                                                        <MapPin className="w-3 h-3 text-slate-400" /> {company.location}
+                                                    </span>
+                                                ) : <span className="italic opacity-50 text-[10px]">Not Specified</span>}
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${company.isApproved
-                                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                                    : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border shadow-sm transition-all ${company.isApproved
+                                                    ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50"
+                                                    : "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50"
                                                     }`}>
-                                                    {company.isApproved ? "Approved" : "Pending Approval"}
+                                                    {company.isApproved ? "Approved" : "Pending"}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-3">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleToggleApproval(company.id, company.isApproved)}
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border shadow-sm ${company.isApproved
+                                                            ? "bg-white dark:bg-slate-900 text-amber-600 border-amber-200 hover:bg-amber-50 dark:border-amber-900/50 dark:hover:bg-amber-900/20"
+                                                            : "bg-blue-600 text-white border-blue-500 hover:bg-blue-700 shadow-blue-500/20"
+                                                            }`}
+                                                        aria-label={company.isApproved ? `Revoke approval for ${company.name}` : `Approve ${company.name}`}
+                                                    >
+                                                        {company.isApproved ? "Revoke" : "Approve"}
+                                                    </button>
+                                                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
                                                     <button
                                                         onClick={() => handleEditClick(company)}
-                                                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                                                         aria-label={`Edit company ${company.name}`}
                                                         title="Edit Company"
                                                     >
                                                         <Edit3 className="w-4 h-4" aria-hidden="true" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleToggleApproval(company.id, company.isApproved)}
-                                                        className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${company.isApproved
-                                                            ? "text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
-                                                            : "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                                                            }`}
-                                                        aria-label={company.isApproved ? `Revoke approval for ${company.name}` : `Approve ${company.name}`}
-                                                    >
-                                                        {company.isApproved ? "Revoke Approval" : "Approve"}
-                                                    </button>
-                                                    <button
                                                         onClick={() => handleDeleteCompany(company.id, company.name)}
-                                                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                         aria-label={`Delete company ${company.name}`}
                                                         title="Delete Company"
                                                     >
