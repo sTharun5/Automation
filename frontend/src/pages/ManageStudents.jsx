@@ -29,7 +29,7 @@ import {
 /**
  * ManageStudents component - Administrative module for orchestrating the student database.
  * Facilitates student enrollment, profile editing, mentor unassignment,
- * and bulk student searching with real-time suggestions.
+ * and bulk student searching with real-time suggestions and placement status tracking.
  */
 export default function ManageStudents() {
     const navigate = useNavigate();
