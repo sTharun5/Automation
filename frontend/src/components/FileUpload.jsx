@@ -1,3 +1,9 @@
+/**
+ * FileUpload component - Input field for specifying the filename of uploaded proof documents.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onChange - Callback function for filename changes
+ */
 export default function FileUpload({ onChange }) {
   return (
     <div>
