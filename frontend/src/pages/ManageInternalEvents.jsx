@@ -27,6 +27,11 @@ import {
     Info
 } from 'lucide-react';
 
+/**
+ * ManageInternalEvents component - Advanced administrative portal for internal campus events.
+ * Features include event lifecycle management, staff/student coordinator assignment,
+ * dynamic QR code projection for attendance, and real-time roster visualization.
+ */
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
     const { darkMode } = useTheme();
