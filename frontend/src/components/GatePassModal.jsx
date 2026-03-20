@@ -38,6 +38,7 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-center relative">
                     <button
                         onClick={onClose}
+                        aria-label="Close modal"
                         className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition-colors"
                     >
                         <X className="w-5 h-5" />
@@ -63,7 +64,7 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                         <>
                             {/* Event Selector (If multiple PROVISIONAL passes exist) */}
                             {provisionalOds.length > 1 && (
-                                <div className="w-full mb-6">
+                                <div className="w-full mb-6 text-slate-900 dark:text-white">
                                     <SearchableSelect
                                         label="Select Event Pass"
                                         placeholder="Choose a pass..."
@@ -85,7 +86,10 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
                             {/* The Static Gate Pass QR Code */}
                             {selectedOd && (
                                 <div className="flex flex-col items-center">
-                                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                                    <div 
+                                        className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"
+                                        aria-label="Gate pass QR code"
+                                    >
                                         <QRCode
                                             value={JSON.stringify({ odId: selectedOd.id })}
                                             size={180}
