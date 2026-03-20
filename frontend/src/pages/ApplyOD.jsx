@@ -252,6 +252,7 @@ export default function ApplyOD() {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Start Date <span className="text-red-500">*</span></label>
             <input
               type="date"
+              aria-label="Application Start Date"
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               onChange={(e) => {
                 const start = e.target.value;
@@ -275,6 +276,7 @@ export default function ApplyOD() {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">End Date <span className="text-red-500">*</span></label>
             <input
               type="date"
+              aria-label="Application End Date"
               className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               onChange={(e) => {
                 const end = e.target.value;
