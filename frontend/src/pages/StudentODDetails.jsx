@@ -196,10 +196,13 @@ export default function StudentODDetails() {
           </div>
 
           {/* ⏱️ REAL-TIME TRACKING HEADER */}
-          <div className="px-6 py-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+          <div className="px-6 py-6 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800" aria-label="Application progress tracking">
             <div className="flex justify-between items-end mb-2">
               <div className="flex items-center gap-3">
-                <span className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md border shadow-sm ${getLiveStatus(od.startDate, od.endDate, od.status).color}`}>
+                <span 
+                    className={`text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md border shadow-sm ${getLiveStatus(od.startDate, od.endDate, od.status).color}`}
+                    aria-live="polite"
+                >
                   {getLiveStatus(od.startDate, od.endDate, od.status).label}
                 </span>
                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -218,7 +221,13 @@ export default function StudentODDetails() {
                 )}
               </div>
             </div>
-            <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
+            <div 
+                className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner"
+                role="progressbar"
+                aria-valuenow={progressPercent}
+                aria-valuemin="0"
+                aria-valuemax="100"
+            >
               <div
                 className={`h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' :
                   isApproved ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
