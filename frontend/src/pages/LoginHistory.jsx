@@ -19,6 +19,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * LoginHistory component - Administrative security audit trail.
+ * Consolidates user login events, capturing geographic location, device hardware details,
+ * operative systems, and browser metrics for security monitoring and session auditing.
+ */
 export default function LoginHistory() {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
