@@ -1,3 +1,6 @@
+/**
+ * Footer component - Displays the system copyright and institution branding.
+ */
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 transition-colors">
