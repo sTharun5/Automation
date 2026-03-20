@@ -295,6 +295,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                                 onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                                 disabled={processingScan || isProcessingOtp}
+                                aria-label={`OTP digit ${idx + 1}`}
                                 className="w-full h-14 md:h-16 text-center text-2xl font-black font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                             />
                         ))}
