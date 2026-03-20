@@ -152,6 +152,8 @@ export default function HelpSupport() {
                                         type="text"
                                         name="subject"
                                         placeholder="Briefly describe the issue..."
+                                        aria-required="true"
+                                        aria-label="Support query subject"
                                         value={form.subject}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
@@ -167,6 +169,8 @@ export default function HelpSupport() {
                                         name="description"
                                         rows="5"
                                         placeholder="Please provide details about the problem you are facing..."
+                                        aria-required="true"
+                                        aria-label="Detailed support query description"
                                         value={form.description}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white resize-none"
@@ -180,38 +184,39 @@ export default function HelpSupport() {
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-300 dark:border-slate-600 transition-all text-sm font-medium">
-                                            <Paperclip className="w-4 h-4" aria-hidden="true" /> <span>Upload Image/Video</span>
+                                            <Paperclip className="w-4 h-4" aria-hidden="true" /> <span>Upload Media</span>
                                             <input
                                                 type="file"
                                                 onChange={handleFileChange}
                                                 className="hidden"
                                                 accept="image/*,video/*"
-                                                aria-label="Upload supporting image or video for your query"
+                                                aria-label="Supporting media upload for your query"
                                             />
                                         </label>
                                         {file && (
-                                            <span className="text-sm text-green-600 dark:text-green-400 truncate max-w-[200px]">
+                                            <span className="text-sm text-green-600 dark:text-green-400 truncate max-w-[200px]" role="status">
                                                 {file.name}
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">Supported: JPG, PNG, MP4 (Max 10MB)</p>
+                                    <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest opacity-70">Supported formats: JPG, PNG, MP4 (Max 10MB)</p>
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={loading}
+                                    aria-busy={loading}
                                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
                                         <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            <span className="uppercase tracking-widest font-black text-sm">Sending...</span>
+                                            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                                            <span className="uppercase tracking-widest font-black text-sm">Processing...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Send className="w-5 h-5" />
-                                            <span className="uppercase tracking-widest font-black text-sm">Submit Query</span>
+                                            <Send className="w-5 h-5" aria-hidden="true" />
+                                            <span className="uppercase tracking-widest font-black text-sm">Send Request</span>
                                         </>
                                     )}
                                 </button>
