@@ -2,6 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../api/axios';
 
+/**
+ * GatePassScannerModal component - Provides a camera interface for faculty members
+ * to scan student QR codes and verify their digital gate passes in real-time.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal and stop camera
+ */
 export default function GatePassScannerModal({ isOpen, onClose }) {
     const [scanResult, setScanResult] = useState(null);
     const [error, setError] = useState(null);
