@@ -29,7 +29,8 @@ import {
 /**
  * ManageODs component - Command center for administrative OD (On-Duty) oversight.
  * Enables searching for OD records by student or company, visualizing placement statistics,
- * manually triggering ERP synchronization, and performing administrative cancellations.
+ * manually triggering ERP synchronization, and performing administrative cancellations
+ * with real-time lifecycle tracking and comprehensive student profiles.
  */
 export default function ManageODs() {
     const navigate = useNavigate();
