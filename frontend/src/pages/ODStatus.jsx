@@ -107,49 +107,48 @@ export default function ODStatus() {
                                 </div>
 
                                  {/* Step Tracker */}
-                                 <div className="space-y-2" aria-label={`Progress for OD request ${od.trackerId}`}>
-                                     <div className="flex justify-between items-end mb-1">
-                                         <span className={`text-xs font-bold uppercase tracking-widest ${od.status === 'REJECTED' ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>
-                                             {od.status === 'REJECTED' ? 'Application Rejected' : getProgressLabel(od.status)}
+                                 <div className="space-y-4" aria-label={`Progress tracking for OD request ${od.trackerId}`}>
+                                     <div className="flex justify-between items-end">
+                                         <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${od.status === 'REJECTED' ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}`}>
+                                             {od.status === 'REJECTED' ? 'Application Terminated' : getProgressLabel(od.status)}
                                          </span>
-                                         <span className="text-xs font-mono text-slate-400">
-                                             {calculateProgress(od.status)}%
+                                         <span className="text-[10px] font-black font-mono text-slate-400">
+                                             {calculateProgress(od.status)}% COMPLETE
                                          </span>
                                      </div>
                                      <div 
-                                         className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+                                         className="relative h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
                                          role="progressbar"
                                          aria-valuenow={calculateProgress(od.status)}
                                          aria-valuemin="0"
                                          aria-valuemax="100"
+                                         aria-label="Application completion progress"
                                      >
                                          <div
-                                             className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${od.status === 'REJECTED' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}`}
+                                             className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(59,130,246,0.5)] ${od.status === 'REJECTED' ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-600'}`}
                                              style={{ width: `${calculateProgress(od.status)}%` }}
                                          ></div>
                                      </div>
-                                    <div className="flex justify-between pt-2">
-                                        <div className="flex justify-between pt-2">
-                                            <Step label="Applied" status={getStepStatus(od.status, 0)} />
-                                            <Step label="AI Verified" status={getStepStatus(od.status, 1)} />
-                                            <Step label="Approved" status={getStepStatus(od.status, 2)} />
-                                        </div>
+                                    <div className="flex justify-between items-start pt-2 px-1">
+                                        <Step label="Applied" status={getStepStatus(od.status, 0)} />
+                                        <Step label="AI Checked" status={getStepStatus(od.status, 1)} />
+                                        <Step label="Authorized" status={getStepStatus(od.status, 2)} />
                                     </div>
                                 </div>
 
                                 {/* Current Status Message */}
-                                <div className={`mt-6 p-4 rounded-xl border flex items-start gap-3 ${od.status === 'REJECTED'
-                                    ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30'
-                                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800'
-                                    }`}>
-                                    <div className="shrink-0">
+                                <div className={`mt-8 p-5 rounded-2xl border flex items-start gap-4 transition-all hover:shadow-md ${od.status === 'REJECTED'
+                                    ? 'bg-red-50/50 dark:bg-red-900/5 border-red-100 dark:border-red-900/20'
+                                    : 'bg-blue-50/30 dark:bg-blue-900/5 border-blue-100/50 dark:border-blue-900/20'
+                                    }`} role="alert" aria-live="polite">
+                                    <div className="shrink-0 p-2 rounded-xl bg-white dark:bg-slate-800 shadow-sm">
                                         {od.status === 'REJECTED' ? <XCircle className="w-5 h-5 text-red-500" /> : <Info className="w-5 h-5 text-blue-500" />}
                                     </div>
                                     <div>
-                                        <h4 className={`font-bold text-sm mb-1 ${od.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
-                                            Status: {(od.status || "Unknown").replace(/_/g, " ")}
+                                        <h4 className={`font-black text-xs uppercase tracking-widest mb-1.5 ${od.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
+                                            Current Phase: {(od.status || "Resolving").replace(/_/g, " ")}
                                         </h4>
-                                        <p className={`text-xs ${od.status === 'REJECTED' ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        <p className={`text-sm font-medium leading-relaxed ${od.status === 'REJECTED' ? 'text-red-600/80 dark:text-red-300/80' : 'text-slate-500 dark:text-slate-400'}`}>
                                             {getStatusMessage(od.status)}
                                         </p>
                                     </div>
