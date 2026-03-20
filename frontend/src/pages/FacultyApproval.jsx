@@ -19,6 +19,11 @@ import {
     ExternalLink
 } from "lucide-react";
 
+/**
+ * FacultyApproval component - Review portal for mentors to audit student OD requests.
+ * Displays a searchable list of pending applications with AI-assisted verification 
+ * metrics and direct document access for informed approval/rejection.
+ */
 export default function FacultyApproval() {
     const navigate = useNavigate();
     const [ods, setOds] = useState([]);
