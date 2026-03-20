@@ -26,6 +26,11 @@ import {
     Calendar
 } from "lucide-react";
 
+/**
+ * ManageStudents component - Administrative module for orchestrating the student database.
+ * Facilitates student enrollment, profile editing, mentor unassignment,
+ * and bulk student searching with real-time suggestions.
+ */
 export default function ManageStudents() {
     const navigate = useNavigate();
     const [students, setStudents] = useState([]);
