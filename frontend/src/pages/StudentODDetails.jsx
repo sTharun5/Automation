@@ -20,6 +20,11 @@ import {
   Check
 } from "lucide-react";
 
+/**
+ * StudentODDetails component - Comprehensive review screen for individual applications.
+ * Displays real-time tracking, detailed verification status, chronological 
+ * application lifecycle, and facilitates internship report submissions for completed ODs.
+ */
 export default function StudentODDetails() {
   const { odId } = useParams();
   const navigate = useNavigate();
