@@ -65,7 +65,7 @@ export default function ConfirmationModal({
             >
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-3">
-                        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-lg ${isDanger
+                        <span className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition-transform duration-300 group-hover:scale-110 ${isDanger
                             ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                             : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                             }`}>
