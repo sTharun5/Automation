@@ -18,6 +18,11 @@ import {
     Award
 } from 'lucide-react';
 
+/**
+ * StudentEvents component - Management portal for student event coordinators.
+ * Enables coordinators to draft and submit participant rosters via Excel upload 
+ * or manual entry, tracking approval statuses and managing real-time event attendance.
+ */
 export default function StudentEvents() {
     const { showToast } = useToast();
     const navigate = useNavigate();
