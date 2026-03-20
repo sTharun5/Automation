@@ -18,6 +18,15 @@ import {
 
 import useGreeting from "../hooks/useGreeting"; // ✅ Import Hook
 
+/**
+ * Hero component - The primary dashboard header for students.
+ * Displays personalized greetings, mentor information, placement status,
+ * and active OD application progress.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.student - The logged-in student's profile data
+ * @param {Object} props.dashboardData - Aggregated statistics and status for the dashboard
+ */
 export default function Hero({ student, dashboardData }) {
   const navigate = useNavigate();
   const { openChat } = useChat(); // ✅ Use Hook
