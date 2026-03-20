@@ -585,20 +585,25 @@ export default function ManageODs() {
                                                         <div className="flex items-center gap-2">
                                                             {od.erpSyncStatus === 'SYNCED' ? (
                                                                 <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 px-2.5 py-1 rounded text-[10px] font-black tracking-widest flex items-center gap-1">
-                                                                    <CheckCircle2 className="w-3 h-3" /> SYNCED
+                                                                    <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> SYNCED
                                                                 </span>
                                                             ) : od.erpSyncStatus === 'FAILED' ? (
                                                                 <span className="text-red-600 bg-red-50 dark:bg-red-900/10 px-2.5 py-1 rounded text-[10px] font-black tracking-widest flex items-center gap-1">
-                                                                    <XCircle className="w-3 h-3" /> FAILED
+                                                                    <XCircle className="w-3 h-3" aria-hidden="true" /> FAILED
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-amber-600 bg-amber-50 dark:bg-amber-900/10 px-2.5 py-1 rounded text-[10px] font-black tracking-widest flex items-center gap-1">
-                                                                    <Clock className="w-3 h-3" /> PENDING
+                                                                    <Clock className="w-3 h-3" aria-hidden="true" /> PENDING
                                                                 </span>
                                                             )}
                                                             {od.erpSyncStatus !== 'SYNCED' && (
-                                                                <button onClick={() => handleErpSync(od.id)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors group" title="Retry ERP Sync">
-                                                                    <RefreshCcw className="w-3.5 h-3.5 text-blue-600 group-hover:rotate-180 transition-transform duration-500" />
+                                                                <button 
+                                                                    onClick={() => handleErpSync(od.id)} 
+                                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors group" 
+                                                                    title="Retry ERP Sync"
+                                                                    aria-label="Retry ERP Synchronization"
+                                                                >
+                                                                    <RefreshCcw className="w-3.5 h-3.5 text-blue-600 group-hover:rotate-180 transition-transform duration-500" aria-hidden="true" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -608,6 +613,7 @@ export default function ManageODs() {
                                                     {getDerivedStatus(od) !== 'REJECTED' && getDerivedStatus(od) !== 'COMPLETED' ? (
                                                         <button
                                                             onClick={() => handleCancelOD(od.id)}
+                                                            aria-label="Cancel this OD request"
                                                             className="text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors"
                                                         >
                                                             Cancel
