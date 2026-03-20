@@ -100,21 +100,23 @@ export default function LoginHistory() {
             
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" aria-hidden="true" />
                 <input 
                   type="text"
                   placeholder="Search email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search login history by email"
                   className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-64 transition-all"
                 />
               </div>
               
               <div className="relative group">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" aria-hidden="true" />
                 <select 
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
+                  aria-label="Filter login history by user role"
                   className="pl-10 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-all"
                 >
                   <option value="ALL">All Roles</option>
