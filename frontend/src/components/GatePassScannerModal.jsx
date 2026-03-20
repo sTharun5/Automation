@@ -120,20 +120,30 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
                         <h3 className="text-white font-bold text-lg">Scan Student Gate Pass</h3>
                         <p className="text-slate-400 font-mono text-xs mt-1">Authorize Class Exit</p>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-full transition-colors">
+                    <button 
+                        onClick={onClose} 
+                        aria-label="Close scanner"
+                        className="p-2 bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-full transition-colors"
+                    >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
                 <div className="p-6">
                     {error && (
-                        <div className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 p-4 rounded-xl text-center font-medium border border-rose-200 dark:border-rose-900 mb-4">
+                        <div 
+                            role="alert"
+                            className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 p-4 rounded-xl text-center font-medium border border-rose-200 dark:border-rose-900 mb-4"
+                        >
                             {error}
                         </div>
                     )}
 
                     {isProcessing && (
-                        <div className="py-12 flex flex-col items-center justify-center space-y-4">
+                        <div 
+                            aria-live="polite"
+                            className="py-12 flex flex-col items-center justify-center space-y-4"
+                        >
                             <div className="w-12 h-12 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin"></div>
                             <p className="text-slate-500 font-medium font-mono">Verifying Credentials...</p>
                         </div>
