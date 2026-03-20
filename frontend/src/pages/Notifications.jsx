@@ -46,17 +46,19 @@ export default function Notifications() {
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
+                                    aria-label="Mark all unread notifications as read"
                                     className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
                                 >
-                                    <CheckCheck className="w-4 h-4 inline mr-1" /> Mark all as read
+                                    <CheckCheck className="w-4 h-4 inline mr-1" aria-hidden="true" /> Mark all as read
                                 </button>
                             )}
                             {notifications.length > 0 && (
                                 <button
                                     onClick={deleteAll}
+                                    aria-label="Delete all notifications permanently"
                                     className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
                                 >
-                                    <Trash2 className="w-4 h-4 inline mr-1" /> Clear all
+                                    <Trash2 className="w-4 h-4 inline mr-1" aria-hidden="true" /> Clear all
                                 </button>
                             )}
                         </div>
