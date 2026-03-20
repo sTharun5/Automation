@@ -29,6 +29,11 @@ import {
   Sparkles
 } from "lucide-react";
 
+/**
+ * Dashboard component - The central hub for student users.
+ * Handles data fetching for OD statistics, event assignments, and gate passes.
+ * Coordinates multiple modals for attendance, reporting, and gate pass display.
+ */
 export default function Dashboard() {
   const navigate = useNavigate();
 
