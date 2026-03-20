@@ -136,6 +136,7 @@ export default function ManageFaculty() {
                             placeholder="Search by Name or Faculty ID..."
                             fetchSuggestions={fetchFacultySuggestions}
                             onSelect={handleSelectFaculty}
+                            aria-label="Search faculty by name or unique identifier"
                             renderSuggestion={(f) => (
                                 <div className="flex flex-col">
                                     <span className="font-bold text-slate-900 dark:text-white">{f.name}</span>
@@ -146,6 +147,7 @@ export default function ManageFaculty() {
                     </div>
                     <button
                         onClick={fetchFaculty}
+                        aria-label="Refresh and show all faculty members"
                         className="text-blue-600 hover:underline text-sm font-semibold"
                     >
                         Show All Faculty
