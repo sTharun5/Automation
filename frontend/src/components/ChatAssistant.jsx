@@ -391,6 +391,7 @@ export default function ChatAssistant() {
                         {/* Expand / Collapse Button */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
+                            aria-label={isExpanded ? "Minimize chat" : "Maximize chat"}
                             className="p-2 hover:bg-white/20 rounded-full transition-all duration-200"
                             title={isExpanded ? "Minimize" : "Full Screen"}
                         >
@@ -403,6 +404,7 @@ export default function ChatAssistant() {
                         {/* Close Button */}
                         <button
                             onClick={() => { closeChat(); setIsExpanded(false); }}
+                            aria-label="Close chat"
                             className="p-2 hover:bg-red-500/80 hover:shadow-red-500/30 hover:shadow-lg rounded-full transition-all duration-200"
                         >
                             <X className="w-5 h-5" />
