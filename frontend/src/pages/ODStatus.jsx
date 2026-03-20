@@ -14,10 +14,15 @@ import {
     XCircle
 } from "lucide-react";
 
+/**
+ * ODStatus component - Live dashboard for tracking active application progress.
+ * Real-time monitoring of document verification, mentor approvals, and final 
+ * administrative decisions with a visual step-progress indicator.
+ */
 export default function ODStatus() {
     const [activeODs, setActiveODs] = useState([]);
     const [loading, setLoading] = useState(true);
-
+ 
     useEffect(() => {
         const fetchODs = async () => {
             try {
@@ -36,8 +41,7 @@ export default function ODStatus() {
                 setLoading(false);
             }
         };
-
-        fetchODs();
+ 
         fetchODs();
         const interval = setInterval(fetchODs, 3000);
         return () => clearInterval(interval);
