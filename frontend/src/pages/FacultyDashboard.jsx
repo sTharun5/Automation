@@ -70,55 +70,60 @@ export default function FacultyDashboard() {
                 {/* Scan Gate Pass (Most common real-time action) */}
                 <button
                   onClick={() => setShowScannerModal(true)}
+                  aria-label="Open Gate Pass Scanner"
                   className="w-full flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border-2 border-emerald-400 dark:border-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100 transition-all font-bold shadow-sm hover:shadow-emerald-500/20"
                 >
                   <span className="flex items-center tracking-tight">
-                    <QrCode className="w-5 h-5 mr-2 opacity-80" />
+                    <QrCode className="w-5 h-5 mr-2 opacity-80" aria-hidden="true" />
                     Scan Gate Pass
                   </span>
-                  <ChevronRight className="w-5 h-5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-60" aria-hidden="true" />
                 </button>
 
                 <button
                   onClick={() => navigate("/faculty/events")}
+                  aria-label="Manage Events"
                   className="w-full flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-900 dark:text-indigo-100 transition-all font-semibold"
                 >
                   <span className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
                     Manage Events
                   </span>
-                  <ChevronRight className="w-5 h-5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-60" aria-hidden="true" />
                 </button>
 
                 <button
                   onClick={() => navigate("/faculty/approvals")}
+                  aria-label="Approve OD applications"
                   className="w-full flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-900 dark:text-blue-100 transition-all font-semibold"
                 >
                   <span className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                     Approve ODs
                   </span>
-                  <ChevronRight className="w-5 h-5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-60" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => navigate("/faculty/update-placement")}
+                  aria-label="Update student placement status"
                   className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-900 dark:text-white transition-all font-semibold"
                 >
                   <span className="flex items-center gap-2">
-                    <FileEdit className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <FileEdit className="w-5 h-5 text-slate-600 dark:text-slate-400" aria-hidden="true" />
                     Update Placement
                   </span>
-                  <ChevronRight className="w-5 h-5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-60" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => navigate("/faculty/reports")}
+                  aria-label="Review internship reports"
                   className="w-full flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-900 dark:text-purple-100 transition-all font-semibold"
                 >
                   <span className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
                     Review Reports
                   </span>
-                  <ChevronRight className="w-5 h-5 opacity-60" />
+                  <ChevronRight className="w-5 h-5 opacity-60" aria-hidden="true" />
                 </button>
               </div>
             </div>
