@@ -190,6 +190,7 @@ export default function ManageCompanies() {
                             <input
                                 type="text"
                                 placeholder="Enter company name (e.g. Google, Microsoft)"
+                                aria-label="Company Name"
                                 value={newCompanyName}
                                 onChange={(e) => setNewCompanyName(e.target.value)}
                                 className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
@@ -204,15 +205,16 @@ export default function ManageCompanies() {
                         <button
                             type="submit"
                             disabled={adding}
+                            aria-label={adding ? "Adding company..." : "Add new company"}
                             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
                         >
                             {adding ? (
                                 <span className="flex items-center gap-2">
-                                    <RotateCcw className="w-4 h-4 animate-spin" /> Adding...
+                                    <RotateCcw className="w-4 h-4 animate-spin" aria-hidden="true" /> Adding...
                                 </span>
                             ) : (
                                 <span className="flex items-center gap-2">
-                                    <Plus className="w-4 h-4" /> Add Company
+                                    <Plus className="w-4 h-4" aria-hidden="true" /> Add Company
                                 </span>
                             )}
                         </button>
