@@ -582,51 +582,51 @@ export default function ManageInternalEvents() {
                                 <div className="grid grid-cols-2 gap-2 mt-auto">
                                     <button
                                         onClick={() => startProjection(event)}
-                                        aria-label={`Project live QR for ${event.name}`}
-                                        className="col-span-2 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
+                                        aria-label={`Project live QR attendance code for ${event.name}`}
+                                        className="col-span-2 py-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-all flex items-center justify-center gap-2 border border-indigo-100/50 dark:border-indigo-500/20"
                                     >
-                                        <MonitorPlay className="w-5 h-5" aria-hidden="true" /> Project Live QR
+                                        <MonitorPlay className="w-5 h-5" aria-hidden="true" /> Project Attendance QR
                                     </button>
                                     <button
                                         onClick={() => fetchAttendance(event)}
                                         disabled={isFetchingAttendance}
-                                        aria-label={`View attendance for ${event.name}`}
-                                        className="py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1"
+                                        aria-label={`View attendance log for ${event.name}`}
+                                        className="py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-1 border border-slate-200 dark:border-slate-700"
                                         title="Attendance Log"
                                     >
                                         <Users className="w-3.5 h-3.5" aria-hidden="true" /> Attendance
                                     </button>
                                     <button
                                         onClick={() => handleViewRoster(event)}
-                                        aria-label={`View registered roster for ${event.name}`}
-                                        className="py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-purple-600 hover:text-white dark:hover:bg-purple-500 dark:hover:text-white transition-colors flex items-center justify-center gap-1"
+                                        aria-label={`View registered student roster for ${event.name}`}
+                                        className="py-2.5 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-purple-600 hover:text-white dark:hover:bg-purple-500 dark:hover:text-white transition-colors flex items-center justify-center gap-1 border border-purple-100 dark:border-purple-500/20"
                                         title="View Pre-Registered Roster"
                                     >
                                         <Eye className="w-3.5 h-3.5" aria-hidden="true" /> Roster
                                     </button>
                                     <button
                                         onClick={() => openEditModal(event)}
-                                        aria-label={`Edit ${event.name}`}
-                                        className="py-2.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-sky-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white transition-all flex items-center justify-center gap-2"
+                                        aria-label={`Edit ${event.name} configuration`}
+                                        className="py-2.5 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-sky-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white transition-all flex items-center justify-center gap-2 border border-sky-100 dark:border-sky-500/20"
                                         title="Edit Event"
                                     >
                                         <Pencil className="w-3.5 h-3.5" aria-hidden="true" /> Edit
                                     </button>
                                     <button
                                         onClick={() => confirmDelete(event.id)}
-                                        aria-label={`Delete ${event.name}`}
-                                        className="py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
+                                        aria-label={`Permanently delete ${event.name}`}
+                                        className="py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors flex items-center justify-center gap-2 border border-red-100 dark:border-red-500/20"
                                         title="Delete Event"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Delete
                                     </button>
                                     <button
                                         onClick={() => { setLogEvent(event); setViewingLogs(true); }}
-                                        aria-label={`View administrative logs for ${event.name}`}
+                                        aria-label={`View detailed administrative audit logs for ${event.name}`}
                                         className="col-span-2 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-800"
                                         title="View Administrative Logs"
                                     >
-                                        <ScrollText className="w-3.5 h-3.5" aria-hidden="true" /> Event Logs
+                                        <ScrollText className="w-3.5 h-3.5" aria-hidden="true" /> Event Audit Logs
                                     </button>
                                 </div>
                             </div>
