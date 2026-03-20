@@ -363,8 +363,8 @@ export default function ManageStudents() {
                 )}
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto text-sm">
+                        <table className="w-full text-left border-collapse" aria-label="Student management records">
                             <thead>
                                 <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Student Details</th>
@@ -377,44 +377,44 @@ export default function ManageStudents() {
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-20 text-center text-blue-500 animate-pulse font-bold">Loading Student Records...</td>
+                                        <td colSpan="5" className="px-6 py-20 text-center text-blue-500 animate-pulse font-bold uppercase tracking-widest">Loading Student Records...</td>
                                     </tr>
                                 ) : students.length > 0 ? (
                                     students.map((s) => (
                                         <tr key={s.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-6 py-4">
                                                 <p className="font-bold text-slate-900 dark:text-white capitalize">{s.name}</p>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400">{s.rollNo} • {s.email}</p>
-                                                {s.parentPhone && <p className="text-xs text-slate-500 dark:text-slate-400">Parent: {s.parentPhone}</p>}
+                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">{s.rollNo} • {s.email}</p>
+                                                {s.parentPhone && <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Parent: {s.parentPhone}</p>}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="text-xs font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded uppercase">
+                                                <span className="text-[10px] font-black px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded uppercase border border-slate-200 dark:border-slate-700">
                                                     {s.department || "N/A"}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 {s.placement_status === "NIP" ? (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
+                                                    <span className="text-[9px] font-black px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase border border-amber-200 dark:border-amber-900/10">NIP</span>
                                                 ) : (s.offers && s.offers.length > 0) || s.placement_status === "PLACED" ? (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed {s.offers?.length > 0 ? `(${s.offers.length})` : ""}</span>
+                                                    <span className="text-[9px] font-black px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase border border-green-200 dark:border-green-900/10 whitespace-nowrap">Placed {s.offers?.length > 0 ? `(${s.offers.length})` : ""}</span>
                                                 ) : (
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
+                                                    <span className="text-[9px] font-black px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase border border-slate-200 dark:border-slate-700">Unplaced</span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
                                                 {s.mentor ? (
                                                     <div className="flex items-center gap-2">
-                                                        <div>
-                                                            <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{s.mentor.name}</p>
-                                                            <p className="text-[10px] text-slate-500">{s.mentor.facultyId}</p>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 truncate">{s.mentor.name}</p>
+                                                            <p className="text-[10px] text-slate-400 font-mono">{s.mentor.facultyId}</p>
                                                         </div>
                                                         <button
                                                             onClick={() => handleRemoveMentor(s.id)}
-                                                            className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                            className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
                                                             aria-label={`Unassign mentor from student ${s.name}`}
                                                             title="Unassign Mentor"
                                                         >
-                                                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                                                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                                                         </button>
                                                     </div>
                                                 ) : (
@@ -422,26 +422,28 @@ export default function ManageStudents() {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button
-                                                    onClick={() => navigate("/admin/assign-mentor", { state: { preSelectedStudent: s } })}
-                                                    aria-label={`${s.mentor ? 'Reassign' : 'Assign'} mentor for ${s.name}`}
-                                                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-bold block"
-                                                >
-                                                    {s.mentor ? "Reassign" : "Assign Mentor"}
-                                                </button>
-                                                <button
-                                                    onClick={() => { setEditingStudent(s); setEditModalOpen(true); }}
-                                                    aria-label={`Edit details for ${s.name}`}
-                                                    className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold block mt-2"
-                                                >
-                                                    Edit Details
-                                                </button>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <button
+                                                        onClick={() => navigate("/admin/assign-mentor", { state: { preSelectedStudent: s } })}
+                                                        aria-label={`${s.mentor ? 'Reassign' : 'Assign'} mentor for ${s.name}`}
+                                                        className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-black uppercase tracking-wider transition-colors"
+                                                    >
+                                                        {s.mentor ? "Reassign" : "Assign Mentor"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setEditingStudent(s); setEditModalOpen(true); }}
+                                                        aria-label={`Edit details for ${s.name}`}
+                                                        className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline text-xs font-bold flex items-center gap-1 transition-colors"
+                                                    >
+                                                        <Edit className="w-3 h-3" /> Edit Details
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-20 text-center text-slate-500 italic">No students found.</td>
+                                        <td colSpan="5" className="px-6 py-20 text-center text-slate-500 italic">No records found matching your search.</td>
                                     </tr>
                                 )}
                             </tbody>
