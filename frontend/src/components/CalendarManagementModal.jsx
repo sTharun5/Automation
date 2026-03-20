@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useToast } from "../context/ToastContext";
 
+/**
+ * CalendarManagementModal component - Admin interface for managing global calendar events (Exams, Holidays, etc.).
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal
+ */
 export default function CalendarManagementModal({ isOpen, onClose }) {
     const { showToast } = useToast();
     const [events, setEvents] = useState([]);
