@@ -26,6 +26,11 @@ import {
     Users
 } from "lucide-react";
 
+/**
+ * ManageODs component - Command center for administrative OD (On-Duty) oversight.
+ * Enables searching for OD records by student or company, visualizing placement statistics,
+ * manually triggering ERP synchronization, and performing administrative cancellations.
+ */
 export default function ManageODs() {
     const navigate = useNavigate();
     const [searchType, setSearchType] = useState("student"); // 'student' | 'company'
