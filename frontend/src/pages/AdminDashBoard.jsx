@@ -114,11 +114,13 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div
                 onClick={() => navigate("/admin/faculty")}
+                role="link"
+                aria-label="Manage Faculty members"
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-blue-50 dark:bg-blue-900/30 p-2 rounded-xl text-blue-600 dark:text-blue-400">
-                    <GraduationCap className="w-6 h-6" />
+                    <GraduationCap className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -126,13 +128,16 @@ export default function AdminDashboard() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Add, Remove and View Faculty Members.</p>
                 <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors" />
               </div>
+
               <div
                 onClick={() => navigate("/admin/students")}
+                role="link"
+                aria-label="Manage Students and mentors"
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-xl text-indigo-600 dark:text-indigo-400">
-                    <Users className="w-6 h-6" />
+                    <Users className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -140,13 +145,16 @@ export default function AdminDashboard() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 relative z-10">Examine all students and their assigned mentors.</p>
                 <div className="absolute -bottom-4 -right-4 h-20 w-20 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors" />
               </div>
+
               <div
                 onClick={() => navigate("/admin/companies")}
+                role="link"
+                aria-label="Manage Companies for OD requests"
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-amber-50 dark:bg-amber-900/30 p-2 rounded-xl text-amber-600 dark:text-amber-400">
-                    <Building2 className="w-6 h-6" />
+                    <Building2 className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -158,11 +166,13 @@ export default function AdminDashboard() {
               {/* ✅ New Manage ODs Card */}
               <div
                 onClick={() => navigate("/admin/manage-ods")}
+                role="link"
+                aria-label="Manage OD Requests and cancellations"
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-rose-50 dark:bg-rose-900/30 p-2 rounded-xl text-rose-600 dark:text-rose-400">
-                    <ShieldAlert className="w-6 h-6" />
+                    <ShieldAlert className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -174,11 +184,13 @@ export default function AdminDashboard() {
               {/* ✅ New Internal Events Manager Card */}
               <div
                 onClick={() => navigate("/admin/internal-events")}
+                role="link"
+                aria-label="Internal Events and Live QR generator"
                 className="group bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-3xl shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all cursor-pointer relative overflow-hidden text-white"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
-                    <CalendarCheck className="w-6 h-6" />
+                    <CalendarCheck className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -190,11 +202,13 @@ export default function AdminDashboard() {
               {/* ✅ New Login History Card */}
               <div
                 onClick={() => navigate("/admin/login-history")}
+                role="link"
+                aria-label="Monitor Login History and device metrics"
                 className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm hover:border-blue-500 transition-all cursor-pointer relative overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-slate-600 dark:text-slate-400">
-                    <Activity className="w-6 h-6" />
+                    <Activity className="w-6 h-6" aria-hidden="true" />
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
