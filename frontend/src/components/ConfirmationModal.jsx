@@ -4,6 +4,24 @@ import {
     Info
 } from "lucide-react";
 
+/**
+ * ConfirmationModal component - A generic, reusable modal for confirming user actions.
+ * Supports danger states, optional text input (remarks), and customizable button text.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal (cancel)
+ * @param {Function} props.onConfirm - Function to trigger the action (passes remarks if showInput is true)
+ * @param {string} props.title - Modal title text
+ * @param {string} props.message - Descriptive body text
+ * @param {string} [props.confirmText="Confirm"] - Text for the primary action button
+ * @param {string} [props.cancelText="Cancel"] - Text for the close button
+ * @param {boolean} [props.isDanger=false] - If true, uses red theme for primary action
+ * @param {boolean} [props.showInput=false] - If true, displays a remarks textarea
+ * @param {string} [props.inputValue=""] - Current value of the remarks textarea
+ * @param {Function} [props.onInputChange=() => {}] - Callback for remarks update
+ * @param {string} [props.inputPlaceholder=""] - Placeholder for the remarks textarea
+ */
 export default function ConfirmationModal({
     isOpen,
     onClose,
