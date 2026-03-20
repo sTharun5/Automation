@@ -47,7 +47,7 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
         }
     }, [onScanSuccess]);
 
-    const stopScanner = async () => {
+    const stopScanner = useCallback(async () => {
         try {
             if (html5QrCode.current && html5QrCode.current.isScanning) {
                 await html5QrCode.current.stop();
@@ -55,9 +55,9 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
         } catch (err) {
             console.error("Failed to stop scanner", err);
         }
-    };
+    }, []);
 
-    const onScanSuccess = async (decodedText) => {
+    const onScanSuccess = useCallback(async (decodedText) => {
         if (isProcessing) return; // Prevent double scans
 
         try {
@@ -99,7 +99,7 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [isProcessing, stopScanner]);
 
     const resetScanner = () => {
         setScanResult(null);

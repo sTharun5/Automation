@@ -219,7 +219,7 @@ export default function MentorAssignment() {
                             <div className="mt-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-                                        {selectedFaculty.name.charAt(0)}
+                                        {selectedFaculty.name?.charAt(0) || "?"}
                                     </div>
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white">{selectedFaculty.name}</p>

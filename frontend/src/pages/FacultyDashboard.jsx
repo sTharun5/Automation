@@ -162,7 +162,7 @@ export default function FacultyDashboard() {
                       >
                         <div className="flex justify-between items-start mb-3">
                           <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300" aria-hidden="true">
-                            {student.name.charAt(0).toUpperCase()}
+                            {student.name?.charAt(0).toUpperCase() || "?"}
                           </div>
                           {student._count?.coordinatedEvents > 0 && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 uppercase">Coordinator</span>
