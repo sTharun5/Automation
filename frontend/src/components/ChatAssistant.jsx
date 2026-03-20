@@ -493,6 +493,7 @@ export default function ChatAssistant() {
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
+                            aria-label="Attach PDF document"
                             className="p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500 rounded-xl transition-all active:scale-95"
                             title="Attach PDF"
                         >
@@ -506,11 +507,13 @@ export default function ChatAssistant() {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                                 placeholder="Ex: Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus"
+                                aria-label="Chat input"
                                 className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
                             />
                             <button
                                 onClick={() => handleSend()}
                                 disabled={!input.trim()}
+                                aria-label="Send message"
                                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center"
                             >
                                 <Send className="w-4 h-4" />
