@@ -280,6 +280,7 @@ export default function ManageODs() {
                     <div className="flex gap-4 mb-6">
                         <button
                             onClick={() => { setSearchType("student"); setSelectedItem(null); setODs([]); }}
+                            aria-label="Search by student details"
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${searchType === "student" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                                 }`}
                         >
@@ -287,6 +288,7 @@ export default function ManageODs() {
                         </button>
                         <button
                             onClick={() => { setSearchType("company"); setSelectedItem(null); setODs([]); }}
+                            aria-label="Search by company statistics"
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${searchType === "company" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                                 }`}
                         >
