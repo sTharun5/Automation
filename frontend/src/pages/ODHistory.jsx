@@ -117,51 +117,54 @@ export default function ODHistory() {
 
                 {/* Table View */}
                 {loading ? (
-                    <div className="text-center py-20 text-slate-500">Loading records...</div>
+                    <div className="text-center py-20 text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse" role="status">Retrieving Archive...</div>
                 ) : filteredODs.length > 0 ? (
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
-                                <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase font-bold text-slate-500 dark:text-slate-400">
+                            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400" aria-label="OD Application History">
+                                <thead className="bg-slate-50 dark:bg-slate-800 text-[10px] uppercase font-black tracking-widest text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
                                     <tr>
                                         <th className="px-6 py-4">Tracker ID</th>
-                                        <th className="px-6 py-4">Title / Company</th>
-                                        <th className="px-6 py-4">Dates</th>
+                                        <th className="px-6 py-4">Verification Entity</th>
+                                        <th className="px-6 py-4">Temporal Range</th>
                                         <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4">Activity ID</th>
-                                        <th className="px-6 py-4">Action</th>
+                                        <th className="px-6 py-4">Activity Ref</th>
+                                        <th className="px-6 py-4">Operations</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {filteredODs.map((od) => (
-                                        <tr key={od.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">#{od.trackerId}</td>
+                                        <tr key={od.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                            <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white" aria-label={`Tracker Identification: #${od.trackerId}`}>#{od.trackerId}</td>
                                             <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-900 dark:text-white capitalize">{(od.type || "OD").toLowerCase()} OD</div>
-                                                <div className="text-xs">{od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Company OD")}</div>
+                                                <div className="font-bold text-slate-900 dark:text-white capitalize">{(od.type || "OD").toLowerCase()} Activity</div>
+                                                <div className="text-[11px] font-medium text-slate-400 group-hover:text-blue-500 transition-colors truncate max-w-[150px]">
+                                                    {od.type === 'INTERNAL' ? (od.event?.name || "Internal Event") : (od.offer?.company?.name || "Corporate Partner")}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex flex-col text-xs">
-                                                    <span>{new Date(od.startDate).toLocaleDateString()}</span>
-                                                    <span className="text-slate-400">to {new Date(od.endDate).toLocaleDateString()}</span>
+                                                <div className="flex flex-col text-[11px] font-medium">
+                                                    <span className="text-slate-700 dark:text-slate-300">{new Date(od.startDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                    <span className="text-slate-400 flex items-center gap-1"><ArrowLeft className="w-2.5 h-2.5 rotate-180" /> {new Date(od.endDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <StatusBadge status={getDerivedStatus(od)} />
                                             </td>
-                                            <td className="px-6 py-4 font-mono text-xs">
+                                            <td className="px-6 py-4 font-mono text-[10px]">
                                                 {od.activityId ? (
-                                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold">
                                                         {od.activityId}
                                                     </span>
-                                                ) : "—"}
+                                                ) : <span className="text-slate-300 dark:text-slate-700">—</span>}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Link
                                                     to={`/student/od/${od.id}`}
-                                                    className="font-bold text-blue-600 hover:text-blue-500 text-xs"
+                                                    aria-label={`View full details for OD record #${od.trackerId}`}
+                                                    className="inline-flex items-center gap-1 font-black text-blue-600 hover:text-blue-500 text-[10px] uppercase tracking-widest group-hover:translate-x-1 transition-transform"
                                                 >
-                                                    View <ChevronRight className="w-3 h-3" />
+                                                    Inspect <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
                                                 </Link>
                                             </td>
                                         </tr>
