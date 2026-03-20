@@ -38,9 +38,9 @@ export default function Notifications() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-colors">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">All Notifications</h2>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                You have {unreadCount} unread notifications
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">Notification Center</h2>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1" aria-live="polite">
+                                You have {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
                             </p>
                         </div>
                         <div className="flex gap-4">
@@ -48,67 +48,76 @@ export default function Notifications() {
                                 <button
                                     onClick={markAllAsRead}
                                     aria-label="Mark all unread notifications as read"
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                                    className="text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1.5 transition-colors"
                                 >
-                                    <CheckCheck className="w-4 h-4 inline mr-1" aria-hidden="true" /> Mark all as read
+                                    <CheckCheck className="w-4 h-4" aria-hidden="true" /> Mark All
                                 </button>
                             )}
                             {notifications.length > 0 && (
                                 <button
                                     onClick={deleteAll}
                                     aria-label="Delete all notifications permanently"
-                                    className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
+                                    className="text-xs font-black uppercase tracking-widest text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1.5 transition-colors"
                                 >
-                                    <Trash2 className="w-4 h-4 inline mr-1" aria-hidden="true" /> Clear all
+                                    <Trash2 className="w-4 h-4" aria-hidden="true" /> Clear Logs
                                 </button>
                             )}
                         </div>
                     </div>
 
                     {notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="flex flex-col items-center justify-center py-20 text-center" role="status">
                             <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
                                 <BellOff className="w-10 h-10 text-slate-400" />
                             </div>
-                            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No notifications yet</h3>
-                            <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-                                When you have updates regarding your OD applications, they will appear here.
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Stationary Horizon</h3>
+                            <p className="text-slate-500 dark:text-slate-400 max-w-sm font-medium">
+                                No new system alerts or OD updates detected in your feed.
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-4" role="log" aria-label="System notification log">
                             {notifications.map((n) => (
                                 <div
                                     key={n.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => e.key === 'Enter' && !n.read && markAsRead(n.id)}
                                     onClick={() => !n.read && markAsRead(n.id)}
-                                    className={`p-5 rounded-xl border transition-all cursor-pointer hover:shadow-md ${n.read
-                                        ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-                                        : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30"
+                                    aria-label={`Notification: ${n.title}. ${n.message}. Published on ${new Date(n.createdAt).toLocaleString()}`}
+                                    className={`p-5 rounded-2xl border transition-all cursor-pointer hover:shadow-lg active:scale-[0.99] group ${n.read
+                                        ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                                        : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200/50 dark:border-blue-900/30"
                                         }`}
                                 >
                                     <div className="flex items-start justify-between gap-4">
-                                        <div className={`p-2 rounded-lg shrink-0 ${n.title.toLowerCase().includes('approved') ? 'bg-green-100 dark:bg-green-900/30 text-green-600' :
-                                                n.title.toLowerCase().includes('rejected') ? 'bg-red-100 dark:bg-red-900/30 text-red-600' :
-                                                    'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                                        <div className={`p-2.5 rounded-xl shrink-0 shadow-sm ${n.title.toLowerCase().includes('approved') ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' :
+                                                n.title.toLowerCase().includes('rejected') ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600' :
+                                                    'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600'
                                             }`}>
-                                            {n.title.toLowerCase().includes('approved') ? <CheckCircle className="w-5 h-5" /> :
-                                                n.title.toLowerCase().includes('rejected') ? <AlertCircle className="w-5 h-5" /> :
-                                                    <Info className="w-5 h-5" />}
+                                            {n.title.toLowerCase().includes('approved') ? <CheckCircle className="w-5 h-5" aria-hidden="true" /> :
+                                                n.title.toLowerCase().includes('rejected') ? <AlertCircle className="w-5 h-5" aria-hidden="true" /> :
+                                                    <Info className="w-5 h-5" aria-hidden="true" />}
                                         </div>
-                                        <div className="flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                {!n.read && <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>}
-                                                <h4 className={`font-semibold ${n.read ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
+                                                {!n.read && <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse shrink-0" aria-label="Unread"></span>}
+                                                <h4 className={`font-black uppercase tracking-tight truncate ${n.read ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
                                                     {n.title}
                                                 </h4>
                                             </div>
-                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-medium">
                                                 {n.message}
                                             </p>
                                         </div>
-                                        <span className="text-xs text-slate-400 whitespace-nowrap">
-                                            {new Date(n.createdAt).toLocaleString()}
-                                        </span>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <div className="text-[9px] font-medium text-slate-300 dark:text-slate-600 uppercase tracking-tighter mt-1">
+                                                {new Date(n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
