@@ -24,6 +24,11 @@ import {
 
 import useGreeting from "../hooks/useGreeting";
 
+/**
+ * AdminDashboard component - The central control center for administrators.
+ * Provides access to faculty/student management, company approvals,
+ * OD request monitoring, internal event creation, and system analytics.
+ */
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
