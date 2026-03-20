@@ -213,6 +213,7 @@ export default function UpdatePlacementStatus() {
               <select
                 value={form.studentId}
                 onChange={(e) => handleStudentChange(e.target.value)}
+                aria-label="Select student for placement update"
                 className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               >
                 <option value="">Click to choose</option>
@@ -236,6 +237,7 @@ export default function UpdatePlacementStatus() {
                     placedDate: ""
                   })
                 }
+                aria-label="Select new placement status"
                 className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white transition-colors"
               >
                 <option value="">Click to choose</option>
