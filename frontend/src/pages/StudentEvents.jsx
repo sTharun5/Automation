@@ -224,17 +224,23 @@ export default function StudentEvents() {
                                                 <div className="p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-4">
                                                     <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Draft Participant Roster</h3>
 
-                                                    {/* Upload Excel */}
-                                                    <div>
-                                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 dark:border-slate-600 border-dashed rounded-xl cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                                <FileSpreadsheet className="w-10 h-10 text-emerald-500 mb-2" />
-                                                                <p className="text-sm text-slate-500 dark:text-slate-400 font-bold"><span className="text-indigo-600 dark:text-indigo-400">Click to upload</span> an Excel file</p>
-                                                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Automatic Roll Number extraction</p>
-                                                            </div>
-                                                            <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={(e) => handleFileUpload(e, event.id)} />
-                                                        </label>
-                                                    </div>
+                                                     {/* Upload Excel */}
+                                                     <div>
+                                                         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 dark:border-slate-600 border-dashed rounded-xl cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                 <FileSpreadsheet className="w-10 h-10 text-emerald-500 mb-2" aria-hidden="true" />
+                                                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-bold"><span className="text-indigo-600 dark:text-indigo-400">Click to upload</span> an Excel file</p>
+                                                                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Automatic Roll Number extraction</p>
+                                                             </div>
+                                                             <input 
+                                                                 type="file" 
+                                                                 className="hidden" 
+                                                                 accept=".xlsx, .xls, .csv" 
+                                                                 onChange={(e) => handleFileUpload(e, event.id)} 
+                                                                 aria-label="Upload participant roster Excel file"
+                                                             />
+                                                         </label>
+                                                     </div>
 
                                                     <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
                                                         <hr className="flex-1 border-slate-200 dark:border-slate-700" /> OR <hr className="flex-1 border-slate-200 dark:border-slate-700" />
