@@ -156,10 +156,12 @@ export default function FacultyDashboard() {
                       <div
                         key={student.id}
                         onClick={() => navigate(`/faculty/mentee/${student.id}`)}
+                        role="link"
+                        aria-label={`View details for student ${student.name}`}
                         className="group p-4 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 cursor-pointer transition-all bg-white dark:bg-slate-800/50 hover:shadow-md"
                       >
                         <div className="flex justify-between items-start mb-3">
-                          <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300">
+                          <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300" aria-hidden="true">
                             {student.name.charAt(0).toUpperCase()}
                           </div>
                           {student._count?.coordinatedEvents > 0 && (
@@ -177,7 +179,7 @@ export default function FacultyDashboard() {
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{student.rollNo}</p>
                         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                           <span className="text-[10px] text-slate-400 font-medium">Click for details</span>
-                          <ChevronRight className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ChevronRight className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
                         </div>
                       </div>
                     ))}
