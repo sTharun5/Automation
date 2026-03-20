@@ -97,11 +97,13 @@ export default function ODHistory() {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Filter OD records by status">
                     {["ALL", "APPROVED", "COMPLETED", "REJECTED", "PENDING"].map((s) => (
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
+                            aria-pressed={filter === s}
+                            aria-label={`Show ${s.toLowerCase().replace("_", " ")} records`}
                             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${filter === s
                                 ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white"
                                 : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-300"
