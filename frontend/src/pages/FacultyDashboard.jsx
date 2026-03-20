@@ -164,16 +164,18 @@ export default function FacultyDashboard() {
                           <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300" aria-hidden="true">
                             {student.name?.charAt(0).toUpperCase() || "?"}
                           </div>
-                          {student._count?.coordinatedEvents > 0 && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 uppercase">Coordinator</span>
-                          )}
-                          {student.placement_status === "NIP" ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
-                          ) : ((student.offers && student.offers.length > 0) || student.placement_status === "PLACED") ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
-                          ) : (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
-                          )}
+                          <div className="flex flex-col items-end gap-1">
+                            {student._count?.coordinatedEvents > 0 && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 uppercase">Coordinator</span>
+                            )}
+                            {student.placement_status === "NIP" ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">NIP</span>
+                            ) : ((student.offers && student.offers.length > 0) || student.placement_status === "PLACED") ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">Placed</span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 uppercase">Unplaced</span>
+                            )}
+                          </div>
                         </div>
                         <h4 className="font-bold text-slate-900 dark:text-white capitalize group-hover:text-blue-600 transition-colors">{student.name}</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{student.rollNo}</p>
