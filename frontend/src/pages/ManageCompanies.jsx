@@ -25,7 +25,7 @@ import {
 /**
  * ManageCompanies component - Administrative dashboard for managing corporate partners.
  * Enables the addition of new companies, approval/revocation of OD eligibility,
- * and editing of company metadata with real-time location autocomplete.
+ * and editing of company metadata with real-time location autocomplete and industrial partnership tracking.
  */
 export default function ManageCompanies() {
     const navigate = useNavigate();
