@@ -78,7 +78,11 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                 {/* Header */}
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">📅 Manage Calendar Events</h2>
-                    <button onClick={onClose} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-2xl">&times;</button>
+                    <button 
+                        onClick={onClose} 
+                        aria-label="Close modal"
+                        className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-2xl"
+                    >&times;</button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -90,12 +94,14 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                             <input
                                 type="text"
                                 placeholder="Event Title (e.g. Sem End Exams)"
+                                aria-label="Event Title"
                                 className="p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-sm"
                                 value={newEvent.title}
                                 onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
                                 required
                             />
                             <select
+                                aria-label="Event Type"
                                 className="p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-sm"
                                 value={newEvent.type}
                                 onChange={e => setNewEvent({ ...newEvent, type: e.target.value })}
@@ -106,6 +112,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                             </select>
                             <input
                                 type="date"
+                                aria-label="Start Date"
                                 className="p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-sm"
                                 value={newEvent.startDate}
                                 onChange={e => setNewEvent({ ...newEvent, startDate: e.target.value })}
@@ -113,6 +120,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                             />
                             <input
                                 type="date"
+                                aria-label="End Date"
                                 className="p-2 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white text-sm"
                                 value={newEvent.endDate}
                                 onChange={e => setNewEvent({ ...newEvent, endDate: e.target.value })}
