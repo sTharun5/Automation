@@ -155,8 +155,9 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                                         </div>
                                         <button
                                             onClick={() => handleDeleteEvent(event.id)}
-                                            className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                            className="text-red-500 hover:text-red-700 p-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-all active:scale-95"
                                             title="Delete Event"
+                                            aria-label={`Delete event ${event.title}`}
                                         >
                                             🗑️
                                         </button>
