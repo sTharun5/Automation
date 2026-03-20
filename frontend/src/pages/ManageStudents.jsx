@@ -167,15 +167,17 @@ export default function ManageStudents() {
                     <div className="flex gap-3">
                         <button
                             onClick={() => setAddModalOpen(true)}
+                            aria-label="Add new student"
                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                         >
-                            <Plus className="w-4 h-4" /> Add Student
+                            <Plus className="w-4 h-4" aria-hidden="true" /> Add Student
                         </button>
                         <button
                             onClick={() => navigate("/admin/assign-mentor")}
+                            aria-label="Assign mentors to students"
                             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
                         >
-                            <UserPlus className="w-4 h-4" /> Assign Mentors
+                            <UserPlus className="w-4 h-4" aria-hidden="true" /> Assign Mentors
                         </button>
                     </div>
                 </div>
