@@ -71,14 +71,17 @@ export default function Hero({ student, dashboardData }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
 
         {/* 1. Placement / Career Status */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-[0_2px_10px_-4px_rgba(6,81,237,0.1)] hover:border-blue-500/30 transition-all duration-300 group">
+        <div 
+          className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-[0_2px_10px_-4px_rgba(6,81,237,0.1)] hover:border-blue-500/30 transition-all duration-300 group"
+          aria-label="Placement eligibility status"
+        >
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Career Status</p>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Placement Eligibility</h3>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-blue-600 transition-colors">
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="w-5 h-5" aria-hidden="true" />
             </div>
           </div>
 
