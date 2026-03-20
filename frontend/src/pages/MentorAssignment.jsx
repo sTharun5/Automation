@@ -18,6 +18,11 @@ import {
     GraduationCap
 } from "lucide-react";
 
+/**
+ * MentorAssignment component - Bulk administration tool for student-mentor mapping.
+ * Provides a two-step wizard to select a faculty mentor and multiple students,
+ * supporting search-as-you-type, reassignment confirmation, and mentor removal.
+ */
 export default function MentorAssignment() {
     const navigate = useNavigate();
     const location = useLocation();
