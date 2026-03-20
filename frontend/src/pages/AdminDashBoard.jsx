@@ -22,9 +22,13 @@ import {
   Activity
 } from "lucide-react";
 
+import useGreeting from "../hooks/useGreeting";
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
+  const greeting = useGreeting();
+  const name = user?.name?.split(" ")[0] || "Admin";
 
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -61,16 +65,12 @@ export default function AdminDashboard() {
     remarks: "" // ✅ Added remarks state
   });
 
-
-
-
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
       <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 md:py-8 max-w-6xl mx-auto w-full overflow-x-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Admin Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{greeting}, {name}!</h1>
           <div className="flex flex-wrap gap-3 sm:gap-4">
             <button
               onClick={() => setShowCalendarModal(true)}
@@ -98,9 +98,9 @@ export default function AdminDashboard() {
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm transition-colors">
               <p className="text-lg text-slate-900 dark:text-white">
-                Welcome, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name || "Admin"}</span>
+                {greeting}, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name}</span>
               </p>
-              <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">System Administrator Access</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">Welcome to your Administrator Control Center</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

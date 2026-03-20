@@ -16,9 +16,12 @@ import {
   GraduationCap
 } from "lucide-react";
 
+import useGreeting from "../hooks/useGreeting";
+
 export default function FacultyDashboard() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
+  const greeting = useGreeting();
   const [mentees, setMentees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showScannerModal, setShowScannerModal] = useState(false); // ✅ Added Modal State
@@ -43,8 +46,8 @@ export default function FacultyDashboard() {
       <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 md:py-8 max-w-6xl mx-auto w-full overflow-x-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Faculty Dashboard</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Welcome back, {user?.name}</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{greeting}, {user?.name?.split(" ")[0] || "Faculty"}!</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Welcome to your Faculty Dashboard</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-bold px-2.5 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full uppercase tracking-wider">

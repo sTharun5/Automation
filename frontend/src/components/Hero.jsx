@@ -16,9 +16,12 @@ import {
   X
 } from "lucide-react";
 
+import useGreeting from "../hooks/useGreeting"; // ✅ Import Hook
+
 export default function Hero({ student, dashboardData }) {
   const navigate = useNavigate();
   const { openChat } = useChat(); // ✅ Use Hook
+  const greeting = useGreeting();
   const name = student?.name?.split(" ")[0] || "Student";
   const [showApplyModal, setShowApplyModal] = useState(false);
 
@@ -28,10 +31,10 @@ export default function Hero({ student, dashboardData }) {
     <section className="animate-fadeIn">
       <div className="mb-8">
         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
-          Welcome back
+          {greeting}
         </p>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mt-1 tracking-tight">
-          Hello, {name}
+          {greeting}, {name}!
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2 max-w-xl leading-relaxed">
           Manage your Internship On-Duty applications and track status.
