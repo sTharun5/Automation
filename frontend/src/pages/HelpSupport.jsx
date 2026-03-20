@@ -179,12 +179,13 @@ export default function HelpSupport() {
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-300 dark:border-slate-600 transition-all text-sm font-medium">
-                                            <Paperclip className="w-4 h-4" /> <span>Upload Image/Video</span>
+                                            <Paperclip className="w-4 h-4" aria-hidden="true" /> <span>Upload Image/Video</span>
                                             <input
                                                 type="file"
                                                 onChange={handleFileChange}
                                                 className="hidden"
                                                 accept="image/*,video/*"
+                                                aria-label="Upload supporting image or video for your query"
                                             />
                                         </label>
                                         {file && (
