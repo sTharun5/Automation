@@ -249,13 +249,14 @@ export default function MentorAssignment() {
 
                         <div className="relative group">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none">
-                                <Search className="w-4 h-4" />
+                                <Search className="w-4 h-4" aria-hidden="true" />
                             </span>
                             <input
                                 type="text"
                                 placeholder="Search by Roll No or Name..."
                                 value={studentQuery}
                                 onChange={(e) => setStudentQuery(e.target.value)}
+                                aria-label="Search students by roll number or name"
                                 className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-3 text-sm font-bold placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white"
                             />
                         </div>
