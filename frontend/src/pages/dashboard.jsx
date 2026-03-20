@@ -125,7 +125,11 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
 
-      <main className="flex-1 px-3 sm:px-6 md:px-8 py-6 md:py-12 max-w-7xl mx-auto w-full overflow-x-hidden">
+      <main 
+        role="main"
+        aria-label="Student Dashboard"
+        className="flex-1 px-3 sm:px-6 md:px-8 py-6 md:py-12 max-w-7xl mx-auto w-full overflow-x-hidden"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
           {/* Main Content (Left) */}
           <div className="lg:col-span-8 space-y-10 md:space-y-14">
