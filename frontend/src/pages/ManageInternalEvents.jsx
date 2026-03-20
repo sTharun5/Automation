@@ -347,31 +347,31 @@ export default function ManageInternalEvents() {
                         </button>
                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Internal Events</h1>
                         <p className="text-slate-600 dark:text-slate-400 font-medium italic">Create and manage internal pre-registered OD sessions.</p>
-                    </div>
-
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    </di                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         {/* Toggle Past Events */}
                         <button
                             onClick={() => setShowPastEvents(!showPastEvents)}
+                            aria-label={showPastEvents ? "Hide past events" : "Show all events including past"}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${showPastEvents
                                 ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20'
                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-indigo-500'
                                 }`}
                         >
-                            <Clock className="w-4 h-4" />
+                            <Clock className="w-4 h-4" aria-hidden="true" />
                             <span>{showPastEvents ? "Showing All" : "Active Only"}</span>
                         </button>
-
                         <button
                             onClick={() => setIsCreating(!isCreating)}
+                            aria-label={isCreating ? "Cancel event creation" : "Create new internal event"}
                             className={`flex items-center gap-2 px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-[0.98] ${isCreating
                                 ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-none'
                                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
                                 }`}
                         >
-                            {isCreating ? <><X className="w-4 h-4" /> Cancel</> : <><Plus className="w-4 h-4" /> Create Event</>}
+                            {isCreating ? <><X className="w-4 h-4" aria-hidden="true" /> Cancel</> : <><Plus className="w-4 h-4" aria-hidden="true" /> Create Event</>}
                         </button>
                     </div>
+iv>
                 </div>
 
                 {/* Creation Form */}
