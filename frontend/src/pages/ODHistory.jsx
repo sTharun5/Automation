@@ -11,6 +11,11 @@ import {
     ChevronRight
 } from "lucide-react";
 
+/**
+ * ODHistory component - Personal archival system for students.
+ * Provides a categorized view of past On-Duty applications with status filtering,
+ * cumulative statistics for utilized days, and access to detailed activity records.
+ */
 export default function ODHistory() {
     const [ods, setOds] = useState([]);
     const [loading, setLoading] = useState(true);
