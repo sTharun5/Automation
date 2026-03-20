@@ -85,6 +85,7 @@ export default function ConfirmationModal({
                         <textarea
                             className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 dark:text-white"
                             placeholder={inputPlaceholder || "Add optional remarks..."}
+                            aria-label="Optional remarks"
                             rows="3"
                             value={inputValue}
                             onChange={(e) => onInputChange(e.target.value)}
@@ -95,13 +96,15 @@ export default function ConfirmationModal({
                 <div className="flex gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-2xl">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                        aria-label={cancelText}
+                        className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 transition-all active:scale-[0.98]"
                     >
                         {cancelText}
                     </button>
                     <button
                         onClick={() => onConfirm(inputValue)}
-                        className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${isDanger
+                        aria-label={confirmText}
+                        className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] ${isDanger
                             ? "bg-red-600 hover:bg-red-500 shadow-red-500/20"
                             : "bg-blue-600 hover:bg-blue-500 shadow-blue-500/20"
                             } shadow-lg`}
