@@ -16,6 +16,17 @@ const colorMap = {
   },
 };
 
+/**
+ * ActionCard component - A versatile card for dashboard quick actions.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.title - The title shown on the card
+ * @param {string} props.description - Brief text explaining the action
+ * @param {string} props.buttonText - Text for the action button
+ * @param {string} [props.color="blue"] - Theme color (blue, green, purple)
+ * @param {React.ReactNode} [props.icon] - Icon or emoji to display
+ * @param {Function} props.onClick - Callback function for button click
+ */
 export default function ActionCard({
   title,
   description,
