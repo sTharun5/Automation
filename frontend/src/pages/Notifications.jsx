@@ -13,6 +13,11 @@ import {
     AlertCircle
 } from "lucide-react";
 
+/**
+ * Notifications component - Real-time communication hub for user alerts.
+ * Displays a chronological list of system-generated notifications (approvals, rejections,
+ * event updates) with features for bulk reading and historical cleanup.
+ */
 export default function Notifications() {
     const navigate = useNavigate();
     const { notifications, unreadCount, markAsRead, markAllAsRead, deleteAll } = useNotification();
