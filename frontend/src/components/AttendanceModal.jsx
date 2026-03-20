@@ -7,6 +7,15 @@ import {
     X
 } from 'lucide-react';
 
+/**
+ * AttendanceModal component - Handles QR code scanning and OTP-based attendance logging.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal
+ * @param {string} props.studentId - Unique identifier for the student
+ * @param {Function} [props.onSuccess] - Optional callback triggered after successful verification
+ */
 export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess }) {
     const { showToast } = useToast();
 
