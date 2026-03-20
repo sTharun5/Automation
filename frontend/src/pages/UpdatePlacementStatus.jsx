@@ -17,6 +17,11 @@ import {
   AlertCircle
 } from "lucide-react";
 
+/**
+ * UpdatePlacementStatus component - Career tracking management for faculty mentees.
+ * Allows faculty members to update placement statuses (Placed, NIP, Yet to be Placed)
+ * and manage historical offer records for their assigned students.
+ */
 export default function UpdatePlacementStatus() {
   const navigate = useNavigate();
   const { showToast } = useToast();
