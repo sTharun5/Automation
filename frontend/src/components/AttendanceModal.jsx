@@ -214,6 +214,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                 {/* Close Button */}
                 <button
                     onClick={() => { stopScanner(); onClose(); }}
+                    aria-label="Close modal"
                     className="absolute top-6 right-6 p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 rounded-full transition-all"
                 >
                     <X className="w-5 h-5" />
