@@ -30,7 +30,8 @@ import {
 /**
  * ManageInternalEvents component - Advanced administrative portal for internal campus events.
  * Features include event lifecycle management, staff/student coordinator assignment,
- * dynamic QR code projection for attendance, and real-time roster visualization.
+ * dynamic QR code projection for attendance, and real-time roster visualization
+ * with automated credit hour calculation and secure OTP verification.
  */
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
