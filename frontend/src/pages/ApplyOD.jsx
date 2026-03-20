@@ -22,6 +22,11 @@ import {
   ChevronRight
 } from "lucide-react";
 
+/**
+ * ApplyOD component - Multi-step application wizard for On-Duty requests.
+ * Orchestrates offer selection, date validation, exam conflict checking, 
+ * and AI-integrated document uploads for student placement and internship activities.
+ */
 export default function ApplyOD() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
