@@ -169,6 +169,7 @@ export default function Dashboard() {
                 {provisionalOds.length > 0 && (
                   <button
                     onClick={() => setShowGatePassModal(true)}
+                    aria-label="Open Digital Gate Pass"
                     className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-amber-50 dark:from-amber-900/20 to-orange-50 dark:to-orange-900/10 rounded-xl border border-amber-200 dark:border-amber-800/50 shadow-sm hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-amber-400/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-950 animate-pulse"
                   >
                     <div className="p-2.5 bg-amber-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-amber-500/30 relative z-10">
@@ -186,6 +187,7 @@ export default function Dashboard() {
                 {/* Coordinator Portal */}
                 <button
                   onClick={() => navigate("/student/events")}
+                  aria-label="Open Coordinator Portal"
                   className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm hover:border-indigo-400 hover:shadow-lg transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-400/30"
                 >
                   <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md">
@@ -201,6 +203,7 @@ export default function Dashboard() {
                 {/* Apply OD */}
                 <button
                   onClick={() => navigate("/apply-od")}
+                  aria-label="Start new OD application"
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-blue-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
@@ -216,6 +219,7 @@ export default function Dashboard() {
                 {/* Submit Report */}
                 <button
                   onClick={() => setShowReportModal(true)}
+                  aria-label="Submit internship report"
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-400 mb-4 group-hover:scale-110 transition-transform">
@@ -231,6 +235,7 @@ export default function Dashboard() {
                 {/* Unified Attendance Logging */}
                 <button
                   onClick={() => setShowAttendanceModal(true)}
+                  aria-label="Open attendance console"
                   className="group relative flex flex-col items-start p-5 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-purple-50 dark:to-purple-900/10 rounded-xl border border-indigo-400 dark:border-indigo-800 shadow-sm hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 text-left overflow-hidden ring-2 ring-indigo-500/20"
                 >
                   <div className="p-2.5 bg-indigo-500 rounded-lg text-white mb-4 group-hover:scale-110 transition-transform shadow-md shadow-indigo-500/30">
@@ -247,6 +252,7 @@ export default function Dashboard() {
                 {/* OD Status */}
                 <button
                   onClick={() => navigate("/od-status")}
+                  aria-label="Track active OD applications"
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
@@ -262,6 +268,7 @@ export default function Dashboard() {
                 {/* OD History */}
                 <button
                   onClick={() => navigate("/od-history")}
+                  aria-label="View OD application history"
                   className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-violet-500/50 hover:shadow-md transition-all duration-300 text-left"
                 >
                   <div className="p-2.5 bg-violet-50 dark:bg-violet-900/20 rounded-lg text-violet-600 dark:text-violet-400 mb-4 group-hover:scale-110 transition-transform">
