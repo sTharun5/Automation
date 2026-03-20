@@ -111,7 +111,7 @@ export default function FacultyEvents() {
         try {
             const res = await api.get(`/events/${eventId}/roster`);
             setRosterData(res.data); // Store full object { isApproved, roster, count }
-        } catch (error) {
+        } catch {
             showToast("Failed to fetch roster details", "error");
             setViewingRoster(false);
         } finally {

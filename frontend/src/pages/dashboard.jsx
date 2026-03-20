@@ -44,7 +44,7 @@ export default function Dashboard() {
   const [showAttendanceModal, setShowAttendanceModal] = useState(false); // ✅ Unified Modal State
   const [showGatePassModal, setShowGatePassModal] = useState(false);
   const [provisionalOds, setProvisionalOds] = useState([]);
-  const [assignedEvents, setAssignedEvents] = useState([]); // ✅ Events assigned to this student
+  /* const [assignedEvents, setAssignedEvents] = useState([]); */
 
   /* ================= LOAD AUTH ================= */
   /* ================= LOAD AUTH & DATA ================= */
@@ -74,13 +74,12 @@ export default function Dashboard() {
 
     const fetchDashboardData = async () => {
       try {
-        const [dashRes, odsRes, eventsRes] = await Promise.all([
+        const [dashRes, odsRes] = await Promise.all([
           api.get("/students/dashboard"),
-          api.get("/od/my-ods"),
-          api.get("/events/internal/my-assigned")
+          api.get("/od/my-ods")
         ]);
         setDashboardData(dashRes.data);
-        setAssignedEvents(eventsRes.data);
+        // setAssignedEvents(eventsRes.data);
 
         // Filter for PROVISIONAL ODs which act as the Digital Gate Pass
         const now = new Date();

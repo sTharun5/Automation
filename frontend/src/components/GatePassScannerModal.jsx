@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../api/axios';
 
@@ -28,9 +28,9 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             stopScanner();
         }
         return () => stopScanner();
-    }, [isOpen]);
+    }, [isOpen, startScanner]);
 
-    const startScanner = async () => {
+    const startScanner = useCallback(async () => {
         try {
             if (!html5QrCode.current) {
                 html5QrCode.current = new Html5Qrcode("faculty-scanner-reader");
@@ -39,13 +39,13 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 onScanSuccess,
-                (err) => { /* Ignore constant scan frame errors */ }
+                () => { /* Ignore frame errors */ }
             );
         } catch (err) {
             console.error("Scanner Error:", err);
             setError("Please allow camera permissions to scan.");
         }
-    };
+    }, [onScanSuccess]);
 
     const stopScanner = async () => {
         try {
@@ -70,7 +70,7 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             let payload;
             try {
                 payload = JSON.parse(decodedText);
-            } catch (e) {
+            } catch {
                 throw new Error("Invalid QR Format. Make sure the student is showing their official Gate Pass.");
             }
 

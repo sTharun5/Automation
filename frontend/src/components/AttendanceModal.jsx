@@ -23,7 +23,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
     const html5QrCode = useRef(null);
     const [isScanning, setIsScanning] = useState(false);
     const [processingScan, setProcessingScan] = useState(false);
-    const [scannerError, setScannerError] = useState(null);
+    // const [scannerError, setScannerError] = useState(null);
 
     // OTP State
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -39,7 +39,6 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
             setOtpError(null);
             setProcessingScan(false);
             setIsProcessingOtp(false);
-            setScannerError(null);
             setIsScanning(false);
 
             // Give it a tiny moment for the DOM to settle, then start
@@ -60,7 +59,7 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
 
     const startScanner = async () => {
         try {
-            setScannerError(null);
+            
 
             // 1. Create fresh instance every time
             if (!html5QrCode.current) {
@@ -78,12 +77,12 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                     qrbox: { width: 250, height: 250 }
                 },
                 onScanSuccess,
-                (err) => { /* Ignore constant frame errors */ }
+                () => { /* Ignore frame errors */ }
             );
             setIsScanning(true);
         } catch (err) {
             console.error("Scanner startup error:", err);
-            setScannerError("Camera permissions are required for QR scanning.");
+            showToast("Camera permissions are required for QR scanning.", "error");
             setIsScanning(false);
         }
     };
@@ -107,7 +106,11 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
         try {
             // Pause instead of stop to keep the camera active while verifying
             if (html5QrCode.current && html5QrCode.current.isScanning) {
-                try { html5QrCode.current.pause(true); } catch (e) { }
+                try {
+                    html5QrCode.current.pause(true);
+                } catch (e) {
+                    console.warn("Scanner pause failure:", e);
+                }
             }
 
             const res = await api.post('/od/scan-internal', {
@@ -129,7 +132,11 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
 
             // Resume scanning if failed
             if (html5QrCode.current && html5QrCode.current.isScanning) {
-                try { html5QrCode.current.resume(); } catch (e) { }
+                try {
+                    html5QrCode.current.resume();
+                } catch (e) {
+                    console.warn("Scanner resume failure:", e);
+                }
             }
         }
     };

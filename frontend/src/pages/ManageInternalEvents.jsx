@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
-import { useTheme } from '../context/ThemeContext';
+// import { useTheme } from '../context/ThemeContext';
 import SearchableSelect from '../components/SearchableSelect';
 import {
     ArrowLeft,
@@ -35,7 +35,7 @@ import {
  */
 export default function ManageInternalEvents() {
     const { showToast } = useToast();
-    const { darkMode } = useTheme();
+    // const { darkMode } = useTheme();
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [faculties, setFaculties] = useState([]);
@@ -68,7 +68,7 @@ export default function ManageInternalEvents() {
     // Projection State
     const [projectingEvent, setProjectingEvent] = useState(null);
     const [qrData, setQrData] = useState(null);
-    const [qrExpiresIn, setQrExpiresIn] = useState(0);
+    // const [qrExpiresIn, setQrExpiresIn] = useState(0);
     const [eventOtp, setEventOtp] = useState(null); // ✅ Added OTP State
     const projectionInterval = useRef(null);
 
@@ -84,7 +84,7 @@ export default function ManageInternalEvents() {
     const [viewingRoster, setViewingRoster] = useState(false);
     const [rosterData, setRosterData] = useState([]);
     const [rosterLoading, setRosterLoading] = useState(false);
-    const [currentEventName, setCurrentEventName] = useState("");
+    // const [currentEventName, setCurrentEventName] = useState("");
     const [selectedEvent, setSelectedEvent] = useState(null);
 
     // Event Logs Modal State
@@ -214,13 +214,13 @@ export default function ManageInternalEvents() {
         }
     };
 
-    const confirmDeleteAll = () => {
-        if (events.length === 0) {
-            showToast("No active events to delete.", "info");
-            return;
-        }
-        setIsDeletingAll(true);
-    };
+    // const confirmDeleteAll = () => {
+    //     if (events.length === 0) {
+    //         showToast("No active events to delete.", "info");
+    //         return;
+    //     }
+    //     setIsDeletingAll(true);
+    // };
 
     const executeDeleteAll = async () => {
         // Optimistic update
@@ -264,7 +264,7 @@ export default function ManageInternalEvents() {
             const res = await api.get(`/events/${eventId}/live-qr`);
             setQrData(res.data.qrData);
             setEventOtp(res.data.otp); // ✅ Store the OTP
-            setQrExpiresIn(res.data.expiresIn);
+            // setQrExpiresIn(res.data.expiresIn);
         } catch (error) {
             console.error("QR Fetch Error:", error);
             showToast("Failed to refresh live QR", "error");
@@ -290,12 +290,12 @@ export default function ManageInternalEvents() {
     const handleViewRoster = async (event) => {
         setViewingRoster(true);
         setRosterLoading(true);
-        setCurrentEventName(event.name);
+        // setCurrentEventName(event.name);
         setSelectedEvent(event);
         try {
             const res = await api.get(`/events/${event.id}/roster`);
             setRosterData(res.data); // Store the whole object { isApproved, count, roster }
-        } catch (error) {
+        } catch {
             showToast("Failed to fetch roster details", "error");
             setViewingRoster(false);
         } finally {
@@ -550,8 +550,8 @@ export default function ManageInternalEvents() {
                                                             try {
                                                                 await api.put(`/events/internal/${event.id}`, { studentCoordinatorId: "" });
                                                                 showToast("Student coordinator revoked", "success");
-                                                                fetchEvents();
-                                                            } catch (err) {
+                                                                fetchData();
+                                                            } catch {
                                                                 showToast("Failed to revoke student coordinator", "error");
                                                             }
                                                         }

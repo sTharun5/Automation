@@ -21,9 +21,10 @@ export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
     const [selectedOd, setSelectedOd] = useState(null);
 
     useEffect(() => {
-        // Auto-select the first PROVISIONAL OD if available
+        // Auto-select the first PROVISIONAL OD if available and not already selected
         if (provisionalOds && provisionalOds.length > 0) {
-            setSelectedOd(provisionalOds[0]);
+            const timer = setTimeout(() => setSelectedOd(prev => prev || provisionalOds[0]), 0);
+            return () => clearTimeout(timer);
         }
     }, [provisionalOds]);
 

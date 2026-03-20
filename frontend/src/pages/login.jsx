@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import logo from "../assets/bit-logo.jpg";
 import bg from "../assets/campus.jpg";
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function Login() {
-  const navigate = useNavigate();
+  /* const navigate = useNavigate(); */
 
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(Array(6).fill(""));

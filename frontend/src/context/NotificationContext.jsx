@@ -76,7 +76,9 @@ export const NotificationProvider = ({ children }) => {
         const role = sessionStorage.getItem("role");
         if (!role) return; // Don't even start polling if not logged in
 
-        fetchNotifications(); // Initial fetch
+        // Initial fetch deferred to next tick to avoid cascading render warning
+        setTimeout(fetchNotifications, 0);
+
         const interval = setInterval(() => {
             // Re-check on every tick — stop polling if user logged out
             if (!sessionStorage.getItem("role")) {

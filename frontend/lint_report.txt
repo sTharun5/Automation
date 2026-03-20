@@ -1,0 +1,85 @@
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+/Users/tharun/Downloads/Automation-main/frontend/src/components/AttendanceModal.jsx
+   26:12  error  'scannerError' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+   81:18  error  'err' is defined but never used                                                               no-unused-vars
+  110:65  error  'e' is defined but never used                                                                 no-unused-vars
+  110:68  error  Empty block statement                                                                         no-empty
+  132:62  error  'e' is defined but never used                                                                 no-unused-vars
+  132:65  error  Empty block statement                                                                         no-empty
+
+/Users/tharun/Downloads/Automation-main/frontend/src/components/GatePassModal.jsx
+  26:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  24 |         // Auto-select the first PROVISIONAL OD if available
+  25 |         if (provisionalOds && provisionalOds.length > 0) {
+> 26 |             setSelectedOd(provisionalOds[0]);
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |         }
+  28 |     }, [provisionalOds]);
+  29 |  react-hooks/set-state-in-effect
+
+/Users/tharun/Downloads/Automation-main/frontend/src/components/GatePassScannerModal.jsx
+  31:8   warning  React Hook useEffect has a missing dependency: 'startScanner'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  42:18  error    'err' is defined but never used                                                                                  no-unused-vars
+  73:22  error    'e' is defined but never used                                                                                    no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/components/InstallPWA.jsx
+  6:10  error  'supportsPWA' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/components/SearchableSelect.jsx
+  31:13  error  'darkMode' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/context/NotificationContext.jsx
+  79:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  77 |         if (!role) return; // Don't even start polling if not logged in
+  78 |
+> 79 |         fetchNotifications(); // Initial fetch
+     |         ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |         const interval = setInterval(() => {
+  81 |             // Re-check on every tick — stop polling if user logged out
+  82 |             if (!sessionStorage.getItem("role")) {  react-hooks/set-state-in-effect
+
+/Users/tharun/Downloads/Automation-main/frontend/src/pages/FacultyEvents.jsx
+  114:18  error  'error' is defined but never used  no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/pages/ManageInternalEvents.jsx
+   38:13  error  'darkMode' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u          no-unused-vars
+   71:12  error  'qrExpiresIn' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u       no-unused-vars
+   87:12  error  'currentEventName' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  217:11  error  'confirmDeleteAll' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  298:18  error  'error' is defined but never used                                                                 no-unused-vars
+  553:65  error  'fetchEvents' is not defined                                                                      no-undef
+  554:70  error  'err' is defined but never used                                                                   no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/pages/MentorAssignment.jsx
+  48:12  error  'facultyQuery' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u           no-unused-vars
+  48:26  error  'setFacultyQuery' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
+  49:12  error  'faculties' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u              no-unused-vars
+  51:12  error  'isSearchingFaculty' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  51:32  error  'setIsSearchingFaculty' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/src/pages/dashboard.jsx
+  77:33  error  'eventsRes' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/Users/tharun/Downloads/Automation-main/frontend/test-api.js
+  1:15  error  'require' is not defined  no-undef
+
+✖ 28 problems (27 errors, 1 warning)
+

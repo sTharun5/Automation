@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import Header from '../components/Header';
@@ -178,7 +178,7 @@ export default function StudentEvents() {
                         events.map((event) => {
                             const roster = rosters[event.id] || [];
                             const isSubmitted = event.isRosterSubmitted;
-                            const isApproved = event.isRosterApproved;
+                            // const isApproved = event.isRosterApproved;
 
                             return (
                                 <div key={event.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 md:p-8 rounded-3xl shadow-sm flex flex-col lg:flex-row gap-8">

@@ -44,11 +44,8 @@ export default function MentorAssignment() {
         }
     }, [location.state]);
 
-    // Faculty Search
-    const [facultyQuery, setFacultyQuery] = useState("");
-    const [faculties, setFaculties] = useState([]);
+    // Faculty Selection
     const [selectedFaculty, setSelectedFaculty] = useState(null);
-    const [isSearchingFaculty, setIsSearchingFaculty] = useState(false);
 
     // Student Search
     const [studentQuery, setStudentQuery] = useState("");
@@ -142,7 +139,6 @@ export default function MentorAssignment() {
             showToast(`Successfully assigned ${selectedStudents.length} students to ${selectedFaculty.name}`, "success");
             setSelectedFaculty(null);
             setSelectedStudents([]);
-            setFaculties([]);
             setStudents([]);
         } catch (err) {
             showToast(err.response?.data?.message || "Assignment failed", "error");

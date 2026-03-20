@@ -3,14 +3,14 @@ import { Download } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 export default function InstallPWA() {
-  const [supportsPWA, setSupportsPWA] = useState(false);
+  // const [supportsPWA, setSupportsPWA] = useState(false);
   const [promptInstall, setPromptInstall] = useState(null);
   const { showToast } = useToast();
 
   useEffect(() => {
     const handler = e => {
       e.preventDefault();
-      setSupportsPWA(true);
+      
       setPromptInstall(e);
     };
 
@@ -32,7 +32,7 @@ export default function InstallPWA() {
       } else {
         console.log('User dismissed the A2HS prompt');
       }
-      setSupportsPWA(false);
+      
     });
   };
 

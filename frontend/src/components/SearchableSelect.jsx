@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext';
+
 
 /**
  * SearchableSelect Component
@@ -28,7 +28,7 @@ export default function SearchableSelect({
     className = "",
     required = false
 }) {
-    const { darkMode } = useTheme();
+    // const { darkMode } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [filteredOptions, setFilteredOptions] = useState(options);
