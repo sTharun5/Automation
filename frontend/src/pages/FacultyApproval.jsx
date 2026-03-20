@@ -104,16 +104,19 @@ export default function FacultyApproval() {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* List */}
-                        <div className="lg:col-span-1 space-y-4">
-                            {ods.map((od) => (
-                                <div
-                                    key={od.id}
-                                    onClick={() => setSelectedOd(od)}
-                                    className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedOd?.id === od.id
-                                        ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
-                                        : "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-blue-300 shadow-sm"
-                                        }`}
-                                >
+                         <div className="lg:col-span-1 space-y-4">
+                             {ods.map((od) => (
+                                 <div
+                                     key={od.id}
+                                     onClick={() => setSelectedOd(od)}
+                                     role="button"
+                                     aria-pressed={selectedOd?.id === od.id}
+                                     aria-label={`Review OD request from ${od.student?.name} (${od.trackerId})`}
+                                     className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedOd?.id === od.id
+                                         ? "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800"
+                                         : "bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-blue-300 shadow-sm"
+                                         }`}
+                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{od.trackerId}</span>
                                         <span className="text-xs px-3 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold flex items-center gap-1.5">
