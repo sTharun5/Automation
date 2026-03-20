@@ -7,6 +7,11 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 
+/**
+ * ManageFaculty component - Administrative interface for managing the faculty directory.
+ * Provides functionality to add new faculty members, search existing directory,
+ * view mentee counts, and delete faculty records (unassigning students).
+ */
 export default function ManageFaculty() {
     const navigate = useNavigate();
     const [faculty, setFaculty] = useState([]);
