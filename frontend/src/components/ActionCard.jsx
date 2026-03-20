@@ -70,6 +70,7 @@ export default function ActionCard({
 
       <button
         onClick={onClick}
+        aria-label={buttonText}
         className={`
           mt-6 w-full py-3 rounded-xl font-semibold text-sm
           bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900
