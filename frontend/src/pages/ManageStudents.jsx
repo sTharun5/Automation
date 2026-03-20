@@ -411,9 +411,10 @@ export default function ManageStudents() {
                                                         <button
                                                             onClick={() => handleRemoveMentor(s.id)}
                                                             className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                                            aria-label={`Unassign mentor from student ${s.name}`}
                                                             title="Unassign Mentor"
                                                         >
-                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                                                         </button>
                                                     </div>
                                                 ) : (
@@ -423,12 +424,14 @@ export default function ManageStudents() {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => navigate("/admin/assign-mentor", { state: { preSelectedStudent: s } })}
+                                                    aria-label={`${s.mentor ? 'Reassign' : 'Assign'} mentor for ${s.name}`}
                                                     className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-bold block"
                                                 >
                                                     {s.mentor ? "Reassign" : "Assign Mentor"}
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditingStudent(s); setEditModalOpen(true); }}
+                                                    aria-label={`Edit details for ${s.name}`}
                                                     className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold block mt-2"
                                                 >
                                                     Edit Details
