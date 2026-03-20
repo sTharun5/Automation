@@ -18,6 +18,11 @@ import {
 
 import useGreeting from "../hooks/useGreeting";
 
+/**
+ * FacultyDashboard component - The primary landing page for faculty members.
+ * Allows faculty to manage mentees, approve OD requests, review internship reports,
+ * and scan student gate passes using a real-time camera interface.
+ */
 export default function FacultyDashboard() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const navigate = useNavigate();
