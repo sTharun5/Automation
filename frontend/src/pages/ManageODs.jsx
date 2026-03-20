@@ -278,10 +278,11 @@ export default function ManageODs() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-sm mb-8">
 
                     {/* Toggle */}
-                    <div className="flex gap-4 mb-6">
+                    <div className="flex gap-4 mb-6" role="group" aria-label="Search category selection">
                         <button
                             onClick={() => { setSearchType("student"); setSelectedItem(null); setODs([]); }}
                             aria-label="Search by student details"
+                            aria-pressed={searchType === "student"}
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${searchType === "student" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                                 }`}
                         >
@@ -290,6 +291,7 @@ export default function ManageODs() {
                         <button
                             onClick={() => { setSearchType("company"); setSelectedItem(null); setODs([]); }}
                             aria-label="Search by company statistics"
+                            aria-pressed={searchType === "company"}
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${searchType === "company" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                                 }`}
                         >
