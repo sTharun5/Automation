@@ -18,17 +18,6 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
     const scannerRef = useRef(null);
     const html5QrCode = useRef(null);
 
-    useEffect(() => {
-        if (isOpen) {
-            setScanResult(null);
-            setError(null);
-            setScanning(true);
-            startScanner();
-        } else {
-            stopScanner();
-        }
-        return () => stopScanner();
-    }, [isOpen, startScanner]);
 
     const stopScanner = useCallback(async () => {
         try {
@@ -100,6 +89,18 @@ export default function GatePassScannerModal({ isOpen, onClose }) {
             setError("Please allow camera permissions to scan.");
         }
     }, [onScanSuccess]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setScanResult(null);
+            setError(null);
+            setScanning(true);
+            startScanner();
+        } else {
+            stopScanner();
+        }
+        return () => stopScanner();
+    }, [isOpen, startScanner]);
 
     const resetScanner = () => {
         setScanResult(null);
