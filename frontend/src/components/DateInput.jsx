@@ -1,3 +1,10 @@
+/**
+ * DateInput component - A simplified, styled date picker input field.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.label - The label text for the input
+ * @param {Function} props.onChange - Callback function for value changes
+ */
 export default function DateInput({ label, onChange }) {
   return (
     <div>
