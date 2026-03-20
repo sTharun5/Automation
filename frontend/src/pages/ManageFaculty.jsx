@@ -161,6 +161,7 @@ export default function ManageFaculty() {
                             type="text"
                             name="facultyId"
                             placeholder="Faculty ID (Unique)"
+                            aria-label="Faculty ID"
                             value={form.facultyId}
                             onChange={handleChange}
                             className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
@@ -169,6 +170,7 @@ export default function ManageFaculty() {
                             type="text"
                             name="name"
                             placeholder="Full Name"
+                            aria-label="Full Name"
                             value={form.name}
                             onChange={handleChange}
                             className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
@@ -177,6 +179,7 @@ export default function ManageFaculty() {
                             type="email"
                             name="email"
                             placeholder="Email Address"
+                            aria-label="Email Address"
                             value={form.email}
                             onChange={handleChange}
                             className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
@@ -185,6 +188,7 @@ export default function ManageFaculty() {
                             type="text"
                             name="department"
                             placeholder="Department"
+                            aria-label="Department"
                             value={form.department}
                             onChange={handleChange}
                             className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
@@ -194,6 +198,7 @@ export default function ManageFaculty() {
                         <button
                             onClick={handleAddFaculty}
                             disabled={formLoading}
+                            aria-label={formLoading ? "Adding faculty..." : "Add faculty member"}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {formLoading ? "Adding..." : "Add Faculty"}
@@ -250,6 +255,7 @@ export default function ManageFaculty() {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => navigate("/admin/assign-mentor", { state: { facultyId: f.id, facultyName: f.name } })}
+                                                    aria-label={`Manage assignments for ${f.name}`}
                                                     className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-bold"
                                                 >
                                                     Manage Assignments
@@ -257,6 +263,7 @@ export default function ManageFaculty() {
                                                 <button
                                                     onClick={() => handleDeleteFaculty(f.id, f.name)}
                                                     className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors ml-4"
+                                                    aria-label={`Delete faculty ${f.name}`}
                                                     title="Delete Faculty"
                                                 >
                                                     🗑️
