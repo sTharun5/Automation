@@ -8,6 +8,15 @@ import {
     FileText
 } from "lucide-react";
 
+/**
+ * GatePassModal component - Generates and displays a digital QR gate pass for students
+ * who have been provisionally approved for internal events.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is visible
+ * @param {Function} props.onClose - Function to close the modal
+ * @param {Array<Object>} props.provisionalOds - List of provisionally approved OD applications
+ */
 export default function GatePassModal({ isOpen, onClose, provisionalOds }) {
     const [selectedOd, setSelectedOd] = useState(null);
 
