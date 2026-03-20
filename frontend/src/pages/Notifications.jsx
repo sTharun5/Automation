@@ -16,7 +16,8 @@ import {
 /**
  * Notifications component - Real-time communication hub for user alerts.
  * Displays a chronological list of system-generated notifications (approvals, rejections,
- * event updates) with features for bulk reading and historical cleanup.
+ * event updates) with features for bulk reading, historical cleanup, and 
+ * role-specific alert filtering.
  */
 export default function Notifications() {
     const navigate = useNavigate();
