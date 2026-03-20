@@ -49,7 +49,7 @@ export default function ActionCard({
       "
     >
       <div className="flex items-start justify-between gap-3">
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 ${styles.iconBg}`}>
           {icon ? (
             typeof icon === "string" ? <span>{icon}</span> : <div className="w-6 h-6">{icon}</div>
           ) : (
