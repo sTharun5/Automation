@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import api, { BASE_URL } from "../api/axios";
 import InternshipReportModal from "../components/InternshipReportModal";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import {
   ArrowLeft,
   AlertCircle,
@@ -32,7 +33,7 @@ export default function StudentODDetails() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   const fetchOD = () => {
-    api.get(`/od/details/${odId}`)
+    api.get(`/od/${odId}`)
       .then((res) => setOd(res.data))
       .catch((err) => console.error(err));
   };
