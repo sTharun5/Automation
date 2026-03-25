@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import SearchableSelect from "../components/SearchableSelect";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     Plus,
@@ -50,12 +51,7 @@ export default function ManageStudents() {
         isDanger: false
     });
 
-    useEffect(() => {
-        fetchStudents();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const fetchStudents = async () => {
+    const fetchStudents = useCallback(async () => {
         try {
             setLoading(true);
             const res = await api.get("/admin/all-students");
@@ -66,7 +62,15 @@ export default function ManageStudents() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showToast]);
+
+    useEffect(() => {
+        fetchStudents();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchStudents]);
+
+    // Auto-refresh every 30 s
+    usePolling(fetchStudents, 30000);
 
     const fetchStudentSuggestions = async (query) => {
         const res = await api.get(`/students/search?q=${query}`);

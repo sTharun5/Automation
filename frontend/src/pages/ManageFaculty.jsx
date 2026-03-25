@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
@@ -6,6 +6,7 @@ import SearchInput from "../components/SearchInput";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import usePolling from "../hooks/usePolling";
 
 /**
  * ManageFaculty component - Administrative module for orchestrating the faculty directory.
@@ -36,12 +37,7 @@ export default function ManageFaculty() {
         isDanger: false
     });
 
-    useEffect(() => {
-        fetchFaculty();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const fetchFaculty = async () => {
+    const fetchFaculty = useCallback(async () => {
         try {
             const res = await api.get("/admin/all-faculty");
             setFaculty(res.data);
@@ -51,7 +47,15 @@ export default function ManageFaculty() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showToast]);
+
+    useEffect(() => {
+        fetchFaculty();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchFaculty]);
+
+    // Auto-refresh every 30 s
+    usePolling(fetchFaculty, 30000);
 
     const fetchFacultySuggestions = async (query) => {
         if (!query) return [];

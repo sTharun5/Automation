@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios"; // ✅ Import centralized axios
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import usePolling from "../hooks/usePolling";
 import {
   ArrowLeft,
   Calendar,
@@ -52,21 +53,26 @@ export default function UpdatePlacementStatus() {
   const dateRef = useRef(null);
 
   /* ================= LOAD INITIAL DATA ================= */
-  useEffect(() => {
-    // Load Students
-    // Load Students (Restricted to Faculty Mentees)
-    api
-      .get("/faculty/mentees")
-      .then((res) => setStudents(res.data))
-      .catch(() => showToast("Failed to load students", "error"));
+  const loadData = useCallback(async () => {
+    try {
+      const [menteesRes, companiesRes] = await Promise.all([
+        api.get("/faculty/mentees"),
+        api.get("/admin/companies?approvedOnly=true")
+      ]);
+      setStudents(menteesRes.data);
+      setCompanies(companiesRes.data);
+    } catch {
+      showToast("Failed to load data", "error");
+    }
+  }, [showToast]);
 
-    // Load Approved Companies
-    api
-      .get("/admin/companies?approvedOnly=true")
-      .then((res) => setCompanies(res.data))
-      .catch(() => showToast("Failed to load approved companies", "error"));
+  useEffect(() => {
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadData]);
+
+  // Auto-refresh every 30 s so new mentee assignments / approved companies appear
+  usePolling(loadData, 30000);
 
   /* ================= FORMAT DATE ================= */
   const formatDate = (isoDate) => {

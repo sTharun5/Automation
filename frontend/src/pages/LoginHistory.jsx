@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -18,6 +18,7 @@ import {
   MapPin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import usePolling from "../hooks/usePolling";
 
 /**
  * LoginHistory component - Administrative security audit trail.
@@ -31,11 +32,7 @@ export default function LoginHistory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/admin/login-history");
@@ -45,7 +42,14 @@ export default function LoginHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  // Auto-refresh every 30 s so new login events appear automatically
+  usePolling(fetchHistory, 30000);
 
   const filteredHistory = history.filter(item => {
     const matchesSearch = item.email.toLowerCase().includes(searchTerm.toLowerCase());

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { BASE_URL } from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     Sparkles,
@@ -33,11 +34,7 @@ export default function FacultyApproval() {
     const [processing, setProcessing] = useState(false); // ✅ Added
     const { showToast } = useToast();
 
-    useEffect(() => {
-        fetchPendingODs();
-    }, []);
-
-    const fetchPendingODs = async () => {
+    const fetchPendingODs = useCallback(async () => {
         try {
             const res = await api.get("/od/mentor/pending");
             setOds(res.data);
@@ -46,7 +43,14 @@ export default function FacultyApproval() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchPendingODs();
+    }, [fetchPendingODs]);
+
+    // Auto-refresh every 30 s so new student submissions appear without reload
+    usePolling(fetchPendingODs, 30000);
 
     const handleUpdateStatus = async (id, status) => {
         if (processing) return;

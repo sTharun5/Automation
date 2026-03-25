@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { BASE_URL } from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     FileText,
@@ -28,24 +29,23 @@ export default function FacultyReportReview() {
     const [remarks, setRemarks] = useState("");
     const [processing, setProcessing] = useState(false);
 
-    useEffect(() => {
-        fetchReports();
-    }, []);
-
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         try {
-            // We need a new endpoint to get all pending reports for a mentor
-            // For now, let's assume we filter mentees or have a specific endpoint.
-            // Let's create/use a dedicated endpoint: /api/faculty/reports/pending
             const res = await api.get("/faculty/reports/pending");
             setReports(res.data);
         } catch (err) {
             console.error("Fetch reports error", err);
-            // showToast("Failed to fetch reports", "error"); 
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchReports();
+    }, [fetchReports]);
+
+    // Auto-refresh every 30 s so new report submissions appear without reload
+    usePolling(fetchReports, 30000);
 
     const handleAction = async () => {
         if (!remarks && action === 'REJECTED') {

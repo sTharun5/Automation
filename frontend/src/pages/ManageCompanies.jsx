@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import Header from "../components/Header";
 import SearchInput from "../components/SearchInput";
@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     Plus,
@@ -51,12 +52,7 @@ export default function ManageCompanies() {
         isDanger: false
     });
 
-    useEffect(() => {
-        fetchCompanies();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const fetchCompanies = async () => {
+    const fetchCompanies = useCallback(async () => {
         try {
             setLoading(true);
             const res = await api.get("/admin/companies");
@@ -67,7 +63,15 @@ export default function ManageCompanies() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showToast]);
+
+    useEffect(() => {
+        fetchCompanies();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchCompanies]);
+
+    // Auto-refresh every 30 s
+    usePolling(fetchCompanies, 30000);
 
     const fetchCompanySuggestions = async (query) => {
         if (!query) return [];

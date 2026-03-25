@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     Briefcase,
@@ -40,7 +41,7 @@ export default function MenteeDetails() {
         isDanger: false
     });
 
-    const fetchDetails = async () => {
+    const fetchDetails = useCallback(async () => {
         try {
             const res = await api.get(`/faculty/mentee/${studentId}`);
             setStudent(res.data);
@@ -49,7 +50,7 @@ export default function MenteeDetails() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [studentId]);
 
     const confirmRemoveOffer = async (offerId) => {
         try {
@@ -94,7 +95,10 @@ export default function MenteeDetails() {
     useEffect(() => {
         fetchDetails();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [studentId]);
+    }, [fetchDetails]);
+
+    // Auto-refresh every 30 s so OD/placement changes appear without reload
+    usePolling(fetchDetails, 30000);
 
     if (loading) return (
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">

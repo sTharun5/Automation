@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import useGreeting from "../hooks/useGreeting";
+import usePolling from "../hooks/usePolling";
 
 /**
  * FacultyDashboard component - The primary landing page for faculty members.
@@ -31,19 +32,23 @@ export default function FacultyDashboard() {
   const [loading, setLoading] = useState(true);
   const [showScannerModal, setShowScannerModal] = useState(false); // ✅ Added Modal State
 
-  useEffect(() => {
-    const fetchMentees = async () => {
-      try {
-        const res = await api.get("/faculty/mentees");
-        setMentees(res.data);
-      } catch (err) {
-        console.error("Fetch mentees error", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMentees();
+  const fetchMentees = useCallback(async () => {
+    try {
+      const res = await api.get("/faculty/mentees");
+      setMentees(res.data);
+    } catch (err) {
+      console.error("Fetch mentees error", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchMentees();
+  }, [fetchMentees]);
+
+  // Auto-refresh every 30 s so new mentee assignments appear without a reload
+  usePolling(fetchMentees, 30000);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">

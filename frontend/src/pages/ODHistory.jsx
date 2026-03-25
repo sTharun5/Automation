@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import usePolling from "../hooks/usePolling";
 import {
     ArrowLeft,
     Folder,
@@ -22,11 +23,7 @@ export default function ODHistory() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("ALL");
 
-    useEffect(() => {
-        fetchHistory();
-    }, []);
-
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         try {
             const res = await api.get("/od/my-ods");
             setOds(Array.isArray(res.data) ? res.data : []);
@@ -35,7 +32,14 @@ export default function ODHistory() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [fetchHistory]);
+
+    // Auto-refresh every 30 s so newly approved/rejected ODs appear automatically
+    usePolling(fetchHistory, 30000);
 
     const isPastApproved = (od) => {
         return (od.status === "APPROVED" || od.status === "MENTOR_APPROVED") && new Date(od.endDate).setHours(16, 20, 0, 0) < new Date().getTime();
