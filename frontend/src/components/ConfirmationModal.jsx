@@ -1,8 +1,5 @@
 import { useEffect } from "react";
-import {
-    AlertTriangle,
-    Info
-} from "lucide-react";
+import { AlertTriangle, Info, Loader2 } from "lucide-react";
 
 /**
  * ConfirmationModal component - A generic, reusable modal for confirming user actions.
@@ -34,7 +31,8 @@ export default function ConfirmationModal({
     showInput = false,
     inputValue = "",
     onInputChange = () => { },
-    inputPlaceholder = ""
+    inputPlaceholder = "",
+    isLoading = false
 }) {
     useEffect(() => {
         const handleEscape = (e) => {
@@ -103,12 +101,15 @@ export default function ConfirmationModal({
                     </button>
                     <button
                         onClick={() => onConfirm(inputValue)}
+                        disabled={isLoading}
                         aria-label={confirmText}
-                        className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] ${isDanger
+                        aria-busy={isLoading}
+                        className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 ${isLoading ? 'opacity-60 cursor-not-allowed' : 'active:scale-[0.98]'} ${isDanger
                             ? "bg-red-600 hover:bg-red-500 shadow-red-500/20"
                             : "bg-blue-600 hover:bg-blue-500 shadow-blue-500/20"
                             } shadow-lg`}
                     >
+                        {isLoading && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
                         {confirmText}
                     </button>
                 </div>

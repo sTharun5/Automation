@@ -8,6 +8,7 @@ import {
     CheckCircle,
     UploadCloud
 } from 'lucide-react';
+import LoadingButton from './LoadingButton';
 
 export default function InternshipReportModal({ isOpen, onClose, pendingODs = [], onUploadSuccess }) {
     const [file, setFile] = useState(null);
@@ -123,13 +124,15 @@ export default function InternshipReportModal({ isOpen, onClose, pendingODs = []
                                 )}
                             </div>
 
-                            <button
+                            <LoadingButton
                                 onClick={handleUpload}
-                                disabled={uploading || !file || !selectedOD}
-                                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/20"
+                                isLoading={uploading}
+                                loadingText="Uploading..."
+                                disabled={!file || !selectedOD}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/20"
                             >
-                                {uploading ? "Uploading..." : "Submit Report"}
-                            </button>
+                                Submit Report
+                            </LoadingButton>
 
                             <button
                                 onClick={onClose}

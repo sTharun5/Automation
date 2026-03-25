@@ -6,6 +6,7 @@ import VerificationResultModal from "../components/VerificationResultModal";
 import InternshipReportModal from "../components/InternshipReportModal"; // ✅ Import Modal
 import { useToast } from "../context/ToastContext";
 import SearchableSelect from "../components/SearchableSelect";
+import LoadingButton from "../components/LoadingButton";
 import api from "../api/axios";
 import {
   ArrowLeft,
@@ -33,8 +34,9 @@ export default function ApplyOD() {
 
   // ✅ Auto-set student ID from session
   const [offers, setOffers] = useState([]);
-  const [calendarEvents, setCalendarEvents] = useState([]); // ✅ Calendar Events
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
 
   // Modal state for verification results
@@ -124,7 +126,9 @@ export default function ApplyOD() {
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
+    if (submitting) return;
     try {
+      setSubmitting(true);
       if (!form.aimFile || !form.offerFile) {
         showToast("Please upload both documents", "warning");
         return;
@@ -151,20 +155,20 @@ export default function ApplyOD() {
       navigate(`/student/od/${odId}`);
 
     } catch (err) {
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Error vibration
-      
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       const errorData = err.response?.data;
       if (errorData?.verificationDetails) {
         setVerificationDetails(errorData.verificationDetails);
         setVerificationSummary(errorData.summary);
         setShowVerificationModal(true);
       } else if (err.response?.status === 403 && errorData?.message === "Internship Report Required") {
-        // Pass pending ODs to modal
         setPendingODs(errorData.pendingODs || []);
         setShowReportModal(true);
       } else {
         showToast(errorData?.message || "Failed to apply OD", "error");
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -386,12 +390,14 @@ export default function ApplyOD() {
           </div>
 
           <div className="flex justify-end">
-            <button
+            <LoadingButton
+              isLoading={submitting}
+              loadingText="Submitting..."
               onClick={handleSubmit}
-              className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-xl font-black text-white uppercase tracking-widest transition-all shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-xl font-black text-white uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"
             >
-              Submit Application <ChevronRight className="w-5 h-5" />
-            </button>
+              Submit Application <span className="ml-1">›</span>
+            </LoadingButton>
           </div>
         </div>
       </main >

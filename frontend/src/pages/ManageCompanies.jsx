@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     Plus,
@@ -206,22 +207,15 @@ export default function ManageCompanies() {
                                 placeholder="City / Location (e.g. Bangalore)"
                             />
                         </div>
-                        <button
+                        <LoadingButton
                             type="submit"
-                            disabled={adding}
+                            isLoading={adding}
+                            loadingText="Adding..."
                             aria-label={adding ? "Adding company..." : "Add new company"}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-blue-500/20 whitespace-nowrap"
                         >
-                            {adding ? (
-                                <span className="flex items-center gap-2">
-                                    <RotateCcw className="w-4 h-4 animate-spin" aria-hidden="true" /> Adding...
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-2">
-                                    <Plus className="w-4 h-4" aria-hidden="true" /> Add Company
-                                </span>
-                            )}
-                        </button>
+                            <Plus className="w-4 h-4" aria-hidden="true" /> Add Company
+                        </LoadingButton>
                     </form>
                 </div>
 
@@ -371,13 +365,14 @@ export default function ManageCompanies() {
                                 >
                                     Cancel
                                 </button>
-                                <button
+                                <LoadingButton
                                     type="submit"
-                                    disabled={updating}
-                                    className="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 rounded-lg shadow-lg shadow-indigo-500/30 transition-all"
+                                    isLoading={updating}
+                                    loadingText="Saving..."
+                                    className="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-lg shadow-indigo-500/30"
                                 >
-                                    {updating ? "Saving..." : "Save Changes"}
-                                </button>
+                                    Save Changes
+                                </LoadingButton>
                             </div>
                         </form>
                     </div>

@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
   ArrowLeft,
   Calendar,
@@ -51,6 +52,7 @@ export default function UpdatePlacementStatus() {
 
 
   const dateRef = useRef(null);
+  const [submitting, setSubmitting] = useState(false);
 
   /* ================= LOAD INITIAL DATA ================= */
   const loadData = useCallback(async () => {
@@ -157,6 +159,7 @@ export default function UpdatePlacementStatus() {
     }
 
     try {
+      setSubmitting(true);
       if (form.status === "PLACED") {
         // Add the offer
         await api.post("/students/add-offer", {
@@ -192,6 +195,8 @@ export default function UpdatePlacementStatus() {
 
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to update status", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -317,12 +322,14 @@ export default function UpdatePlacementStatus() {
             )}
 
             <div className="flex justify-end">
-              <button
+              <LoadingButton
                 onClick={handleSubmit}
-                className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold text-white transition-colors shadow-lg shadow-blue-500/20"
+                isLoading={submitting}
+                loadingText="Saving..."
+                className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold text-white shadow-lg shadow-blue-500/20"
               >
                 {form.status === "PLACED" ? "Add Placement Offer" : "Update Status"}
-              </button>
+              </LoadingButton>
             </div>
           </div>
 

@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     FileText,
@@ -161,14 +162,14 @@ export default function FacultyReportReview() {
                         />
 
                         <div className="flex gap-3">
-                            <button
+                            <LoadingButton
                                 onClick={handleAction}
-                                disabled={processing}
-                                className={`flex-1 py-3 rounded-xl font-bold text-white transition-colors ${action === 'APPROVED' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                                    }`}
+                                isLoading={processing}
+                                loadingText="Processing..."
+                                className={`flex-1 py-3 rounded-xl font-bold text-white ${action === 'APPROVED' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                             >
-                                {processing ? "Processing..." : "Confirm"}
-                            </button>
+                                Confirm
+                            </LoadingButton>
                             <button
                                 onClick={() => setSelectedReport(null)}
                                 className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold"

@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
+import LoadingButton from "../components/LoadingButton";
 import SearchableSelect from "../components/SearchableSelect";
 import {
     ArrowLeft,
@@ -347,16 +348,18 @@ export default function MentorAssignment() {
                                 <span className="font-bold text-slate-900 dark:text-white">{selectedStudents.length} selected</span>
                             </div>
                         </div>
-                        <button
+                        <LoadingButton
                             onClick={handleAssign}
-                            disabled={loading || !selectedFaculty || selectedStudents.length === 0}
-                            className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-lg ${loading || !selectedFaculty || selectedStudents.length === 0
-                                ? "bg-slate-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
-                                }`}
+                            isLoading={loading}
+                            loadingText="Assigning..."
+                            disabled={!selectedFaculty || selectedStudents.length === 0}
+                            className={`w-full py-3 rounded-xl font-bold text-white shadow-lg ${!loading && selectedFaculty && selectedStudents.length > 0
+                                ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                                : "bg-slate-400"
+                            }`}
                         >
-                            {loading ? "Assigning..." : "Assign Mentor"}
-                        </button>
+                            Assign Mentor
+                        </LoadingButton>
                     </div>
                 </div>
             </main>

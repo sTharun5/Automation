@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     Sparkles,
@@ -220,22 +221,22 @@ export default function FacultyApproval() {
                                                 className="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
                                             />
                                             <div className="flex gap-4">
-                                                <button
+                                                <LoadingButton
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "REJECTED")}
-                                                    disabled={processing}
-                                                    className="flex-1 py-4 px-6 rounded-xl border-2 border-red-100 dark:border-red-900/30 text-red-600 font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    isLoading={processing}
+                                                    loadingText="Rejecting..."
+                                                    className="flex-1 py-4 px-6 rounded-xl border-2 border-red-100 dark:border-red-900/30 text-red-600 font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10"
                                                 >
-                                                    {processing ? <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div> : <XCircle className="w-5 h-5" />}
-                                                    Reject Request
-                                                </button>
-                                                <button
+                                                    <XCircle className="w-5 h-5" /> Reject Request
+                                                </LoadingButton>
+                                                <LoadingButton
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "MENTOR_APPROVED")}
-                                                    disabled={processing}
-                                                    className="flex-1 py-4 px-6 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    isLoading={processing}
+                                                    loadingText="Approving..."
+                                                    className="flex-1 py-4 px-6 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-500/20"
                                                 >
-                                                    {processing ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle2 className="w-5 h-5" />}
-                                                    Approve Training
-                                                </button>
+                                                    <CheckCircle2 className="w-5 h-5" /> Approve Training
+                                                </LoadingButton>
                                             </div>
                                         </div>
                                     </div>

@@ -8,6 +8,7 @@ import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import SearchableSelect from "../components/SearchableSelect";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     Plus,
@@ -41,6 +42,7 @@ export default function ManageStudents() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [newStudent, setNewStudent] = useState({ name: "", rollNo: "", email: "", department: "", semester: "1", parentPhone: "" });
     const [editingStudent, setEditingStudent] = useState(null);
+    const [formSubmitting, setFormSubmitting] = useState(false);
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -107,7 +109,9 @@ export default function ManageStudents() {
 
     const handleAddStudent = async (e) => {
         e.preventDefault();
+        if (formSubmitting) return;
         try {
+            setFormSubmitting(true);
             await api.post("/admin/add-student", newStudent);
             showToast("Student added successfully", "success");
             setAddModalOpen(false);
@@ -115,12 +119,16 @@ export default function ManageStudents() {
             fetchStudents();
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to add student", "error");
+        } finally {
+            setFormSubmitting(false);
         }
     };
 
     const handleUpdateStudent = async (e) => {
         e.preventDefault();
+        if (formSubmitting) return;
         try {
+            setFormSubmitting(true);
             await api.put(`/admin/update-student/${editingStudent.id}`, editingStudent);
             showToast("Student updated successfully", "success");
             setEditModalOpen(false);
@@ -128,6 +136,8 @@ export default function ManageStudents() {
             fetchStudents();
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to update student", "error");
+        } finally {
+            setFormSubmitting(false);
         }
     };
 
@@ -264,12 +274,14 @@ export default function ManageStudents() {
                                     >
                                         Cancel
                                     </button>
-                                    <button
+                                    <LoadingButton
                                         type="submit"
-                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-500/30 transition-all font-bold"
+                                        isLoading={formSubmitting}
+                                        loadingText="Adding..."
+                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-500/30 font-bold"
                                     >
                                         Add Student
-                                    </button>
+                                    </LoadingButton>
                                 </div>
                             </form>
                         </div>
@@ -354,12 +366,14 @@ export default function ManageStudents() {
                                     >
                                         Cancel
                                     </button>
-                                    <button
+                                    <LoadingButton
                                         type="submit"
-                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-500/30 transition-all font-bold"
+                                        isLoading={formSubmitting}
+                                        loadingText="Saving..."
+                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-lg shadow-indigo-500/30 font-bold"
                                     >
                                         Save Changes
-                                    </button>
+                                    </LoadingButton>
                                 </div>
                             </form>
                         </div>

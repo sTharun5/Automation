@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 
 /**
  * ManageFaculty component - Administrative module for orchestrating the faculty directory.
@@ -201,14 +202,15 @@ export default function ManageFaculty() {
                         />
                     </div>
                     <div className="mt-4 flex justify-end">
-                        <button
+                        <LoadingButton
                             onClick={handleAddFaculty}
-                            disabled={formLoading}
+                            isLoading={formLoading}
+                            loadingText="Adding..."
                             aria-label={formLoading ? "Adding faculty..." : "Add faculty member"}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20"
                         >
-                            {formLoading ? "Adding..." : "Add Faculty"}
-                        </button>
+                            Add Faculty
+                        </LoadingButton>
                     </div>
                 </div>
 
