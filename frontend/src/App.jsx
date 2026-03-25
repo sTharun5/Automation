@@ -115,7 +115,7 @@ export default function App() {
                   <Route path="/faculty/events" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyEvents /></ProtectedRoute>} />
                   <Route path="/faculty/reports" element={<ProtectedRoute allowedRoles={["FACULTY"]}><FacultyReportReview /></ProtectedRoute>} />
                   <Route path="/faculty/mentee/:studentId" element={<ProtectedRoute allowedRoles={["FACULTY"]}><MenteeDetails /></ProtectedRoute>} />
-                  <Route path="/help" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY"]}><HelpSupport /></ProtectedRoute>} />
+                  <Route path="/help" element={<ProtectedRoute allowedRoles={["STUDENT", "FACULTY", "ADMIN"]}><HelpSupport /></ProtectedRoute>} />
                 </Routes>
               </Suspense>
               </Layout>

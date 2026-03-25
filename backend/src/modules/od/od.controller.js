@@ -26,10 +26,8 @@ const generateActivityId = () => {
 ===================================================== */
 async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true }) {
   try {
-    const { PDFParse } = pdf;
-    const dataBuffer = await fs.promises.readFile(filePath); // ✅ async — no longer blocks event loop
-    const parser = new PDFParse({ data: dataBuffer });
-    const data = await parser.getText();
+    const dataBuffer = await fs.promises.readFile(filePath); // async — no longer blocks event loop
+    const data = await pdf(dataBuffer); // pdf-parse exports a function directly, not a class
     const text = data.text.toLowerCase().replace(/\s+/g, " ");
 
     // Initialize detailed results

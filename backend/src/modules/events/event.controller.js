@@ -20,10 +20,11 @@ exports.createInternalEvent = async (req, res) => {
         // Generate a random ID e.g., EVT-4938
         const eventId = `EVT-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        let facultyExists = false;
+        let _facultyVerified = false; // used as local guard below
         if (staffCoordinatorId) {
             const fac = await prisma.faculty.findUnique({ where: { id: parseInt(staffCoordinatorId) } });
             if (!fac) return res.status(400).json({ message: "Staff Coordinator Faculty ID not found" });
+            _facultyVerified = true;
         }
 
         if (studentCoordinatorId) {

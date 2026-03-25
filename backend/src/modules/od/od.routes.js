@@ -33,6 +33,8 @@ const upload = multer({
 });
 
 /* ================= ROUTES ================= */
+// IMPORTANT: All static routes MUST be defined before dynamic /:id routes
+// to prevent Express from treating static path segments as ID parameters.
 
 router.post(
   "/apply",
@@ -49,18 +51,17 @@ router.post('/verify-gate-pass', verifyToken, odController.verifyGatePass);
 
 router.post('/scan-internal', verifyToken, odController.scanInternalOD);
 
-router.get("/my-ods", verifyToken, odController.getMyODs); // ✅ New Route
-router.get("/:id", verifyToken, odController.getOdById);
+// Static named routes (must come before /:id)
+router.get("/my-ods", verifyToken, odController.getMyODs);
+router.get("/mentor/pending", verifyToken, odController.getMentorODs);
+router.get("/admin/all", verifyToken, odController.getAllODs);
+router.get("/admin/company-stats", verifyToken, odController.getCompanyStats);
+router.get("/admin/company-placed", verifyToken, odController.getCompanyPlacedStudents);
+router.get("/admin/student/:studentId", verifyToken, odController.getStudentODs);
 
+// Dynamic routes (must come after static routes)
+router.get("/:id", verifyToken, odController.getOdById);
 router.put("/update-status/:id", verifyToken, odController.updateOdStatus);
 router.post("/:id/sync-erp", verifyToken, odController.manualErpSync);
-
-// 👮‍♂️ Admin / Faculty routes
-router.get("/mentor/pending", verifyToken, odController.getMentorODs);
-router.get("/admin/student/:studentId", verifyToken, odController.getStudentODs);
-router.get("/admin/all", verifyToken, odController.getAllODs); // ✅ New Admin Search Route
-router.get("/admin/company-stats", verifyToken, odController.getCompanyStats); // ✅ Company Stats Route
-router.get("/admin/company-placed", verifyToken, odController.getCompanyPlacedStudents); // ✅ Company Placed Students Route
-
 
 module.exports = router;

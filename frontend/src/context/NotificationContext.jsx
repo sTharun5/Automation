@@ -71,7 +71,7 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
-    // Poll every 30 seconds (reduced from 15s to lower DB load)
+    // Poll every 15 seconds for fresh notifications
     useEffect(() => {
         const role = sessionStorage.getItem("role");
         if (!role) return; // Don't even start polling if not logged in

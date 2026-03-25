@@ -5,18 +5,20 @@ const { isAdmin } = require('../../middlewares/isAdmin.middleware');
 
 const router = express.Router();
 
+// Static routes MUST come before dynamic /:eventId routes to avoid Express mis-matching
+
 // Admin Routes
 router.post('/internal', verifyToken, isAdmin, createInternalEvent);
-router.put('/internal/:eventId', verifyToken, isAdmin, editInternalEvent);
-router.delete('/internal/all', verifyToken, isAdmin, deleteAllInternalEvents);
-router.delete('/internal/:eventId', verifyToken, isAdmin, deleteInternalEvent);
+router.delete('/internal/all', verifyToken, isAdmin, deleteAllInternalEvents); // Must be before /internal/:eventId
 router.get('/internal/:eventId/attendance', verifyToken, isAdmin, getEventAttendance);
+router.put('/internal/:eventId', verifyToken, isAdmin, editInternalEvent);
+router.delete('/internal/:eventId', verifyToken, isAdmin, deleteInternalEvent);
 
-// Faculty & Student Routes
+// Faculty & Student Routes (static route before dynamic)
 router.get('/internal/my-assigned', verifyToken, getMyAssignedEvents);
-
-// Public / Shared Routes
-router.get('/:eventId/live-qr', verifyToken, getLiveEventQR);
 router.get('/active', verifyToken, getActiveEvents);
+
+// Dynamic Route (must come last)
+router.get('/:eventId/live-qr', verifyToken, getLiveEventQR);
 
 module.exports = router;

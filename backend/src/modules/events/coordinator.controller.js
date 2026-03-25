@@ -167,8 +167,8 @@ exports.submitRoster = async (req, res) => {
             return res.status(400).json({ message: "Roster is already approved and locked by the Staff Coordinator." });
         }
 
-        // 2. Verify Capacity Limit
-        if (rollNos.length > event.maxParticipants) {
+        // 2. Verify Capacity Limit (0 means unlimited)
+        if (event.maxParticipants > 0 && rollNos.length > event.maxParticipants) {
             return res.status(400).json({
                 message: `Capacity exceeded. Maximum allowed: ${event.maxParticipants}, Provided: ${rollNos.length}`
             });
