@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
 import ConfirmationModal from "../components/ConfirmationModal";
 import usePolling from "../hooks/usePolling";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     Briefcase,
@@ -31,6 +32,7 @@ export default function MenteeDetails() {
     const [error, setError] = useState("");
     const { showToast } = useToast();
     const currentUser = JSON.parse(sessionStorage.getItem("user"));
+    const [revokingId, setRevokingId] = useState(null); // tracks which event coordinator is being revoked
 
     // Modal State
     const [confirmModal, setConfirmModal] = useState({
@@ -69,15 +71,19 @@ export default function MenteeDetails() {
         if (!window.confirm("Are you sure you want to revoke this student's coordinator access?")) return;
 
         const reason = window.prompt("Reason for revocation (Required):");
-        if (reason === null) return; // User cancelled prompt
+        if (reason === null) return;
         if (!reason.trim()) return showToast("Reason is required to revoke coordinator access", "error");
+        if (revokingId === eventId) return;
 
         try {
+            setRevokingId(eventId);
             await api.put(`/events/${eventId}/revoke-coordinator`, { reason });
             showToast("Student Coordinator access revoked successfully.", "success");
-            fetchDetails(); // Refresh
+            fetchDetails();
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to revoke coordinator", "error");
+        } finally {
+            setRevokingId(null);
         }
     };
 
@@ -285,12 +291,14 @@ export default function MenteeDetails() {
                                                         </span>
                                                     </div>
                                                     {isStaffCoordinator && (
-                                                        <button
+                                                        <LoadingButton
                                                             onClick={() => handleRevokeCoordinator(event.id)}
-                                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors border border-red-100 dark:border-red-900/30 flex items-center gap-1.5"
+                                                            isLoading={revokingId === event.id}
+                                                            loadingText="Revoking..."
+                                                            className="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-red-100 dark:border-red-900/30"
                                                         >
                                                             <UserMinus className="w-3 h-3" /> Revoke Access
-                                                        </button>
+                                                        </LoadingButton>
                                                     )}
                                                 </div>
                                             </div>

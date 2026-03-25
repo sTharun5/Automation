@@ -13,6 +13,7 @@ import {
   Zap,
   Lock
 } from "lucide-react";
+import LoadingButton from "../components/LoadingButton";
 
 export default function Login() {
   /* const navigate = useNavigate(); */
@@ -262,12 +263,14 @@ export default function Login() {
               >
                 Cancel
               </button>
-              <button
+              <LoadingButton
                 onClick={forceLogin}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors shadow-sm"
+                isLoading={loading}
+                loadingText="Logging in..."
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-sm"
               >
                 Yes, Log Them Out
-              </button>
+              </LoadingButton>
             </div>
           </div>
         </div>
@@ -299,12 +302,14 @@ export default function Login() {
                   className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium text-sm sm:text-base"
                 />
               </div>
-              <button
+              <LoadingButton
                 onClick={sendOTP}
-                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
+                isLoading={loading}
+                loadingText="Sending OTP..."
+                className="w-full bg-blue-900 hover:bg-blue-800 dark:bg-blue-800 dark:hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-sm sm:text-base"
               >
                 <Zap className="w-4 h-4" /> Send OTP
-              </button>
+              </LoadingButton>
             </>
           )}
 
@@ -344,17 +349,19 @@ export default function Login() {
                 </button>
               </div>
 
-              <button
+              <LoadingButton
                 onClick={() => verifyOTP(otp.join(""))}
+                isLoading={loading}
+                loadingText="Verifying..."
                 disabled={otp.join("").length !== 6}
-                className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base
+                className={`w-full py-3 rounded-lg font-semibold text-sm sm:text-base
                   ${otp.join("").length === 6
                     ? "bg-green-700 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 text-white"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-300 text-gray-500"
                   }`}
               >
                 <ShieldCheck className="w-5 h-5" /> Verify &amp; Login
-              </button>
+              </LoadingButton>
             </>
           )}
 

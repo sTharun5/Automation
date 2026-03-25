@@ -475,7 +475,8 @@ export default function ChatAssistant() {
                             <button
                                 key={i}
                                 onClick={() => handleSend(chip)}
-                                className="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-sm active:scale-95"
+                                disabled={isTyping}
+                                className={`whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
                             >
                                 {chip}
                             </button>
@@ -512,11 +513,12 @@ export default function ChatAssistant() {
                             />
                             <button
                                 onClick={() => handleSend()}
-                                disabled={!input.trim()}
+                                disabled={!input.trim() || isTyping}
                                 aria-label="Send message"
+                                aria-busy={isTyping}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center"
                             >
-                                <Send className="w-4 h-4" />
+                                {isTyping ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
                             </button>
                         </div>
                     </div>

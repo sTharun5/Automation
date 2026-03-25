@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useToast } from "../context/ToastContext";
+import LoadingButton from "./LoadingButton";
 
 /**
  * CalendarManagementModal component - Admin interface for managing global calendar events (Exams, Holidays, etc.).
@@ -13,6 +14,7 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
     const { showToast } = useToast();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [adding, setAdding] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: "",
         startDate: "",
@@ -46,14 +48,18 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
             showToast("Please fill all fields", "error");
             return;
         }
+        if (adding) return;
 
         try {
+            setAdding(true);
             await api.post("/calendar", newEvent);
             showToast("Event added successfully", "success");
-            setNewEvent({ title: "", startDate: "", endDate: "", type: "EXAM" }); // Reset
+            setNewEvent({ title: "", startDate: "", endDate: "", type: "EXAM" });
             fetchEvents();
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to add event", "error");
+        } finally {
+            setAdding(false);
         }
     };
 
@@ -127,9 +133,14 @@ export default function CalendarManagementModal({ isOpen, onClose }) {
                                 required
                             />
                         </div>
-                        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors shadow-lg shadow-blue-500/20">
+                        <LoadingButton
+                            type="submit"
+                            isLoading={adding}
+                            loadingText="Adding..."
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg shadow-lg shadow-blue-500/20"
+                        >
                             Add Event
-                        </button>
+                        </LoadingButton>
                     </form>
 
                     {/* Event List */}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import LoadingButton from './LoadingButton';
 import {
     Camera,
     X
@@ -308,16 +309,18 @@ export default function AttendanceModal({ isOpen, onClose, studentId, onSuccess 
                         ))}
                     </div>
 
-                    <button
+                    <LoadingButton
                         type="submit"
-                        disabled={otp.join("").length !== 6 || processingScan || isProcessingOtp}
-                        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${otp.join("").length === 6 && !processingScan && !isProcessingOtp
+                        isLoading={isProcessingOtp}
+                        loadingText="Authorizing..."
+                        disabled={otp.join("").length !== 6 || processingScan}
+                        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs ${otp.join("").length === 6 && !processingScan && !isProcessingOtp
                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/20"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                            }`}
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                        }`}
                     >
-                        {isProcessingOtp ? "Authorizing..." : "Authorize with OTP"}
-                    </button>
+                        Authorize with OTP
+                    </LoadingButton>
                 </form>
 
                 <p className="mt-8 text-center text-[10px] text-slate-400 font-medium uppercase tracking-wider">
