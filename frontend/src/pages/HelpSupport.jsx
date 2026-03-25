@@ -4,15 +4,8 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
-import {
-    ArrowLeft,
-    Mail,
-    Building2,
-    Send,
-    Loader2,
-    Paperclip,
-    LifeBuoy
-} from "lucide-react";
+import { ArrowLeft, HelpCircle, FileQuestion, Send, Paperclip } from "lucide-react";
+import LoadingButton from "../components/LoadingButton";
 
 /**
  * HelpSupport component - Integrated user assistance and ticketing system.
@@ -202,24 +195,15 @@ export default function HelpSupport() {
                                     <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest opacity-70">Supported formats: JPG, PNG, MP4 (Max 10MB)</p>
                                 </div>
 
-                                <button
+                                <LoadingButton
                                     type="submit"
-                                    disabled={loading}
-                                    aria-busy={loading}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    isLoading={loading}
+                                    loadingText="Processing..."
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30"
                                 >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                                            <span className="uppercase tracking-widest font-black text-sm">Processing...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="w-5 h-5" aria-hidden="true" />
-                                            <span className="uppercase tracking-widest font-black text-sm">Send Request</span>
-                                        </>
-                                    )}
-                                </button>
+                                    <Send className="w-5 h-5" aria-hidden="true" />
+                                    <span className="uppercase tracking-widest font-black text-sm">Send Request</span>
+                                </LoadingButton>
                             </form>
                         </div>
                     </div>

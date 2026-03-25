@@ -7,6 +7,7 @@ import ProfileCard from "../components/ProfileCard";
 
 import ConfirmationModal from "../components/ConfirmationModal";
 import CalendarManagementModal from "../components/CalendarManagementModal";
+import LoadingButton from "../components/LoadingButton";
 import PlacementMapWidget from "../components/PlacementMapWidget";
 import {
   Calendar,
@@ -91,14 +92,15 @@ export default function AdminDashboard() {
             >
               <Users className="w-4 h-4 sm:w-5 h-5" aria-hidden="true" /> <span className="whitespace-nowrap">Mentors</span>
             </button>
-            <button
+            <LoadingButton
               onClick={handleExportExcel}
-              disabled={exporting}
+              isLoading={exporting}
+              loadingText="Exporting..."
               aria-label={exporting ? "Exporting OD records" : "Export OD records to Excel"}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg text-white ${exporting ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'}`}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
             >
-              {exporting ? <Loader2 className="w-4 h-4 sm:w-5 h-5 animate-spin" aria-hidden="true" /> : <BarChart3 className="w-4 h-4 sm:w-5 h-5" aria-hidden="true" />} <span className="whitespace-nowrap">{exporting ? 'Exporting...' : 'Export Excel'}</span>
-            </button>
+              <BarChart3 className="w-4 h-4 sm:w-5 h-5" aria-hidden="true" /> <span className="whitespace-nowrap">Export Excel</span>
+            </LoadingButton>
           </div>
         </div>
 

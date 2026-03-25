@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 import SearchableSelect from '../components/SearchableSelect';
+import LoadingButton from '../components/LoadingButton';
 import {
     ArrowLeft,
     Calendar,
@@ -29,6 +30,8 @@ export default function FacultyEvents() {
     const [loading, setLoading] = useState(true);
     const [assigningRollNo, setAssigningRollNo] = useState({});
     const [assigningReason, setAssigningReason] = useState({});
+    const [assigningId, setAssigningId] = useState(null); // tracks which event is being assigned
+    const [approvingId, setApprovingId] = useState(null); // tracks which event roster is being approved
 
     // Roster Modal State
     const [viewingRoster, setViewingRoster] = useState(false);
@@ -66,8 +69,10 @@ export default function FacultyEvents() {
         const reason = assigningReason[eventId];
         if (!rollNo) return showToast("Please enter a Roll Number", "error");
         if (!reason) return showToast("Please provide a reason for assignment", "error");
+        if (assigningId === eventId) return;
 
         try {
+            setAssigningId(eventId);
             await api.post(`/events/${eventId}/assign-coordinator`, { rollNo, reason });
             showToast("Student Coordinator assigned successfully!", "success");
             setAssigningRollNo(prev => ({ ...prev, [eventId]: '' }));
@@ -75,6 +80,8 @@ export default function FacultyEvents() {
             fetchEvents();
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to assign coordinator", "error");
+        } finally {
+            setAssigningId(null);
         }
     };
 
@@ -95,12 +102,16 @@ export default function FacultyEvents() {
     };
 
     const handleApproveRoster = async (eventId) => {
+        if (approvingId === eventId) return;
         try {
+            setApprovingId(eventId);
             await api.post(`/events/${eventId}/approve-roster`);
             showToast("Roster officially approved. Digital Gate Passes generated!", "success");
             fetchEvents();
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to approve roster", "error");
+        } finally {
+            setApprovingId(null);
         }
     };
 
@@ -228,13 +239,15 @@ export default function FacultyEvents() {
                                                         className="w-full px-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                                                     />
                                                 </div>
-                                                <button
+                                                <LoadingButton
                                                     onClick={() => handleAssignCoordinator(event.id)}
-                                                    className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-2xl transition-all shadow-lg shadow-blue-500/20 whitespace-nowrap flex items-center gap-2 group"
+                                                    isLoading={assigningId === event.id}
+                                                    loadingText="Assigning..."
+                                                    className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/20 whitespace-nowrap"
                                                 >
-                                                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                                                    <Plus className="w-5 h-5" />
                                                     Assign
-                                                </button>
+                                                </LoadingButton>
                                             </div>
                                         </div>
                                     ) : (
@@ -292,16 +305,19 @@ export default function FacultyEvents() {
                                                             >
                                                                 <Eye className="w-3.5 h-3.5" /> View Roster
                                                             </button>
-                                                            <button
+                                                            <LoadingButton
                                                                 onClick={() => handleApproveRoster(event.id)}
+                                                                isLoading={approvingId === event.id}
+                                                                loadingText="Approving..."
                                                                 disabled={!event.isRosterSubmitted}
-                                                                className={`px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center gap-2 ${event.isRosterSubmitted
+                                                                className={`px-6 py-2 text-xs font-black uppercase tracking-widest rounded-xl shadow-lg ${event.isRosterSubmitted
                                                                     ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
-                                                                    : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none"
-                                                                    }`}
+                                                                    : "bg-slate-200 dark:bg-slate-800 text-slate-400 shadow-none"
+                                                                }`}
                                                             >
-                                                                {event.isRosterSubmitted ? <><CheckCircle2 className="w-4 h-4" /> Approve</> : <><Clock className="w-4 h-4" /> Pending Submission</>}
-                                                            </button>
+                                                                <CheckCircle2 className="w-4 h-4" />
+                                                                {event.isRosterSubmitted ? "Approve" : "Pending Submission"}
+                                                            </LoadingButton>
                                                         </div>
                                                     </div>
                                                 </div>

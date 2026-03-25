@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
+import LoadingButton from '../components/LoadingButton';
 import {
     ArrowLeft,
     Mailbox,
@@ -28,6 +29,7 @@ export default function StudentEvents() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [submittingId, setSubmittingId] = useState(null);
 
     // Roster specific state per event ID
     const [rosters, setRosters] = useState({});
@@ -143,13 +145,17 @@ export default function StudentEvents() {
         if (event.maxParticipants > 0 && rollNos.length > event.maxParticipants) {
             return showToast(`Roster exceeds capacity! Maximum allowed is ${event.maxParticipants}.`, "error");
         }
+        if (submittingId === event.id) return;
 
         try {
+            setSubmittingId(event.id);
             await api.post(`/events/${event.id}/roster`, { rollNos });
             showToast("Roster submitted successfully! Waiting for Staff approval.", "success");
             fetchEvents(); // Refresh statuses
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to submit roster", "error");
+        } finally {
+            setSubmittingId(null);
         }
     };
 
@@ -265,16 +271,18 @@ export default function StudentEvents() {
                                                     </div>
                                                 </div>
 
-                                                <button
-                                                    onClick={() => handleSubmitRoster(event)}
-                                                    disabled={roster.length === 0}
-                                                    className={`w-full py-4 text-sm font-black uppercase tracking-widest rounded-xl transition-all shadow-lg ${roster.length === 0
-                                                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
-                                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20 hover:scale-[1.02]'
-                                                        }`}
-                                                >
-                                                    {isSubmitted ? "Update & Resubmit Roster" : "Submit Roster"} ({roster.length} Students)
-                                                </button>
+                                                <LoadingButton
+                                    onClick={() => handleSubmitRoster(event)}
+                                    isLoading={submittingId === event.id}
+                                    loadingText="Submitting..."
+                                    disabled={roster.length === 0}
+                                    className={`w-full py-4 text-sm font-black uppercase tracking-widest rounded-xl shadow-lg ${roster.length === 0
+                                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 shadow-none'
+                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20 hover:scale-[1.02]'
+                                    }`}
+                                >
+                                    {isSubmitted ? "Update & Resubmit Roster" : "Submit Roster"} ({roster.length} Students)
+                                </LoadingButton>
                                             </div>
                                         )}
                                     </div>

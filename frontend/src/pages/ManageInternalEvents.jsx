@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useToast } from '../context/ToastContext';
 // import { useTheme } from '../context/ThemeContext';
 import SearchableSelect from '../components/SearchableSelect';
+import LoadingButton from '../components/LoadingButton';
 import {
     ArrowLeft,
     Clock,
@@ -44,6 +45,9 @@ export default function ManageInternalEvents() {
 
     // Form State
     const [isCreating, setIsCreating] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [approvingRoster, setApprovingRoster] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         startDate: '',
@@ -153,7 +157,9 @@ export default function ManageInternalEvents() {
 
     const handleCreate = async (e) => {
         e.preventDefault();
+        if (creating) return;
         try {
+            setCreating(true);
             await api.post('/events/internal', formData);
             showToast("Internal event created successfully!", "success");
             setIsCreating(false);
@@ -161,6 +167,8 @@ export default function ManageInternalEvents() {
             setFormData({ name: '', startDate: '', endDate: '', allocatedHours: 2, maxParticipants: 0, staffCoordinatorId: '' });
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to create event", "error");
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -183,13 +191,17 @@ export default function ManageInternalEvents() {
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+        if (editing) return;
         try {
+            setEditing(true);
             await api.put(`/events/internal/${editingEvent.id}`, editFormData);
             showToast("Event updated successfully!", "success");
             setEditingEvent(null);
             fetchData();
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to update event", "error");
+        } finally {
+            setEditing(false);
         }
     };
 
@@ -322,15 +334,17 @@ export default function ManageInternalEvents() {
     };
 
     const handleApproveRoster = async () => {
-        if (!selectedEvent) return;
+        if (!selectedEvent || approvingRoster) return;
         try {
+            setApprovingRoster(true);
             const res = await api.post(`/events/${selectedEvent.id}/roster/approve`);
             showToast(res.data.message || "Roster approved successfully", "success");
-            // Refresh
             handleViewRoster(selectedEvent);
             fetchData();
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to approve roster", "error");
+        } finally {
+            setApprovingRoster(false);
         }
     };
 
@@ -487,9 +501,14 @@ export default function ManageInternalEvents() {
                                 />
                             </div>
                             <div className="md:col-span-2 flex justify-end mt-4">
-                                <button type="submit" className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold uppercase tracking-wider rounded-xl hover:scale-[1.02] transition-transform">
+                                <LoadingButton
+                                    type="submit"
+                                    isLoading={creating}
+                                    loadingText="Creating..."
+                                    className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold uppercase tracking-wider rounded-xl hover:scale-[1.02]"
+                                >
                                     Finalize Event
-                                </button>
+                                </LoadingButton>
                             </div>
                         </form>
                     </div>
@@ -910,9 +929,14 @@ export default function ManageInternalEvents() {
                                     <button type="button" onClick={() => setEditingEvent(null)} className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl transition-colors">
                                         Cancel
                                     </button>
-                                    <button type="submit" className="px-6 py-3 bg-indigo-600 text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20">
+                                    <LoadingButton
+                                        type="submit"
+                                        isLoading={editing}
+                                        loadingText="Saving..."
+                                        className="px-6 py-3 bg-indigo-600 text-white text-sm font-bold uppercase tracking-wider rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20"
+                                    >
                                         Save Changes
-                                    </button>
+                                    </LoadingButton>
                                 </div>
                             </form>
                         </div>
@@ -1114,16 +1138,19 @@ export default function ManageInternalEvents() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     {!rosterData.isApproved && (
-                                        <button
+                                        <LoadingButton
                                             onClick={handleApproveRoster}
+                                            isLoading={approvingRoster}
+                                            loadingText="Approving..."
                                             disabled={!selectedEvent?.isRosterSubmitted}
-                                            className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${selectedEvent?.isRosterSubmitted
+                                            className={`px-6 py-2.5 rounded-xl font-bold ${selectedEvent?.isRosterSubmitted
                                                 ? "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200 dark:shadow-none"
-                                                : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                                                }`}
+                                                : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                                            }`}
                                         >
-                                            {selectedEvent?.isRosterSubmitted ? <><CheckCircle2 className="w-4 h-4" /> Approve Roster</> : <><Clock className="w-4 h-4" /> Awaiting Submission</>}
-                                        </button>
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            {selectedEvent?.isRosterSubmitted ? "Approve Roster" : "Awaiting Submission"}
+                                        </LoadingButton>
                                     )}
                                     <button
                                         onClick={() => setViewingRoster(false)}

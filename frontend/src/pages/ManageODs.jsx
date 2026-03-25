@@ -8,6 +8,7 @@ import SearchInput from "../components/SearchInput";
 import { motion } from "framer-motion";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { useToast } from "../context/ToastContext";
+import LoadingButton from "../components/LoadingButton";
 import {
     ArrowLeft,
     Search,
@@ -36,6 +37,7 @@ export default function ManageODs() {
     const navigate = useNavigate();
     const [searchType, setSearchType] = useState("student"); // 'student' | 'company'
     const [selectedItem, setSelectedItem] = useState(null);
+    const [erpSyncingId, setErpSyncingId] = useState(null);
     const [ods, setODs] = useState([]);
     const [placedStudents, setPlacedStudents] = useState([]); // New state for placed list
     const [viewMode, setViewMode] = useState("list"); // 'list' | 'stats'
@@ -211,17 +213,16 @@ export default function ManageODs() {
         });
     };
 
-    /* ================= MANUAL ERP SYNC ================= */
     const handleErpSync = async (odId) => {
+        if (erpSyncingId === odId) return;
         try {
+            setErpSyncingId(odId);
             const res = await api.post(`/od/${odId}/sync-erp`);
             if (res.data.erpSyncStatus === 'FAILED') {
                 showToast(res.data.message || "Failed to trigger ERP Sync", "error");
             } else {
                 showToast(res.data.message || "ERP Sync Triggered", "success");
             }
-
-            // Update local state directly to ensure immediate UI feedback
             setODs(prevODs => prevODs.map(od =>
                 od.id === odId
                     ? { ...od, erpSyncStatus: res.data.erpSyncStatus }
@@ -229,6 +230,8 @@ export default function ManageODs() {
             ));
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to trigger ERP Sync", "error");
+        } finally {
+            setErpSyncingId(null);
         }
     };
 
@@ -600,14 +603,15 @@ export default function ManageODs() {
                                                                 </span>
                                                             )}
                                                             {od.erpSyncStatus !== 'SYNCED' && (
-                                                                <button 
-                                                                    onClick={() => handleErpSync(od.id)} 
-                                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors group" 
-                                                                    title="Retry ERP Sync"
+                                                                <LoadingButton
+                                                                    onClick={() => handleErpSync(od.id)}
+                                                                    isLoading={erpSyncingId === od.id}
                                                                     aria-label="Retry ERP Synchronization"
+                                                                    title="Retry ERP Sync"
+                                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full group"
                                                                 >
                                                                     <RefreshCcw className="w-3.5 h-3.5 text-blue-600 group-hover:rotate-180 transition-transform duration-500" aria-hidden="true" />
-                                                                </button>
+                                                                </LoadingButton>
                                                             )}
                                                         </div>
                                                     )}
