@@ -124,7 +124,7 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header />
 
-      <main 
+      <main
         role="main"
         aria-label="Student Dashboard"
         className="flex-1 px-3 sm:px-6 md:px-8 py-6 md:py-12 max-w-7xl mx-auto w-full overflow-x-hidden"
@@ -304,7 +304,7 @@ export default function Dashboard() {
 
                     <div className="flex items-center gap-3 text-xs font-mono bg-slate-900 rounded-lg p-3 border border-slate-800 w-fit">
                       <span className="text-indigo-400">$</span>
-                      <span className="text-slate-300">Apply OD 10.08.2025 to 12.08.2025 for Google IT on campus</span>
+                      <span className="text-slate-300">Apply OD 25.03.2026 to 27.04.2026 for Kaar Technologies IT on campus</span>
                     </div>
                   </div>
 
