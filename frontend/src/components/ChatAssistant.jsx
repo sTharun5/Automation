@@ -175,9 +175,16 @@ function useVoiceInput(onTranscript, onError) {
     const [isListening, setIsListening] = useState(false);
     const [supported, setSupported] = useState(false);
     const recognitionRef = useRef(null);
-    // Keep a ref to the latest callback so rec.onresult never goes stale
+    const isListeningRef = useRef(false); // track without closure staleness
+    const retryRef = useRef(0);           // auto-retry counter for network errors
     const callbackRef = useRef(onTranscript);
     useEffect(() => { callbackRef.current = onTranscript; }, [onTranscript]);
+
+    const startRec = useCallback(() => {
+        const rec = recognitionRef.current;
+        if (!rec) return;
+        try { rec.start(); } catch { /* already started, ignore */ }
+    }, []);
 
     useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -185,9 +192,9 @@ function useVoiceInput(onTranscript, onError) {
 
         setSupported(true);
         const rec = new SpeechRecognition();
-        rec.lang = "en-US";         // broader support; en-IN causes failures on some browsers
-        rec.continuous = true;      // keep listening until user explicitly stops
-        rec.interimResults = true;  // show live transcript as user speaks
+        rec.lang = "en-US";
+        rec.continuous = false;    // false avoids the Chrome 'network' bug in continuous mode
+        rec.interimResults = true;
 
         rec.onresult = (e) => {
             const transcript = Array.from(e.results)
@@ -196,40 +203,62 @@ function useVoiceInput(onTranscript, onError) {
             callbackRef.current(transcript, e.results[e.results.length - 1].isFinal);
         };
 
-        rec.onend = () => setIsListening(false);
+        // Auto-restart when recognition ends naturally (simulates continuous mode safely)
+        rec.onend = () => {
+            if (isListeningRef.current) {
+                try { rec.start(); } catch { /* ignore */ }
+            } else {
+                setIsListening(false);
+            }
+        };
 
         rec.onerror = (e) => {
+            if (e.error === "network" && retryRef.current < 2 && isListeningRef.current) {
+                // Chrome's 'network' error is often transient — retry silently up to 2x
+                retryRef.current += 1;
+                setTimeout(() => { try { rec.start(); } catch { /* ignore */ } }, 500);
+                return;
+            }
+            retryRef.current = 0;
+            isListeningRef.current = false;
             setIsListening(false);
-            const msg = e.error === "not-allowed"
-                ? "⚠️ Microphone access denied. Please allow mic permission in your browser settings."
-                : e.error === "network"
-                    ? "⚠️ Voice recognition needs an internet connection. Please try again."
-                    : e.error === "no-speech"
-                        ? "🎙 No speech detected. Please try speaking again."
-                        : `⚠️ Voice error: ${e.error}. Please type your message instead.`;
-            onError?.(msg);
+
+            const msg =
+                e.error === "not-allowed"
+                    ? "⚠️ Microphone access denied. Please allow mic permission in your browser settings and reload."
+                    : e.error === "network"
+                        ? "⚠️ Voice recognition failed to connect. This usually means the page needs HTTPS, or Chrome's speech service is temporarily unavailable. Please try again in a moment."
+                        : e.error === "no-speech"
+                            ? "🎙 No speech detected. Make sure your microphone is working and try again."
+                            : e.error === "aborted"
+                                ? null  // user stopped — no message needed
+                                : `⚠️ Voice error (${e.error}). Please type your message instead.`;
+            if (msg) onError?.(msg);
         };
 
         recognitionRef.current = rec;
-
-        // Cleanup on unmount
         return () => {
+            isListeningRef.current = false;
             try { rec.abort(); } catch { /* ignore */ }
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Only run once — callback is handled via ref
+    }, []);
 
     const toggle = useCallback(() => {
         const rec = recognitionRef.current;
         if (!rec) return;
-        if (isListening) {
-            rec.stop();
+        if (isListeningRef.current) {
+            isListeningRef.current = false;
+            retryRef.current = 0;
+            try { rec.stop(); } catch { /* ignore */ }
             setIsListening(false);
         } else {
-            rec.start();
+            retryRef.current = 0;
+            isListeningRef.current = true;
+            try { rec.start(); } catch { /* ignore */ }
             setIsListening(true);
         }
-    }, [isListening]);
+    }, []);
 
     return { isListening, supported, toggle };
 }
