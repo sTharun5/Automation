@@ -602,6 +602,17 @@ exports.applyOD = async (req, res) => {
       }
     }
 
+    // 2. Verify OFFER LETTER (ITO) -> Skip Roll No, Strict Company
+    const offerResult = await verifyDocumentContent(
+      offerFilePath,
+      student.name,
+      student.rollNo,
+      companyNameForOCR,
+      startDate,
+      endDate,
+      { checkRollNo: false, checkCompany: true, docType: "OFFER/ITO" }
+    );
+
     if (!offerResult.success) {
       ocrFailed = true;
       if (offerResult.verificationDetails) {
