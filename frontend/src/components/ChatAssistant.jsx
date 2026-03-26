@@ -212,26 +212,40 @@ function useVoiceInput(onTranscript, onError) {
             }
         };
 
-        rec.onerror = (e) => {
-            if (e.error === "network" && retryRef.current < 2 && isListeningRef.current) {
-                // Chrome's 'network' error is often transient — retry silently up to 2x
-                retryRef.current += 1;
-                setTimeout(() => { try { rec.start(); } catch { /* ignore */ } }, 500);
-                return;
+        rec.onerror = async (e) => {
+            if (e.error === "network") {
+                // Check if running in Brave — Brave blocks Google's Speech API by default
+                const isBrave = !!(navigator.brave && await navigator.brave.isBrave().catch(() => false));
+
+                if (isBrave) {
+                    retryRef.current = 0;
+                    isListeningRef.current = false;
+                    setIsListening(false);
+                    onError?.("🦁 Brave is blocking voice recognition. Fix: click the **Shields icon** (🛡) in the address bar → set **Fingerprinting** to \"Allow all fingerprinting\" for this site, then try again.");
+                    return;
+                }
+
+                // Non-Brave: retry silently up to 2x (transient network hiccup)
+                if (retryRef.current < 2 && isListeningRef.current) {
+                    retryRef.current += 1;
+                    setTimeout(() => { try { rec.start(); } catch { /* ignore */ } }, 600);
+                    return;
+                }
             }
+
             retryRef.current = 0;
             isListeningRef.current = false;
             setIsListening(false);
 
             const msg =
                 e.error === "not-allowed"
-                    ? "⚠️ Microphone access denied. Please allow mic permission in your browser settings and reload."
+                    ? "⚠️ Microphone access denied. Allow mic permission in your browser settings and reload."
                     : e.error === "network"
-                        ? "⚠️ Voice recognition failed to connect. This usually means the page needs HTTPS, or Chrome's speech service is temporarily unavailable. Please try again in a moment."
+                        ? "⚠️ Voice recognition failed to connect. Make sure the page is on HTTPS, or try a different browser."
                         : e.error === "no-speech"
                             ? "🎙 No speech detected. Make sure your microphone is working and try again."
                             : e.error === "aborted"
-                                ? null  // user stopped — no message needed
+                                ? null
                                 : `⚠️ Voice error (${e.error}). Please type your message instead.`;
             if (msg) onError?.(msg);
         };
