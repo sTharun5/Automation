@@ -171,32 +171,53 @@ function CopyButton({ text }) {
 /* =========================================
    🔊 VOICE INPUT HOOK
 ========================================= */
-function useVoiceInput(onTranscript) {
+function useVoiceInput(onTranscript, onError) {
     const [isListening, setIsListening] = useState(false);
     const [supported, setSupported] = useState(false);
     const recognitionRef = useRef(null);
+    // Keep a ref to the latest callback so rec.onresult never goes stale
+    const callbackRef = useRef(onTranscript);
+    useEffect(() => { callbackRef.current = onTranscript; }, [onTranscript]);
 
     useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            setSupported(true);
-            const rec = new SpeechRecognition();
-            rec.lang = "en-IN";
-            rec.continuous = false;
-            rec.interimResults = true;
+        if (!SpeechRecognition) return;
 
-            rec.onresult = (e) => {
-                const transcript = Array.from(e.results)
-                    .map(r => r[0].transcript)
-                    .join("");
-                onTranscript(transcript, e.results[e.results.length - 1].isFinal);
-            };
+        setSupported(true);
+        const rec = new SpeechRecognition();
+        rec.lang = "en-US";         // broader support; en-IN causes failures on some browsers
+        rec.continuous = true;      // keep listening until user explicitly stops
+        rec.interimResults = true;  // show live transcript as user speaks
 
-            rec.onend = () => setIsListening(false);
-            rec.onerror = () => setIsListening(false);
-            recognitionRef.current = rec;
-        }
-    }, [onTranscript]);
+        rec.onresult = (e) => {
+            const transcript = Array.from(e.results)
+                .map(r => r[0].transcript)
+                .join("");
+            callbackRef.current(transcript, e.results[e.results.length - 1].isFinal);
+        };
+
+        rec.onend = () => setIsListening(false);
+
+        rec.onerror = (e) => {
+            setIsListening(false);
+            const msg = e.error === "not-allowed"
+                ? "⚠️ Microphone access denied. Please allow mic permission in your browser settings."
+                : e.error === "network"
+                    ? "⚠️ Voice recognition needs an internet connection. Please try again."
+                    : e.error === "no-speech"
+                        ? "🎙 No speech detected. Please try speaking again."
+                        : `⚠️ Voice error: ${e.error}. Please type your message instead.`;
+            onError?.(msg);
+        };
+
+        recognitionRef.current = rec;
+
+        // Cleanup on unmount
+        return () => {
+            try { rec.abort(); } catch { /* ignore */ }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once — callback is handled via ref
 
     const toggle = useCallback(() => {
         const rec = recognitionRef.current;
@@ -296,7 +317,7 @@ export default function ChatAssistant() {
             // Auto-populate only; user presses Send/Enter
         }
     }, []);
-    const { isListening, supported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleTranscript);
+    const { isListening, supported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleTranscript, addBotMsg);
 
     /* ---- Auto-suggestions from typing ---- */
     const handleInputChange = (val) => {
