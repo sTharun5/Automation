@@ -7,10 +7,13 @@ import {
     Paperclip,
     User,
     FileText,
-    Bot,
-    CheckCircle,
-    AlertCircle,
-    Pin
+    ThumbsUp,
+    ThumbsDown,
+    Copy,
+    Check,
+    Mic,
+    MicOff,
+    ChevronDown
 } from "lucide-react";
 
 import api from "../api/axios";
@@ -44,22 +47,14 @@ function StreamingMessage({ text, isStreaming }) {
             setDisplayedText(text);
             return;
         }
-
-        // Reset when a new streaming message starts
         setDisplayedText("");
         indexRef.current = 0;
-
-        // Stream word-by-word at ~40ms per word
         const words = text.split(" ");
         const interval = setInterval(() => {
-            if (indexRef.current >= words.length) {
-                clearInterval(interval);
-                return;
-            }
+            if (indexRef.current >= words.length) { clearInterval(interval); return; }
             setDisplayedText(prev => (prev ? prev + " " : "") + words[indexRef.current]);
             indexRef.current += 1;
         }, 40);
-
         return () => clearInterval(interval);
     }, [text, isStreaming]);
 
@@ -105,15 +100,144 @@ function FilePreviewCard({ file, index, onRemove }) {
     );
 }
 
+/* =========================================
+   👍 MESSAGE REACTION BUTTON
+========================================= */
+function ReactionBar({ msgIndex, reactions, onReact }) {
+    const [showPop, setShowPop] = useState(null);
+    const reaction = reactions[msgIndex];
+
+    const handleReact = (type) => {
+        if (reaction === type) return; // already reacted
+        setShowPop(type);
+        onReact(msgIndex, type);
+        setTimeout(() => setShowPop(null), 800);
+    };
+
+    return (
+        <div className="flex items-center gap-1 mt-0.5 relative">
+            {showPop && (
+                <span className="absolute -top-7 left-0 text-lg animate-bounce pointer-events-none select-none">
+                    {showPop === "up" ? "👍" : "👎"}
+                </span>
+            )}
+            <button
+                onClick={() => handleReact("up")}
+                aria-label="Helpful"
+                className={`p-1 rounded-full transition-all hover:scale-125 active:scale-95
+                    ${reaction === "up" ? "text-green-500" : "text-slate-300 hover:text-green-400"}`}
+            >
+                <ThumbsUp className="w-3 h-3" />
+            </button>
+            <button
+                onClick={() => handleReact("down")}
+                aria-label="Not helpful"
+                className={`p-1 rounded-full transition-all hover:scale-125 active:scale-95
+                    ${reaction === "down" ? "text-red-500" : "text-slate-300 hover:text-red-400"}`}
+            >
+                <ThumbsDown className="w-3 h-3" />
+            </button>
+        </div>
+    );
+}
+
+/* =========================================
+   📋 COPY BUTTON
+========================================= */
+function CopyButton({ text }) {
+    const [copied, setCopied] = useState(false);
+    const plain = text.replace(/\*\*(.*?)\*\*/g, "$1"); // strip markdown for clipboard
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(plain);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch { /* ignore */ }
+    };
+
+    return (
+        <button
+            onClick={handleCopy}
+            aria-label="Copy message"
+            className={`p-1 rounded-full transition-all hover:scale-125 active:scale-95
+                ${copied ? "text-green-500" : "text-slate-300 hover:text-slate-500"}`}
+        >
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+        </button>
+    );
+}
+
+/* =========================================
+   🔊 VOICE INPUT HOOK
+========================================= */
+function useVoiceInput(onTranscript) {
+    const [isListening, setIsListening] = useState(false);
+    const [supported, setSupported] = useState(false);
+    const recognitionRef = useRef(null);
+
+    useEffect(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            setSupported(true);
+            const rec = new SpeechRecognition();
+            rec.lang = "en-IN";
+            rec.continuous = false;
+            rec.interimResults = true;
+
+            rec.onresult = (e) => {
+                const transcript = Array.from(e.results)
+                    .map(r => r[0].transcript)
+                    .join("");
+                onTranscript(transcript, e.results[e.results.length - 1].isFinal);
+            };
+
+            rec.onend = () => setIsListening(false);
+            rec.onerror = () => setIsListening(false);
+            recognitionRef.current = rec;
+        }
+    }, [onTranscript]);
+
+    const toggle = useCallback(() => {
+        const rec = recognitionRef.current;
+        if (!rec) return;
+        if (isListening) {
+            rec.stop();
+            setIsListening(false);
+        } else {
+            rec.start();
+            setIsListening(true);
+        }
+    }, [isListening]);
+
+    return { isListening, supported, toggle };
+}
+
+/* =========================================
+   💡 AUTO-SUGGESTION DATA
+========================================= */
+const SUGGESTIONS = [
+    { trigger: /^ap/i, chips: ["Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus", "Application Procedure"] },
+    { trigger: /^st|^tr|^ch|^my/i, chips: ["Check my Status", "Track my OD"] },
+    { trigger: /^doc|^fo|^fi/i, chips: ["Document Formats", "File naming convention"] },
+    { trigger: /^sys|^pu|^wh|^ab/i, chips: ["System Purpose", "What is Smart OD?"] },
+    { trigger: /^hi|^hel|^hey/i, chips: ["Hello", "Help me apply for OD"] },
+];
+
+function getAutoSuggestions(input) {
+    if (!input || input.trim().length < 2) return [];
+    for (const s of SUGGESTIONS) {
+        if (s.trigger.test(input.trim())) return s.chips;
+    }
+    return [];
+}
+
 /**
- * ChatAssistant component - An AI-powered virtual assistant (Disha 2.0) that handles
- * natural language queries for OD applications and provides status updates.
+ * ChatAssistant component - An AI-powered virtual assistant (Disha 2.0)
  */
 export default function ChatAssistant() {
     const { isOpen, openChat, closeChat } = useChat();
     const [isExpanded, setIsExpanded] = useState(false);
-
-    // Each message: { type, text, timestamp, streaming? }
     const [messages, setMessages] = useState([
         {
             type: "bot",
@@ -123,52 +247,78 @@ export default function ChatAssistant() {
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-    const messagesEndRef = useRef(null);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages, isOpen]);
-
+    const [reactions, setReactions] = useState({}); // { msgIndex: "up" | "down" }
+    const [suggestions, setSuggestions] = useState([]);
+    const [showScrollPill, setShowScrollPill] = useState(false);
     const [attachments, setAttachments] = useState([]);
+
+    const messagesEndRef = useRef(null);
+    const messagesBodyRef = useRef(null);
     const fileInputRef = useRef(null);
+    const isAtBottomRef = useRef(true);
 
     const dishaAvatar = "https://cdn-icons-png.flaticon.com/512/6997/6997662.png";
 
-    /* =========================================
-       📎 ATTACHMENT HANDLERS
-    ========================================= */
+    /* ---- Scroll management ---- */
+    const scrollToBottom = useCallback((force = false) => {
+        if (force || isAtBottomRef.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            setShowScrollPill(false);
+        }
+    }, []);
+
+    const handleScroll = useCallback(() => {
+        const el = messagesBodyRef.current;
+        if (!el) return;
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+        isAtBottomRef.current = atBottom;
+        if (atBottom) setShowScrollPill(false);
+    }, []);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [isOpen]);
+
+    useEffect(() => {
+        // Show scroll pill for new bot messages if user scrolled up
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg?.type === "bot" && !isAtBottomRef.current) {
+            setShowScrollPill(true);
+        } else {
+            scrollToBottom();
+        }
+    }, [messages, scrollToBottom]);
+
+    /* ---- Voice input ---- */
+    const handleTranscript = useCallback((transcript, isFinal) => {
+        setInput(transcript);
+        if (isFinal && transcript.trim()) {
+            // Auto-populate only; user presses Send/Enter
+        }
+    }, []);
+    const { isListening, supported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleTranscript);
+
+    /* ---- Auto-suggestions from typing ---- */
+    const handleInputChange = (val) => {
+        setInput(val);
+        setSuggestions(getAutoSuggestions(val));
+    };
+
+    /* ---- Attachments ---- */
     const handleFileSelect = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            // Reset input so same file can be re-selected if removed
             e.target.value = "";
-
             if (attachments.length >= 2) {
-                setMessages(prev => [...prev, {
-                    type: "bot",
-                    text: "⚠️ Maximum 2 attachments allowed (Offer Letter & Aim).",
-                    timestamp: new Date()
-                }]);
+                addBotMsg("⚠️ Maximum 2 attachments allowed (Offer Letter & Aim).");
                 return;
             }
             if (!file.type.includes("pdf")) {
-                setMessages(prev => [...prev, {
-                    type: "bot",
-                    text: "⚠️ Only PDF files are supported.",
-                    timestamp: new Date()
-                }]);
+                addBotMsg("⚠️ Only PDF files are supported.");
                 return;
             }
             if (!file.name.includes("-ITO-") && !file.name.includes("-ITI-")) {
-                setMessages(prev => [...prev, {
-                    type: "bot",
-                    text: "⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`.",
-                    timestamp: new Date()
-                }]);
+                addBotMsg("⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`.");
             }
             setAttachments(prev => [...prev, file]);
         }
@@ -178,16 +328,16 @@ export default function ChatAssistant() {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
-    /* =========================================
-       🌊 STREAM A BOT REPLY
-    ========================================= */
-    const streamBotMessage = useCallback((text) => {
-        const msg = { type: "bot", text, timestamp: new Date(), streaming: true };
-        setMessages(prev => [...prev, msg]);
+    /* ---- Message helpers ---- */
+    const addBotMsg = useCallback((text) => {
+        setMessages(prev => [...prev, { type: "bot", text, timestamp: new Date() }]);
+    }, []);
 
-        // After streaming duration completes, mark as done
-        const words = text.split(" ").length;
-        const durationMs = Math.min(words * 42, 3000);
+    const streamBotMessage = useCallback((text) => {
+        setMessages(prev => [...prev, {
+            type: "bot", text, timestamp: new Date(), streaming: true
+        }]);
+        const durationMs = Math.min(text.split(" ").length * 42, 3000);
         setTimeout(() => {
             setMessages(prev =>
                 prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
@@ -195,209 +345,129 @@ export default function ChatAssistant() {
         }, durationMs);
     }, []);
 
-    /* =========================================
-       📢 HELPER FUNCTIONS
-    ========================================= */
+    /* ---- Reactions ---- */
+    const handleReact = useCallback((msgIndex, type) => {
+        setReactions(prev => ({ ...prev, [msgIndex]: type }));
+        // Log to backend (fire-and-forget, non-blocking)
+        api.post("/ai/feedback", { msgIndex, rating: type }).catch(() => {});
+    }, []);
+
+    /* ---- OD Status fetch ---- */
     const fetchODStatus = async () => {
         try {
             const user = JSON.parse(sessionStorage.getItem("user"));
             if (!user || !user.id) return "❌ Please log in to check your OD status.";
-
             const res = await api.get(`/od/my-ods?studentId=${user.id}`);
             const ods = res.data;
-
-            if (!ods || ods.length === 0) {
-                return "ℹ️ You have no OD applications yet.";
-            }
-
+            if (!ods || ods.length === 0) return "ℹ️ You have no OD applications yet.";
             const statusList = ods.map(od =>
                 `📌 **${od.company}**\n   Status: **${od.status}**\n   Dates: ${new Date(od.startDate).toLocaleDateString()} - ${new Date(od.endDate).toLocaleDateString()}`
             ).join("\n\n");
-
             return `Here are your recent OD applications:\n\n${statusList}`;
-        } catch (error) {
-            console.error(error);
-            return "❌ Failed to fetch OD status. Please try again later.";
-        }
+        } catch { return "❌ Failed to fetch OD status. Please try again later."; }
     };
 
-    // eslint-disable-next-line no-unused-vars
-    const findBestResponse = (query) => {
-        const lower = query.toLowerCase();
-        if (lower.includes("procedure") || lower.includes("process")) {
-            return "To apply for an OD:\n1. **Upload** your Offer Letter & Aim.\n2. Use the **Smart Apply** command (e.g., `Apply OD...`).\n3. Wait for **Faculty Approval**.\n4. Once approved, download your OD form.";
-        }
-        if (lower.includes("format") || lower.includes("document")) {
-            return "Files must be in **PDF** format.\n\nNaming Convention:\n- Offer Letter: `RollNo-ITO-Date.pdf`\n- Aim: `RollNo-ITI-Date.pdf`\n\nExample: `22CS001-ITO-01.02.2024.pdf`";
-        }
-        if (lower.includes("purpose") || lower.includes("system")) {
-            return "This **Smart OD System** automates the On-Duty application process for students with placement offers, eliminating manual paperwork! 🚀";
-        }
-        if (lower.includes("hello") || lower.includes("hi")) {
-            return "Hello! 👋 How can I assist you with your OD application today?";
-        }
-        if (lower.includes("why") && lower.includes("start") && lower.includes("approved")) {
-            return "Usually, an OD is **Active** only when:\n1. The Start Date has arrived.\n2. Final Admin/HOD Approval is complete (after Mentor).\nIf your Mentor approved, it might still be pending Final Review!";
-        }
-        return "I'm not sure about that. Try asking about **OD Status**, **Formats**, or **Procedures**.";
-    };
-
-    /* =========================================
-       🧠 SMART APPLY LOGIC
-    ========================================= */
+    /* ---- Smart Apply ---- */
     const processSmartApply = async (text) => {
-        const dateRegex = /(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i;
         const dateMatch = text.match(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i);
-
-        if (!dateMatch) {
-            return "❌ **Invalid Date Format.**\nPlease use: `Apply OD <Start> to <End> ...`\nExample: `Apply OD 10.08.2025 to 12.08.2025`";
-        }
+        if (!dateMatch) return "❌ **Invalid Date Format.**\nExample: `Apply OD 10.08.2025 to 12.08.2025`";
 
         const startDate = dateMatch[1];
         const endDate = dateMatch[4];
-
         const industryMatch = text.match(/\b(IT|Core|Research)\b/i);
         const campusMatch = text.match(/\b(On Campus|Off Campus)\b/i);
-        const industry = industryMatch ? industryMatch[0] : null;
-        const campusType = campusMatch ? campusMatch[0] : null;
+        const industry = industryMatch?.[0];
+        const campusType = campusMatch?.[0];
 
-        if (!industry || !campusType) {
-            return "❌ **Missing Details.**\nPlease specify the **Industry** (IT/Core/Research) and **Mode** (On Campus/Off Campus).\nExample: `... for Google IT On Campus`";
-        }
+        if (!industry || !campusType) return "❌ **Missing Details.**\nSpecify Industry (IT/Core/Research) and Mode (On Campus/Off Campus).";
 
         const parts = text.split(/ for /i);
-        if (parts.length < 2) {
-            return "❌ **Missing Company.**\nPlease use: `... for <Company Name> ...`";
-        }
+        if (parts.length < 2) return "❌ **Missing Company.**\nUse: `... for <Company Name> ...`";
 
-        let companySection = parts.slice(1).join(" for ");
-        companySection = companySection.replace(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i, "").trim();
+        const removeToken = (str, token) => str.replace(new RegExp(`\\b${token}\\b`, 'gi'), "");
+        let companyName = parts.slice(1).join(" for ")
+            .replace(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i, "").trim();
+        companyName = removeToken(removeToken(companyName, industry), campusType).replace(/\s+/g, " ").trim();
 
-        const removeToken = (str, token) => {
-            const regex = new RegExp(`\\b${token}\\b`, 'gi');
-            return str.replace(regex, "");
-        };
-
-        let companyName = companySection;
-        companyName = removeToken(companyName, industry);
-        companyName = removeToken(companyName, campusType);
-        companyName = companyName.replace(/\s+/g, " ").trim();
-
-        if (!companyName || companyName.length < 2) {
-            return "❌ **Invalid Company Name.**\nPlease explicitly mention who you are visiting.";
-        }
-
-        if (attachments.length !== 2) {
-            return "❌ **Missing Attachments.**\nPlease attach exactly 2 PDF files: **Offer Letter** and **Aim/Objective** before sending.";
-        }
+        if (!companyName || companyName.length < 2) return "❌ **Invalid Company Name.**";
+        if (attachments.length !== 2) return "❌ **Missing Attachments.**\nPlease attach exactly 2 PDFs: Offer Letter and Aim/Objective.";
 
         const user = JSON.parse(sessionStorage.getItem("user"));
-        if (!user || !user.id) return "❌ **Authentication Failed.** Please log in again.";
+        if (!user?.id) return "❌ **Authentication Failed.** Please log in again.";
 
         try {
             const offersRes = await api.get(`/students/${user.id}/offers`);
-            const offers = offersRes.data;
-            const selectedOffer = offers.find(o => o.company.name.toLowerCase().includes(companyName.toLowerCase().trim()));
+            const selectedOffer = offersRes.data.find(o =>
+                o.company.name.toLowerCase().includes(companyName.toLowerCase())
+            );
+            if (!selectedOffer) return `❌ **Company Not Found.**\nSearched for '**${companyName}**'. No matching offer found.`;
 
-            if (!selectedOffer) {
-                return `❌ **Company Not Found.**\nI searched for '**${companyName}**' but couldn't find a matching offer in your records.`;
-            }
-
-            const formData = new FormData();
-            formData.append("studentId", user.id);
-            formData.append("offerId", selectedOffer.id);
-            formData.append("industry", industry.toUpperCase());
-            formData.append("campusType", campusType);
-
-            const toISODate = (d) => {
-                const p = d.split(/[-.]/) ;
-                return `${p[2]}-${p[1]}-${p[0]}`;
-            };
-            const startISO = toISODate(startDate);
-            const endISO = toISODate(endDate);
-            formData.append("startDate", startISO);
-            formData.append("endDate", endISO);
-
-            const s = new Date(startISO);
-            const e = new Date(endISO);
-            const days = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
-            formData.append("duration", days);
+            const toISO = (d) => { const p = d.split(/[-.]/); return `${p[2]}-${p[1]}-${p[0]}`; };
+            const startISO = toISO(startDate), endISO = toISO(endDate);
+            const days = Math.ceil((new Date(endISO) - new Date(startISO)) / 86400000) + 1;
 
             const offerFile = attachments.find(f => f.name.includes("ITO"));
             const aimFile = attachments.find(f => f.name.includes("ITI"));
+            if (!offerFile || !aimFile) return "❌ **Filename Error.**\nEnsure Offer Letter has `-ITO-` and Aim has `-ITI-` in filename.";
 
-            if (!offerFile || !aimFile) {
-                return "❌ **Filename Error.**\nPlease ensure:\n- Offer Letter filename contains `-ITO-`\n- Aim filename contains `-ITI-`";
-            }
+            const fd = new FormData();
+            fd.append("studentId", user.id);
+            fd.append("offerId", selectedOffer.id);
+            fd.append("industry", industry.toUpperCase());
+            fd.append("campusType", campusType);
+            fd.append("startDate", startISO);
+            fd.append("endDate", endISO);
+            fd.append("duration", days);
+            fd.append("offerFile", offerFile);
+            fd.append("aimFile", aimFile);
+            fd.append("iqacStatus", "Initiated");
 
-            formData.append("offerFile", offerFile);
-            formData.append("aimFile", aimFile);
-            formData.append("iqacStatus", "Initiated");
-
-            await api.post("/od/apply", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-
+            await api.post("/od/apply", fd, { headers: { "Content-Type": "multipart/form-data" } });
             setAttachments([]);
-            return `✅ **Success!**\nOD Application for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days.\nTrack status in 'My ODs'.`;
-
+            return `✅ **Success!**\nOD for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days. Track in 'My ODs'.`;
         } catch (error) {
-            console.error(error);
             const errData = error.response?.data;
-            if (errData?.steps && Array.isArray(errData.steps)) {
-                const stepsList = errData.steps.map(step => {
-                    const icon = step.success ? "✅" : "❌";
-                    const status = step.success ? "**Success**" : `**Failed**: ${step.error || ""}`;
-                    return `${icon} **${step.name}**\n   ${status}`;
-                }).join("\n\n");
-                return `⚠️ **Verification Incomplete**\n\n${stepsList}\n\nPlease correct the issues marked with ❌ and try again.`;
+            if (errData?.steps) {
+                const list = errData.steps.map(s => `${s.success ? "✅" : "❌"} **${s.name}**${s.error ? `\n   ${s.error}` : ""}`).join("\n\n");
+                return `⚠️ **Verification Incomplete**\n\n${list}\n\nCorrect issues marked ❌ and try again.`;
             }
             return `❌ **Submission Failed.**\n${errData?.message || error.message}`;
         }
     };
 
-    /* =========================================
-       📤 HANDLE SEND
-    ========================================= */
+    /* ---- Handle Send ---- */
     const handleSend = async (text = input) => {
         if (!text.trim()) return;
 
+        setSuggestions([]);
         setMessages(prev => [...prev, { type: "user", text, timestamp: new Date() }]);
         setInput("");
         setIsTyping(true);
 
-        const lowerText = text.toLowerCase();
+        const lower = text.toLowerCase();
 
-        if (lowerText.startsWith("apply od")) {
-            setMessages(prev => [...prev, {
-                type: "bot", text: "🔄 Processing Smart Application...", timestamp: new Date(), streaming: false
-            }]);
-            const resultMsg = await processSmartApply(text);
+        if (lower.startsWith("apply od")) {
+            addBotMsg("🔄 Processing Smart Application...");
+            const result = await processSmartApply(text);
             setMessages(prev => {
                 const filtered = prev.slice(0, -1);
-                return [...filtered, { type: "bot", text: resultMsg, timestamp: new Date(), streaming: true }];
+                return [...filtered, { type: "bot", text: result, timestamp: new Date(), streaming: true }];
             });
-            // Mark as done after stream completes
-            const wordCount = resultMsg.split(" ").length;
-            setTimeout(() => {
-                setMessages(prev =>
-                    prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
-                );
-            }, Math.min(wordCount * 42, 3000));
+            const wc = result.split(" ").length;
+            setTimeout(() => setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)), Math.min(wc * 42, 3000));
             setIsTyping(false);
             return;
         }
 
-        if (lowerText.includes("status") || lowerText.includes("track") || lowerText.includes("check") || lowerText.includes("my od")) {
+        if (lower.includes("status") || lower.includes("track") || lower.includes("check") || lower.includes("my od")) {
             setTimeout(async () => {
-                const statusMsg = await fetchODStatus();
-                streamBotMessage(statusMsg);
+                const msg = await fetchODStatus();
+                streamBotMessage(msg);
                 setIsTyping(false);
             }, 600);
             return;
         }
 
-        // AI-POWERED RESPONSE
         (async () => {
             try {
                 const response = await api.post("/ai/chat", {
@@ -405,39 +475,28 @@ export default function ChatAssistant() {
                     conversationHistory: messages
                         .slice(-6)
                         .filter(m => m.type !== "bot" || !m.text.includes("Processing"))
-                        .map(m => ({
-                            role: m.type === "user" ? "user" : "assistant",
-                            content: m.text
-                        }))
+                        .map(m => ({ role: m.type === "user" ? "user" : "assistant", content: m.text }))
                 });
                 streamBotMessage(response.data.response);
-            } catch (error) {
-                console.error("AI Error:", error);
-                streamBotMessage("I'm having trouble connecting right now. Please try asking about **OD Status**, **Formats**, or **Procedures**.");
+            } catch {
+                streamBotMessage("I'm having trouble connecting right now. Try asking about **OD Status**, **Formats**, or **Procedures**.");
             } finally {
                 setIsTyping(false);
             }
         })();
     };
 
-    const QUICK_CHIPS = [
-        "Check my Status",
-        "Application Procedure",
-        "Document Formats",
-        "System Purpose"
-    ];
+    const QUICK_CHIPS = ["Check my Status", "Application Procedure", "Document Formats", "System Purpose"];
 
     return (
         <>
             {/* Main Chat Window */}
-            <div
-                className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col overflow-hidden shadow-2xl
+            <div className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col overflow-hidden shadow-2xl
                 ${isExpanded
-                        ? "inset-0 w-full h-full rounded-none"
-                        : `bottom-24 right-6 w-96 max-h-[600px] h-[500px] rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
-                    }
-                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5
-            `}
+                    ? "inset-0 w-full h-full rounded-none"
+                    : `bottom-24 right-6 w-96 max-h-[600px] h-[500px] rounded-3xl ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-10 pointer-events-none"}`
+                }
+                bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 ring-1 ring-black/5`}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shrink-0">
@@ -454,81 +513,99 @@ export default function ChatAssistant() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            aria-label={isExpanded ? "Minimize chat" : "Maximize chat"}
-                            className="p-2 hover:bg-white/20 rounded-full transition-all duration-200"
-                            title={isExpanded ? "Minimize" : "Full Screen"}
-                        >
+                        <button onClick={() => setIsExpanded(!isExpanded)} aria-label={isExpanded ? "Minimize chat" : "Maximize chat"}
+                            className="p-2 hover:bg-white/20 rounded-full transition-all duration-200">
                             {isExpanded ? <Minimize2 className="w-4.5 h-4.5" /> : <Maximize2 className="w-4.5 h-4.5" />}
                         </button>
-                        <button
-                            onClick={() => { closeChat(); setIsExpanded(false); }}
-                            aria-label="Close chat"
-                            className="p-2 hover:bg-red-500/80 hover:shadow-red-500/30 hover:shadow-lg rounded-full transition-all duration-200"
-                        >
+                        <button onClick={() => { closeChat(); setIsExpanded(false); }} aria-label="Close chat"
+                            className="p-2 hover:bg-red-500/80 hover:shadow-red-500/30 hover:shadow-lg rounded-full transition-all duration-200">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
 
-                {/* Messages Body */}
-                <div className="flex-1 overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50 space-y-4">
-                    {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 group`}>
-                            {msg.type === "bot" && (
+                {/* Messages Body (relative for scroll pill positioning) */}
+                <div className="flex-1 relative overflow-hidden">
+                    <div
+                        ref={messagesBodyRef}
+                        onScroll={handleScroll}
+                        className="h-full overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50 space-y-4"
+                    >
+                        {messages.map((msg, i) => (
+                            <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 group`}>
+                                {msg.type === "bot" && (
+                                    <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
+                                        <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <div className="flex flex-col gap-0.5 max-w-[85%] sm:max-w-[75%]">
+                                    <div className={`px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
+                                        ${msg.type === "user"
+                                            ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
+                                            : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50"
+                                        }`}
+                                    >
+                                        {msg.type === "bot" && msg.streaming !== undefined ? (
+                                            <StreamingMessage text={msg.text} isStreaming={!!msg.streaming} />
+                                        ) : (
+                                            <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+                                        )}
+                                    </div>
+
+                                    {/* Actions row: Timestamp + Reactions + Copy */}
+                                    <div className={`flex items-center gap-1 ${msg.type === "user" ? "justify-end" : "justify-start"} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
+                                        {msg.timestamp && (
+                                            <span className="text-[10px] text-slate-400 select-none px-1">{getRelativeTime(msg.timestamp)}</span>
+                                        )}
+                                        {msg.type === "bot" && (
+                                            <>
+                                                <CopyButton text={msg.text} />
+                                                <ReactionBar msgIndex={i} reactions={reactions} onReact={handleReact} />
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                {msg.type === "user" && (
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
+                                        <User className="w-4 h-4 text-slate-500" />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                        {isTyping && (
+                            <div className="flex justify-start items-end gap-2">
                                 <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
                                     <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                                 </div>
-                            )}
-                            <div className="flex flex-col gap-0.5">
-                                <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
-                                    ${msg.type === "user"
-                                        ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
-                                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50 shadow-slate-200/50 dark:shadow-none"
-                                    }`}>
-                                    {msg.type === "bot" && msg.streaming !== undefined ? (
-                                        <StreamingMessage text={msg.text} isStreaming={!!msg.streaming} />
-                                    ) : (
-                                        <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
-                                    )}
-                                </div>
-                                {/* Timestamp — visible on group hover */}
-                                {msg.timestamp && (
-                                    <p className={`text-[10px] font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 select-none
-                                        ${msg.type === "user" ? "text-right pr-1" : "pl-1"}`}>
-                                        {getRelativeTime(msg.timestamp)}
-                                    </p>
-                                )}
-                            </div>
-                            {msg.type === "user" && (
-                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
-                                    <User className="w-4 h-4 text-slate-500" />
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                    {isTyping && (
-                        <div className="flex justify-start items-end gap-2">
-                            <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
-                                <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-700/50">
-                                <div className="flex gap-1.5">
-                                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                    <span className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"></span>
+                                <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-700/50">
+                                    <div className="flex gap-1.5">
+                                        <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="w-2 h-2 bg-pink-400 rounded-full animate-bounce"></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* 🔽 Scroll-to-Latest Pill */}
+                    {showScrollPill && (
+                        <button
+                            onClick={() => scrollToBottom(true)}
+                            className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg shadow-indigo-500/40 animate-bounce transition-all z-10"
+                        >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                            New message
+                        </button>
                     )}
-                    <div ref={messagesEndRef} />
                 </div>
 
-                {/* Attachments & Quick Actions Panel */}
+                {/* Bottom Panel */}
                 <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-slate-700/50">
 
-                    {/* Rich File Preview Cards */}
+                    {/* File Previews */}
                     {attachments.length > 0 && (
                         <div className="px-4 pt-3 pb-1 flex gap-2.5 overflow-x-auto no-scrollbar">
                             {attachments.map((file, i) => (
@@ -537,64 +614,70 @@ export default function ChatAssistant() {
                         </div>
                     )}
 
-                    {/* Quick Chips */}
-                    <div className="px-4 pt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                        {QUICK_CHIPS.map((chip, i) => (
-                            <button
-                                key={i}
-                                onClick={() => handleSend(chip)}
-                                disabled={isTyping}
-                                className={`whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
-                            >
-                                {chip}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Auto-Suggestions (contextual chips based on typing) */}
+                    {suggestions.length > 0 && (
+                        <div className="px-4 pt-2 flex gap-2 overflow-x-auto no-scrollbar">
+                            {suggestions.map((chip, i) => (
+                                <button key={i}
+                                    onClick={() => { handleSend(chip); setSuggestions([]); }}
+                                    className="whitespace-nowrap px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-medium rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800/40 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                >
+                                    ✨ {chip}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
-                    {/* Input Field */}
-                    <div className="p-4 flex items-center gap-3">
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileSelect}
-                            className="hidden"
-                            accept="application/pdf"
-                        />
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            aria-label="Attach PDF document"
-                            className={`p-2.5 rounded-xl transition-all active:scale-95 relative
-                                ${attachments.length > 0
-                                    ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30"
-                                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500"
-                                }`}
-                            title="Attach PDF"
-                        >
-                            <Paperclip className="w-5 h-5" />
+                    {/* Default Quick Chips (shown when no auto-suggestions) */}
+                    {suggestions.length === 0 && (
+                        <div className="px-4 pt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                            {QUICK_CHIPS.map((chip, i) => (
+                                <button key={i} onClick={() => handleSend(chip)} disabled={isTyping}
+                                    className="whitespace-nowrap px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 text-xs font-medium rounded-full border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                                    {chip}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Input Row */}
+                    <div className="p-4 flex items-center gap-2">
+                        <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="application/pdf" />
+
+                        {/* Attach button with count badge */}
+                        <button onClick={() => fileInputRef.current?.click()} aria-label="Attach PDF"
+                            className={`relative p-2.5 rounded-xl transition-all active:scale-95 flex-shrink-0
+                                ${attachments.length > 0 ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500"}`}>
+                            <FileText className="w-5 h-5" />
                             {attachments.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                                    {attachments.length}
-                                </span>
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">{attachments.length}</span>
                             )}
                         </button>
 
+                        {/* Voice button */}
+                        {voiceSupported && (
+                            <button onClick={toggleVoice} aria-label={isListening ? "Stop listening" : "Voice input"}
+                                className={`p-2.5 rounded-xl transition-all active:scale-95 flex-shrink-0
+                                    ${isListening ? "text-red-500 bg-red-50 dark:bg-red-900/20 animate-pulse" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-purple-500"}`}>
+                                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                            </button>
+                        )}
+
+                        {/* Text input */}
                         <div className="flex-1 relative">
                             <input
                                 type="text"
                                 value={input}
-                                onChange={(e) => setInput(e.target.value)}
+                                onChange={(e) => handleInputChange(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder="Ex: Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus"
+                                placeholder={isListening ? "🎙 Listening..." : "Ask Disha or type 'Apply OD ...'"}
                                 aria-label="Chat input"
-                                className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
+                                className={`w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all
+                                    ${isListening ? "ring-2 ring-red-400/50 bg-red-50/50 dark:bg-red-900/10" : ""}`}
                             />
-                            <button
-                                onClick={() => handleSend()}
-                                disabled={!input.trim() || isTyping}
-                                aria-label="Send message"
-                                aria-busy={isTyping}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center"
-                            >
+                            <button onClick={() => handleSend()} disabled={!input.trim() || isTyping}
+                                aria-label="Send message" aria-busy={isTyping}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-90 flex items-center justify-center">
                                 {isTyping ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
                             </button>
                         </div>
@@ -602,16 +685,14 @@ export default function ChatAssistant() {
                 </div>
             </div>
 
-            {/* Floating Action Button (FAB) */}
+            {/* FAB */}
             {!isExpanded && (
                 <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-4 transition-all duration-300 ${isOpen ? "invisible opacity-0" : "visible opacity-100"}`}>
                     <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-white px-5 py-2.5 rounded-full shadow-xl border border-white/20 dark:border-slate-700 text-sm font-semibold animate-bounce hidden sm:block">
                         Chat with Disha 2.0 👋
                     </div>
-                    <button
-                        onClick={() => openChat()}
-                        className="group relative h-16 w-16 rounded-full shadow-2xl flex items-center justify-center bg-white border-2 border-indigo-500 transition-all duration-500 transform hover:scale-110 active:scale-95 ring-4 ring-indigo-200 dark:ring-indigo-900/40 overflow-hidden"
-                    >
+                    <button onClick={() => openChat()}
+                        className="group relative h-16 w-16 rounded-full shadow-2xl flex items-center justify-center bg-white border-2 border-indigo-500 transition-all duration-500 transform hover:scale-110 active:scale-95 ring-4 ring-indigo-200 dark:ring-indigo-900/40 overflow-hidden">
                         <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                         <span className="absolute top-2 right-2 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
