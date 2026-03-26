@@ -591,8 +591,12 @@ exports.applyOD = async (req, res) => {
 
     if (!aimResult.success) {
       const failedReasons = [];
-      if (!aimResult.verificationDetails.name.found) failedReasons.push("Student Name (in Aim File)");
-      if (!aimResult.verificationDetails.rollNo.found) failedReasons.push("Roll No (in Aim File)");
+      if (aimResult.verificationDetails) {
+        if (!aimResult.verificationDetails.name?.found) failedReasons.push("Student Name (in Aim File)");
+        if (!aimResult.verificationDetails.rollNo?.found) failedReasons.push("Roll No (in Aim File)");
+      } else {
+        failedReasons.push(aimResult.message || "PDF Parsing Error (or Invalid File Format)");
+      }
 
       validationSteps.push({
         name: "AI Verification (Aim File)",
@@ -623,8 +627,12 @@ exports.applyOD = async (req, res) => {
 
     if (!offerResult.success) {
       const failedReasons = [];
-      if (!offerResult.verificationDetails.name.found) failedReasons.push("Student Name (in Offer Letter)");
-      if (!offerResult.verificationDetails.company.found) failedReasons.push("Company Name (in Offer Letter)");
+      if (offerResult.verificationDetails) {
+        if (!offerResult.verificationDetails.name?.found) failedReasons.push("Student Name (in Offer Letter)");
+        if (!offerResult.verificationDetails.company?.found) failedReasons.push("Company Name (in Offer Letter)");
+      } else {
+        failedReasons.push(offerResult.message || "PDF Parsing Error (or Invalid File Format)");
+      }
 
       validationSteps.push({
         name: "AI Verification (Offer Letter)",
