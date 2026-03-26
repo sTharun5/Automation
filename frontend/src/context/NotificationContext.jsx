@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 
 const NotificationContext = createContext();
@@ -15,6 +15,19 @@ if (typeof window !== "undefined") {
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    // Use a ref to track the previous count for side effects
+    const prevUnreadCountRef = useRef(0);
+
+    // Idiomatic React: Side effects go in useEffect, never in setState updaters
+    useEffect(() => {
+        if (unreadCount > prevUnreadCountRef.current) {
+            // navigator.userActivation properly tracks if user has interacted with the frame
+            if (typeof navigator !== "undefined" && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate) {
+                try { navigator.vibrate([100, 50, 100]); } catch (e) { /* ignore */ }
+            }
+        }
+        prevUnreadCountRef.current = unreadCount;
+    }, [unreadCount]);
 
     const fetchNotifications = async () => {
         try {
@@ -29,13 +42,7 @@ export const NotificationProvider = ({ children }) => {
             setNotifications(res.data);
             
             const newUnreadCount = res.data.filter((n) => !n.read).length;
-            // Vibrate if there are NEW unread notifications compared to current state
-            setUnreadCount((prevCount) => {
-                if (newUnreadCount > prevCount && navigator.vibrate && hasInteracted) {
-                    try { navigator.vibrate([100, 50, 100]); } catch (e) { /* ignore */ }
-                }
-                return newUnreadCount;
-            });
+            setUnreadCount(newUnreadCount);
         } catch (error) {
             console.error("Failed to fetch notifications", error);
         }
