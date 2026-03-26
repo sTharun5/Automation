@@ -157,7 +157,7 @@ export default function FacultyApproval() {
                                             </h4>
                                             <div className="grid grid-cols-3 gap-2">
                                                 {Object.entries(selectedOd.verificationDetails || {})
-                                                    .filter(([key]) => !['ocrFailed', 'fallbackReasons', 'docType', 'searched'].includes(key))
+                                                    .filter(([key]) => !['ocrFailed', 'fallbackReasons', 'docType', 'searched', 'dates'].includes(key))
                                                     .map(([key, val]) => {
                                                         const isMapped = val && typeof val === 'object' ? val.found : !!val;
                                                         return (
