@@ -310,12 +310,26 @@ export default function ChatAssistant() {
         }
     }, [messages, scrollToBottom]);
 
+    /* ---- Message helpers (must be defined before useVoiceInput and handleFileSelect) ---- */
+    const addBotMsg = useCallback((text) => {
+        setMessages(prev => [...prev, { type: "bot", text, timestamp: new Date() }]);
+    }, []);
+
+    const streamBotMessage = useCallback((text) => {
+        setMessages(prev => [...prev, {
+            type: "bot", text, timestamp: new Date(), streaming: true
+        }]);
+        const durationMs = Math.min(text.split(" ").length * 42, 3000);
+        setTimeout(() => {
+            setMessages(prev =>
+                prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
+            );
+        }, durationMs);
+    }, []);
+
     /* ---- Voice input ---- */
-    const handleTranscript = useCallback((transcript, isFinal) => {
+    const handleTranscript = useCallback((transcript) => {
         setInput(transcript);
-        if (isFinal && transcript.trim()) {
-            // Auto-populate only; user presses Send/Enter
-        }
     }, []);
     const { isListening, supported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleTranscript, addBotMsg);
 
@@ -348,23 +362,6 @@ export default function ChatAssistant() {
     const removeAttachment = (index) => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
-
-    /* ---- Message helpers ---- */
-    const addBotMsg = useCallback((text) => {
-        setMessages(prev => [...prev, { type: "bot", text, timestamp: new Date() }]);
-    }, []);
-
-    const streamBotMessage = useCallback((text) => {
-        setMessages(prev => [...prev, {
-            type: "bot", text, timestamp: new Date(), streaming: true
-        }]);
-        const durationMs = Math.min(text.split(" ").length * 42, 3000);
-        setTimeout(() => {
-            setMessages(prev =>
-                prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
-            );
-        }, durationMs);
-    }, []);
 
     /* ---- Reactions ---- */
     const handleReact = useCallback((msgIndex, type) => {
