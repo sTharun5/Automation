@@ -11,8 +11,6 @@ import {
     ThumbsDown,
     Copy,
     Check,
-    Mic,
-    MicOff,
     ChevronDown
 } from "lucide-react";
 
@@ -36,33 +34,49 @@ function getRelativeTime(date) {
 }
 
 /* =========================================
-   🌊 STREAMING MESSAGE COMPONENT
+   🌊 STREAMING MESSAGE — Claude-style char-by-char
 ========================================= */
 function StreamingMessage({ text, isStreaming }) {
-    const [displayedText, setDisplayedText] = useState("");
-    const indexRef = useRef(0);
+    const [displayed, setDisplayed] = useState("");
+    const idxRef = useRef(0);
+    const timerRef = useRef(null);
 
     useEffect(() => {
         if (!isStreaming) {
-            setDisplayedText(text);
+            setDisplayed(text);
             return;
         }
-        setDisplayedText("");
-        indexRef.current = 0;
-        const words = text.split(" ");
-        const interval = setInterval(() => {
-            if (indexRef.current >= words.length) { clearInterval(interval); return; }
-            setDisplayedText(prev => (prev ? prev + " " : "") + words[indexRef.current]);
-            indexRef.current += 1;
-        }, 40);
-        return () => clearInterval(interval);
+        setDisplayed("");
+        idxRef.current = 0;
+
+        const tick = () => {
+            if (idxRef.current >= text.length) return;
+            const ch = text[idxRef.current];
+            setDisplayed(prev => prev + ch);
+            idxRef.current += 1;
+
+            // Variable speed: punctuation & newlines pause longer for natural rhythm
+            const delay = /[.!?\n]/.test(ch) ? 55
+                        : ch === ',' ? 35
+                        : 12; // normal chars fly fast like Claude
+            timerRef.current = setTimeout(tick, delay);
+        };
+        timerRef.current = setTimeout(tick, 10);
+        return () => clearTimeout(timerRef.current);
     }, [text, isStreaming]);
 
-    const html = displayedText
+    const html = displayed
         .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
         .replace(/\n/g, "<br/>");
 
-    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    return (
+        <div>
+            <span dangerouslySetInnerHTML={{ __html: html }} />
+            {isStreaming && displayed.length < text.length && (
+                <span className="inline-block w-0.5 h-4 bg-indigo-500 ml-0.5 animate-pulse align-middle" />
+            )}
+        </div>
+    );
 }
 
 /* =========================================
@@ -168,114 +182,6 @@ function CopyButton({ text }) {
     );
 }
 
-/* =========================================
-   🔊 VOICE INPUT HOOK
-========================================= */
-function useVoiceInput(onTranscript, onError) {
-    const [isListening, setIsListening] = useState(false);
-    const [supported, setSupported] = useState(false);
-    const recognitionRef = useRef(null);
-    const isListeningRef = useRef(false); // track without closure staleness
-    const retryRef = useRef(0);           // auto-retry counter for network errors
-    const callbackRef = useRef(onTranscript);
-    useEffect(() => { callbackRef.current = onTranscript; }, [onTranscript]);
-
-    const startRec = useCallback(() => {
-        const rec = recognitionRef.current;
-        if (!rec) return;
-        try { rec.start(); } catch { /* already started, ignore */ }
-    }, []);
-
-    useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return;
-
-        setSupported(true);
-        const rec = new SpeechRecognition();
-        rec.lang = "en-US";
-        rec.continuous = false;    // false avoids the Chrome 'network' bug in continuous mode
-        rec.interimResults = true;
-
-        rec.onresult = (e) => {
-            const transcript = Array.from(e.results)
-                .map(r => r[0].transcript)
-                .join("");
-            callbackRef.current(transcript, e.results[e.results.length - 1].isFinal);
-        };
-
-        // Auto-restart when recognition ends naturally (simulates continuous mode safely)
-        rec.onend = () => {
-            if (isListeningRef.current) {
-                try { rec.start(); } catch { /* ignore */ }
-            } else {
-                setIsListening(false);
-            }
-        };
-
-        rec.onerror = async (e) => {
-            if (e.error === "network") {
-                // Check if running in Brave — Brave blocks Google's Speech API by default
-                const isBrave = !!(navigator.brave && await navigator.brave.isBrave().catch(() => false));
-
-                if (isBrave) {
-                    retryRef.current = 0;
-                    isListeningRef.current = false;
-                    setIsListening(false);
-                    onError?.("🦁 Brave is blocking voice recognition. Fix: click the **Shields icon** (🛡) in the address bar → set **Fingerprinting** to \"Allow all fingerprinting\" for this site, then try again.");
-                    return;
-                }
-
-                // Non-Brave: retry silently up to 2x (transient network hiccup)
-                if (retryRef.current < 2 && isListeningRef.current) {
-                    retryRef.current += 1;
-                    setTimeout(() => { try { rec.start(); } catch { /* ignore */ } }, 600);
-                    return;
-                }
-            }
-
-            retryRef.current = 0;
-            isListeningRef.current = false;
-            setIsListening(false);
-
-            const msg =
-                e.error === "not-allowed"
-                    ? "⚠️ Microphone access denied. Allow mic permission in your browser settings and reload."
-                    : e.error === "network"
-                        ? "⚠️ Voice recognition failed to connect. Make sure the page is on HTTPS, or try a different browser."
-                        : e.error === "no-speech"
-                            ? "🎙 No speech detected. Make sure your microphone is working and try again."
-                            : e.error === "aborted"
-                                ? null
-                                : `⚠️ Voice error (${e.error}). Please type your message instead.`;
-            if (msg) onError?.(msg);
-        };
-
-        recognitionRef.current = rec;
-        return () => {
-            isListeningRef.current = false;
-            try { rec.abort(); } catch { /* ignore */ }
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const toggle = useCallback(() => {
-        const rec = recognitionRef.current;
-        if (!rec) return;
-        if (isListeningRef.current) {
-            isListeningRef.current = false;
-            retryRef.current = 0;
-            try { rec.stop(); } catch { /* ignore */ }
-            setIsListening(false);
-        } else {
-            retryRef.current = 0;
-            isListeningRef.current = true;
-            try { rec.start(); } catch { /* ignore */ }
-            setIsListening(true);
-        }
-    }, []);
-
-    return { isListening, supported, toggle };
-}
 
 /* =========================================
    💡 AUTO-SUGGESTION DATA
@@ -370,11 +276,6 @@ export default function ChatAssistant() {
         }, durationMs);
     }, []);
 
-    /* ---- Voice input ---- */
-    const handleTranscript = useCallback((transcript) => {
-        setInput(transcript);
-    }, []);
-    const { isListening, supported: voiceSupported, toggle: toggleVoice } = useVoiceInput(handleTranscript, addBotMsg);
 
     /* ---- Auto-suggestions from typing ---- */
     const handleInputChange = (val) => {
@@ -515,7 +416,7 @@ export default function ChatAssistant() {
                 return [...filtered, { type: "bot", text: result, timestamp: new Date(), streaming: true }];
             });
             const wc = result.split(" ").length;
-            setTimeout(() => setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)), Math.min(wc * 42, 3000));
+            setTimeout(() => setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)), Math.min(result.length * 13, 4000));
             setIsTyping(false);
             return;
         }
@@ -715,14 +616,6 @@ export default function ChatAssistant() {
                             )}
                         </button>
 
-                        {/* Voice button */}
-                        {voiceSupported && (
-                            <button onClick={toggleVoice} aria-label={isListening ? "Stop listening" : "Voice input"}
-                                className={`p-2.5 rounded-xl transition-all active:scale-95 flex-shrink-0
-                                    ${isListening ? "text-red-500 bg-red-50 dark:bg-red-900/20 animate-pulse" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-purple-500"}`}>
-                                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                            </button>
-                        )}
 
                         {/* Text input */}
                         <div className="flex-1 relative">
@@ -731,10 +624,9 @@ export default function ChatAssistant() {
                                 value={input}
                                 onChange={(e) => handleInputChange(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                placeholder={isListening ? "🎙 Listening..." : "Ask Disha or type 'Apply OD ...'"}
+                                placeholder="Ask Disha or type 'Apply OD ...'"
                                 aria-label="Chat input"
-                                className={`w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all
-                                    ${isListening ? "ring-2 ring-red-400/50 bg-red-50/50 dark:bg-red-900/10" : ""}`}
+                                className="w-full bg-slate-100 dark:bg-slate-800 border-transparent focus:border-indigo-500 focus:ring-0 rounded-xl px-4 py-3 pr-12 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 shadow-inner transition-all"
                             />
                             <button onClick={() => handleSend()} disabled={!input.trim() || isTyping}
                                 aria-label="Send message" aria-busy={isTyping}
