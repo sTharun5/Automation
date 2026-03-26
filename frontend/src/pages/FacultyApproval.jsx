@@ -156,15 +156,30 @@ export default function FacultyApproval() {
                                                 <ShieldCheck className="w-4 h-4" /> AI Verification Results
                                             </h4>
                                             <div className="grid grid-cols-3 gap-2">
-                                                {Object.entries(selectedOd.verificationDetails || {}).map(([key, val]) => (
-                                                    <div key={key} className="text-center">
-                                                        <p className="text-[10px] uppercase text-slate-500 font-bold mb-1">{key}</p>
-                                                        <span className={`text-xs px-2 py-1 rounded-md font-bold ${val ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                            {val ? 'MAPPED' : 'FAILED'}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                {Object.entries(selectedOd.verificationDetails || {})
+                                                    .filter(([key]) => !['ocrFailed', 'fallbackReasons', 'docType', 'searched'].includes(key))
+                                                    .map(([key, val]) => {
+                                                        const isMapped = val && typeof val === 'object' ? val.found : !!val;
+                                                        return (
+                                                            <div key={key} className="text-center">
+                                                                <p className="text-[10px] uppercase text-slate-500 font-bold mb-1">{key === 'rollNo' ? 'Roll No' : key}</p>
+                                                                <span className={`text-xs px-2 py-1 rounded-md font-bold ${isMapped ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    {isMapped ? 'MAPPED' : 'FAILED'}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
                                             </div>
+                                            {selectedOd.verificationDetails?.ocrFailed && (
+                                                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                                    <p className="text-xs font-bold text-red-700 dark:text-red-400 mb-1">AI Verification Issues Flagged:</p>
+                                                    <ul className="list-disc list-inside text-[11px] text-red-600 dark:text-red-300 ml-4">
+                                                        {(selectedOd.verificationDetails.fallbackReasons || []).map((reason, idx) => (
+                                                            <li key={idx}>{reason}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Student Info */}
