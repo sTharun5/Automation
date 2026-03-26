@@ -4,6 +4,14 @@ import api from "../api/axios";
 
 const NotificationContext = createContext();
 
+// Global tracker to avoid Chrome [Intervention] warning for navigator.vibrate
+let hasInteracted = false;
+if (typeof window !== "undefined") {
+    ['click', 'touchstart', 'keydown'].forEach(evt => 
+        window.addEventListener(evt, () => hasInteracted = true, { once: true, passive: true })
+    );
+}
+
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -23,8 +31,8 @@ export const NotificationProvider = ({ children }) => {
             const newUnreadCount = res.data.filter((n) => !n.read).length;
             // Vibrate if there are NEW unread notifications compared to current state
             setUnreadCount((prevCount) => {
-                if (newUnreadCount > prevCount && navigator.vibrate) {
-                    navigator.vibrate([100, 50, 100]); // Short double pulse for notification
+                if (newUnreadCount > prevCount && navigator.vibrate && hasInteracted) {
+                    try { navigator.vibrate([100, 50, 100]); } catch (e) { /* ignore */ }
                 }
                 return newUnreadCount;
             });
