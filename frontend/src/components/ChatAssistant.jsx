@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
     Maximize2,
     Minimize2,
@@ -6,6 +6,7 @@ import {
     Send,
     Paperclip,
     User,
+    FileText,
     Bot,
     CheckCircle,
     AlertCircle,
@@ -13,18 +14,112 @@ import {
 } from "lucide-react";
 
 import api from "../api/axios";
-import { useChat } from "../context/ChatContext"; // ✅ Import Hook
+import { useChat } from "../context/ChatContext";
+
+/* =========================================
+   ⏱️ TIMESTAMP HELPER
+========================================= */
+function getRelativeTime(date) {
+    const now = Date.now();
+    const diff = now - new Date(date).getTime();
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 5) return "just now";
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return new Date(date).toLocaleDateString();
+}
+
+/* =========================================
+   🌊 STREAMING MESSAGE COMPONENT
+========================================= */
+function StreamingMessage({ text, isStreaming }) {
+    const [displayedText, setDisplayedText] = useState("");
+    const indexRef = useRef(0);
+
+    useEffect(() => {
+        if (!isStreaming) {
+            setDisplayedText(text);
+            return;
+        }
+
+        // Reset when a new streaming message starts
+        setDisplayedText("");
+        indexRef.current = 0;
+
+        // Stream word-by-word at ~40ms per word
+        const words = text.split(" ");
+        const interval = setInterval(() => {
+            if (indexRef.current >= words.length) {
+                clearInterval(interval);
+                return;
+            }
+            setDisplayedText(prev => (prev ? prev + " " : "") + words[indexRef.current]);
+            indexRef.current += 1;
+        }, 40);
+
+        return () => clearInterval(interval);
+    }, [text, isStreaming]);
+
+    const html = displayedText
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\n/g, "<br/>");
+
+    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+/* =========================================
+   📄 FILE PREVIEW CARD
+========================================= */
+function FilePreviewCard({ file, index, onRemove }) {
+    const sizeKB = (file.size / 1024).toFixed(1);
+    const isOffer = file.name.includes("-ITO-");
+    const isAim = file.name.includes("-ITI-");
+    const label = isOffer ? "Offer Letter" : isAim ? "Aim/Objective" : "PDF";
+    const color = isOffer
+        ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+        : isAim
+            ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+            : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300";
+
+    return (
+        <div className={`flex items-center gap-2.5 border rounded-xl px-3 py-2 shadow-sm min-w-[160px] max-w-[200px] flex-shrink-0 ${color}`}>
+            <div className="w-8 h-8 rounded-lg bg-white/60 dark:bg-black/20 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-wider opacity-70">{label}</p>
+                <p className="text-xs font-semibold truncate" title={file.name}>{file.name}</p>
+                <p className="text-[10px] opacity-60">{sizeKB} KB</p>
+            </div>
+            <button
+                onClick={() => onRemove(index)}
+                aria-label={`Remove ${file.name}`}
+                className="flex-shrink-0 w-5 h-5 rounded-full bg-white/50 dark:bg-black/30 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 transition-colors"
+            >
+                <X className="w-3 h-3" />
+            </button>
+        </div>
+    );
+}
 
 /**
  * ChatAssistant component - An AI-powered virtual assistant (Disha 2.0) that handles
  * natural language queries for OD applications and provides status updates.
  */
 export default function ChatAssistant() {
-    const { isOpen, openChat, closeChat } = useChat(); // ✅ Use Context
-    // const [isOpen, setIsOpen] = useState(false); // ❌ Remove local state
-    const [isExpanded, setIsExpanded] = useState(false); // Full screen toggle
+    const { isOpen, openChat, closeChat } = useChat();
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    // Each message: { type, text, timestamp, streaming? }
     const [messages, setMessages] = useState([
-        { type: "bot", text: "Greetings. I am **Disha 2.0**. select a query below or type your question regarding application procedures." }
+        {
+            type: "bot",
+            text: "Greetings. I am **Disha 2.0**. select a query below or type your question regarding application procedures.",
+            timestamp: new Date()
+        }
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -41,7 +136,6 @@ export default function ChatAssistant() {
     const [attachments, setAttachments] = useState([]);
     const fileInputRef = useRef(null);
 
-    // Custom Disha Avatar
     const dishaAvatar = "https://cdn-icons-png.flaticon.com/512/6997/6997662.png";
 
     /* =========================================
@@ -50,19 +144,32 @@ export default function ChatAssistant() {
     const handleFileSelect = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            // Reset input so same file can be re-selected if removed
+            e.target.value = "";
+
             if (attachments.length >= 2) {
-                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Maximum 2 attachments allowed (Offer Letter & Aim)." }]);
+                setMessages(prev => [...prev, {
+                    type: "bot",
+                    text: "⚠️ Maximum 2 attachments allowed (Offer Letter & Aim).",
+                    timestamp: new Date()
+                }]);
                 return;
             }
             if (!file.type.includes("pdf")) {
-                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Only PDF files are supported." }]);
+                setMessages(prev => [...prev, {
+                    type: "bot",
+                    text: "⚠️ Only PDF files are supported.",
+                    timestamp: new Date()
+                }]);
                 return;
             }
-            // Basic filename check suggestion (optional, but helpful)
             if (!file.name.includes("-ITO-") && !file.name.includes("-ITI-")) {
-                setMessages(prev => [...prev, { type: "bot", text: "⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`." }]);
+                setMessages(prev => [...prev, {
+                    type: "bot",
+                    text: "⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`.",
+                    timestamp: new Date()
+                }]);
             }
-
             setAttachments(prev => [...prev, file]);
         }
     };
@@ -70,6 +177,23 @@ export default function ChatAssistant() {
     const removeAttachment = (index) => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
+
+    /* =========================================
+       🌊 STREAM A BOT REPLY
+    ========================================= */
+    const streamBotMessage = useCallback((text) => {
+        const msg = { type: "bot", text, timestamp: new Date(), streaming: true };
+        setMessages(prev => [...prev, msg]);
+
+        // After streaming duration completes, mark as done
+        const words = text.split(" ").length;
+        const durationMs = Math.min(words * 42, 3000);
+        setTimeout(() => {
+            setMessages(prev =>
+                prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
+            );
+        }, durationMs);
+    }, []);
 
     /* =========================================
        📢 HELPER FUNCTIONS
@@ -122,20 +246,18 @@ export default function ChatAssistant() {
        🧠 SMART APPLY LOGIC
     ========================================= */
     const processSmartApply = async (text) => {
-        // 1. Extract Dates (Required)
-        const dateRegex = /(\d{2}[-.]\d{2}[-.]\d{4}) to (\d{2}[-.]\d{2}[-.]\d{4})/i;
-        const dateMatch = text.match(dateRegex);
+        const dateRegex = /(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i;
+        const dateMatch = text.match(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i);
 
         if (!dateMatch) {
             return "❌ **Invalid Date Format.**\nPlease use: `Apply OD <Start> to <End> ...`\nExample: `Apply OD 10.08.2025 to 12.08.2025`";
         }
 
-        const [_, startDate, endDate] = dateMatch;
+        const startDate = dateMatch[1];
+        const endDate = dateMatch[4];
 
-        // 2. Extract Keywords (Flexible Order)
         const industryMatch = text.match(/\b(IT|Core|Research)\b/i);
         const campusMatch = text.match(/\b(On Campus|Off Campus)\b/i);
-
         const industry = industryMatch ? industryMatch[0] : null;
         const campusType = campusMatch ? campusMatch[0] : null;
 
@@ -143,108 +265,59 @@ export default function ChatAssistant() {
             return "❌ **Missing Details.**\nPlease specify the **Industry** (IT/Core/Research) and **Mode** (On Campus/Off Campus).\nExample: `... for Google IT On Campus`";
         }
 
-        // 3. Extract Company Name
-        // Logic: "for <Company>" ... and stop at first keyword or end of string.
-        // We know the structure is "for <Company> [keywords]"
-        // So we split by "for" and take the second part.
         const parts = text.split(/ for /i);
         if (parts.length < 2) {
             return "❌ **Missing Company.**\nPlease use: `... for <Company Name> ...`";
         }
 
-        // Get everything after "for"
-        let companySection = parts.slice(1).join(" for "); // Rejoin if multiple "for"s exists (edge case)
+        let companySection = parts.slice(1).join(" for ");
+        companySection = companySection.replace(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i, "").trim();
 
-        // Remove the dates if they appeared after "for" (unlikely but safe)
-        companySection = companySection.replace(dateRegex, "").trim();
-
-        // Remove known keywords to isolate company name
-
-        // Also remove "add", "apply", "od" just in case they leaked in (defensive)
-
-        // Strategy: Truncate company name at the *first* occurrence of a keyword
-        // This assumes user types "for Google IT...", not "IT for Google..."
-        // If they typed "IT On Campus for Google", this logic needs to be different.
-
-        // Let's assume standard "for <Company>" is valid, but what follows can be mixed.
-        // We simply remove the found keywords from the companySection string.
-        let companyName = companySection;
-
-        // Regex to remove keywords case-insensitively
-        companyName = companyName.replace(new RegExp(`\\b${industry}\\b`, 'yi'), ""); // 'y' is sticky, nope.
-        // Just replace strings
         const removeToken = (str, token) => {
             const regex = new RegExp(`\\b${token}\\b`, 'gi');
             return str.replace(regex, "");
-        }
+        };
 
+        let companyName = companySection;
         companyName = removeToken(companyName, industry);
         companyName = removeToken(companyName, campusType);
-
-        // Cleanup extra spaces and special chars
         companyName = companyName.replace(/\s+/g, " ").trim();
-
-        // Remove trailing "it" if it was part of "for Google add on campus it" and "it" was matched as industry.
-        // Wait, "it" IS the industry. So it's already removed.
-
-        // Fix for "Google add" -> If "add" is a common typo for "and" or just noise, we leave it. 
-        // We can't distinguish "Google Add" (company) from "Google add" (typo).
-        // But the user's prompt was "Google add on campus it".
-        // industry="it". campus="on campus".
-        // companySection initially "Google add on campus it".
-        // remove "it": "Google add on campus "
-        // remove "on campus": "Google add  "
-        // Result: "Google add". 
-        // This is acceptable behavior.
 
         if (!companyName || companyName.length < 2) {
             return "❌ **Invalid Company Name.**\nPlease explicitly mention who you are visiting.";
         }
 
-        // --- Logic Continues ---
-
         if (attachments.length !== 2) {
             return "❌ **Missing Attachments.**\nPlease attach exactly 2 PDF files: **Offer Letter** and **Aim/Objective** before sending.";
         }
 
-        // Verify Student Session
         const user = JSON.parse(sessionStorage.getItem("user"));
         if (!user || !user.id) return "❌ **Authentication Failed.** Please log in again.";
 
         try {
-            // 1. Fetch Offers to find ID
             const offersRes = await api.get(`/students/${user.id}/offers`);
             const offers = offersRes.data;
-
-            // Fuzzy match company name
             const selectedOffer = offers.find(o => o.company.name.toLowerCase().includes(companyName.toLowerCase().trim()));
 
             if (!selectedOffer) {
                 return `❌ **Company Not Found.**\nI searched for '**${companyName}**' but couldn't find a matching offer in your records.`;
             }
 
-            // 2. Prepare Form Data
             const formData = new FormData();
             formData.append("studentId", user.id);
             formData.append("offerId", selectedOffer.id);
-            formData.append("industry", industry.toUpperCase()); // Normalize
-            formData.append("campusType", campusType); // Keep formatting or normalize? Backend likely expects specific strings.
-            // "On Campus" / "Off Campus" -> Ensure backend supports spaces or CamelCase.
-            // Usually enums are "ON_CAMPUS" or similar. But let's assume Title Case is fine for now based on UI.
+            formData.append("industry", industry.toUpperCase());
+            formData.append("campusType", campusType);
 
-            // Format dates for backend (YYYY-MM-DD)
             const toISODate = (d) => {
-                const parts = d.split(/[-.]/);
-                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                const p = d.split(/[-.]/) ;
+                return `${p[2]}-${p[1]}-${p[0]}`;
             };
-
             const startISO = toISODate(startDate);
             const endISO = toISODate(endDate);
-
             formData.append("startDate", startISO);
             formData.append("endDate", endISO);
 
-            // Calculate duration
             const s = new Date(startISO);
             const e = new Date(endISO);
             const days = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
@@ -261,72 +334,70 @@ export default function ChatAssistant() {
             formData.append("aimFile", aimFile);
             formData.append("iqacStatus", "Initiated");
 
-            // 3. Submit
             await api.post("/od/apply", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
 
-            setAttachments([]); // Clear
+            setAttachments([]);
             return `✅ **Success!**\nOD Application for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days.\nTrack status in 'My ODs'.`;
 
         } catch (error) {
             console.error(error);
             const errData = error.response?.data;
-
-            // 🛑 CHECKLIST RENDERER
             if (errData?.steps && Array.isArray(errData.steps)) {
                 const stepsList = errData.steps.map(step => {
                     const icon = step.success ? "✅" : "❌";
                     const status = step.success ? "**Success**" : `**Failed**: ${step.error || ""}`;
-                    return `${icon} **${step.name}**\n   ${status}`; // Indented status
+                    return `${icon} **${step.name}**\n   ${status}`;
                 }).join("\n\n");
-
                 return `⚠️ **Verification Incomplete**\n\n${stepsList}\n\nPlease correct the issues marked with ❌ and try again.`;
             }
-
             return `❌ **Submission Failed.**\n${errData?.message || error.message}`;
         }
     };
 
+    /* =========================================
+       📤 HANDLE SEND
+    ========================================= */
     const handleSend = async (text = input) => {
         if (!text.trim()) return;
 
-        // User Message
-        const userMsg = { type: "user", text };
-        setMessages((prev) => [...prev, userMsg]);
+        setMessages(prev => [...prev, { type: "user", text, timestamp: new Date() }]);
         setInput("");
         setIsTyping(true);
 
         const lowerText = text.toLowerCase();
 
-        // 🧠 SMART APPLY COMMAND CHECK
         if (lowerText.startsWith("apply od")) {
-            // Simulate processing
-            setMessages(prev => [...prev, { type: "bot", text: "🔄 Processing Smart Application..." }]);
-
+            setMessages(prev => [...prev, {
+                type: "bot", text: "🔄 Processing Smart Application...", timestamp: new Date(), streaming: false
+            }]);
             const resultMsg = await processSmartApply(text);
-
             setMessages(prev => {
-                // Remove 'Processing' message (last one)
                 const filtered = prev.slice(0, -1);
-                return [...filtered, { type: "bot", text: resultMsg }];
+                return [...filtered, { type: "bot", text: resultMsg, timestamp: new Date(), streaming: true }];
             });
+            // Mark as done after stream completes
+            const wordCount = resultMsg.split(" ").length;
+            setTimeout(() => {
+                setMessages(prev =>
+                    prev.map((m, i) => i === prev.length - 1 ? { ...m, streaming: false } : m)
+                );
+            }, Math.min(wordCount * 42, 3000));
             setIsTyping(false);
             return;
         }
 
-        // Check for Status/Track keywords FIRST
         if (lowerText.includes("status") || lowerText.includes("track") || lowerText.includes("check") || lowerText.includes("my od")) {
-            // Simulate thinking then fetch API
             setTimeout(async () => {
                 const statusMsg = await fetchODStatus();
-                setMessages((prev) => [...prev, { type: "bot", text: statusMsg }]);
+                streamBotMessage(statusMsg);
                 setIsTyping(false);
             }, 600);
             return;
         }
 
-        // 🤖 AI-POWERED RESPONSE for general queries
+        // AI-POWERED RESPONSE
         (async () => {
             try {
                 const response = await api.post("/ai/chat", {
@@ -339,15 +410,10 @@ export default function ChatAssistant() {
                             content: m.text
                         }))
                 });
-
-                setMessages((prev) => [...prev, { type: "bot", text: response.data.response }]);
+                streamBotMessage(response.data.response);
             } catch (error) {
                 console.error("AI Error:", error);
-                // Fallback response
-                setMessages((prev) => [...prev, {
-                    type: "bot",
-                    text: "I'm having trouble connecting right now. Please try asking about **OD Status**, **Formats**, or **Procedures**."
-                }]);
+                streamBotMessage("I'm having trouble connecting right now. Please try asking about **OD Status**, **Formats**, or **Procedures**.");
             } finally {
                 setIsTyping(false);
             }
@@ -388,20 +454,14 @@ export default function ChatAssistant() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        {/* Expand / Collapse Button */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
                             aria-label={isExpanded ? "Minimize chat" : "Maximize chat"}
                             className="p-2 hover:bg-white/20 rounded-full transition-all duration-200"
                             title={isExpanded ? "Minimize" : "Full Screen"}
                         >
-                            {isExpanded ? (
-                                <Minimize2 className="w-4.5 h-4.5" />
-                            ) : (
-                                <Maximize2 className="w-4.5 h-4.5" />
-                            )}
+                            {isExpanded ? <Minimize2 className="w-4.5 h-4.5" /> : <Maximize2 className="w-4.5 h-4.5" />}
                         </button>
-                        {/* Close Button */}
                         <button
                             onClick={() => { closeChat(); setIsExpanded(false); }}
                             aria-label="Close chat"
@@ -415,18 +475,31 @@ export default function ChatAssistant() {
                 {/* Messages Body */}
                 <div className="flex-1 overflow-y-auto p-5 scroll-smooth custom-scrollbar bg-slate-50/50 dark:bg-slate-950/50 space-y-4">
                     {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                        <div key={i} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} items-end gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 group`}>
                             {msg.type === "bot" && (
                                 <div className="w-8 h-8 rounded-full border border-indigo-100 bg-white flex items-center justify-center shadow-md shrink-0 overflow-hidden">
                                     <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
                                 </div>
                             )}
-                            <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
-                                ${msg.type === "user"
-                                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
-                                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50 shadow-slate-200/50 dark:shadow-none"
-                                }`}>
-                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+                            <div className="flex flex-col gap-0.5">
+                                <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-sm
+                                    ${msg.type === "user"
+                                        ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-br-none shadow-blue-500/20"
+                                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700/50 shadow-slate-200/50 dark:shadow-none"
+                                    }`}>
+                                    {msg.type === "bot" && msg.streaming !== undefined ? (
+                                        <StreamingMessage text={msg.text} isStreaming={!!msg.streaming} />
+                                    ) : (
+                                        <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+                                    )}
+                                </div>
+                                {/* Timestamp — visible on group hover */}
+                                {msg.timestamp && (
+                                    <p className={`text-[10px] font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 select-none
+                                        ${msg.type === "user" ? "text-right pr-1" : "pl-1"}`}>
+                                        {getRelativeTime(msg.timestamp)}
+                                    </p>
+                                )}
                             </div>
                             {msg.type === "user" && (
                                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm shrink-0">
@@ -452,19 +525,14 @@ export default function ChatAssistant() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Attachments & Quick Actions Panel (Glassy) */}
+                {/* Attachments & Quick Actions Panel */}
                 <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-slate-700/50">
-                    {/* Attachments Chips */}
+
+                    {/* Rich File Preview Cards */}
                     {attachments.length > 0 && (
-                        <div className="px-4 py-3 flex gap-3 overflow-x-auto no-scrollbar">
+                        <div className="px-4 pt-3 pb-1 flex gap-2.5 overflow-x-auto no-scrollbar">
                             {attachments.map((file, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 text-xs px-3 py-1.5 rounded-lg text-indigo-700 dark:text-indigo-300 shadow-sm transition-all hover:scale-105">
-                                    <Paperclip className="w-3 h-3" />
-                                    <span className="max-w-[120px] truncate font-medium">{file.name}</span>
-                                    <button onClick={() => removeAttachment(i)} className="ml-1 text-indigo-400 hover:text-red-500 transition-colors">
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
+                                <FilePreviewCard key={i} file={file} index={i} onRemove={removeAttachment} />
                             ))}
                         </div>
                     )}
@@ -495,10 +563,19 @@ export default function ChatAssistant() {
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             aria-label="Attach PDF document"
-                            className="p-2.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500 rounded-xl transition-all active:scale-95"
+                            className={`p-2.5 rounded-xl transition-all active:scale-95 relative
+                                ${attachments.length > 0
+                                    ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30"
+                                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-500"
+                                }`}
                             title="Attach PDF"
                         >
-                            <Paperclip className="w-5.5 h-5.5" />
+                            <Paperclip className="w-5 h-5" />
+                            {attachments.length > 0 && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                                    {attachments.length}
+                                </span>
+                            )}
                         </button>
 
                         <div className="flex-1 relative">
@@ -536,7 +613,6 @@ export default function ChatAssistant() {
                         className="group relative h-16 w-16 rounded-full shadow-2xl flex items-center justify-center bg-white border-2 border-indigo-500 transition-all duration-500 transform hover:scale-110 active:scale-95 ring-4 ring-indigo-200 dark:ring-indigo-900/40 overflow-hidden"
                     >
                         <img src={dishaAvatar} alt="Disha" className="w-full h-full object-cover" />
-                        {/* Ping effect */}
                         <span className="absolute top-2 right-2 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500 border border-white"></span>
