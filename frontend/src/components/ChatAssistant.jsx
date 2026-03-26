@@ -384,8 +384,12 @@ export default function ChatAssistant() {
             fd.append("aimFile", aimFile);
             fd.append("iqacStatus", "Initiated");
 
-            await api.post("/od/apply", fd, { headers: { "Content-Type": "multipart/form-data" } });
+            const response = await api.post("/od/apply", fd, { headers: { "Content-Type": "multipart/form-data" } });
             setAttachments([]);
+            
+            if (response.data.ocrFailed) {
+                return `✅ **Submitted!**\nOD for **${selectedOffer.company.name}** applied.\nDuration: ${days} days.\n⚠️ *Note: AI verification failed, so this requires manual Mentor review.*`;
+            }
             return `✅ **Success!**\nOD for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days. Track in 'My ODs'.`;
         } catch (error) {
             const errData = error.response?.data;

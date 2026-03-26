@@ -589,66 +589,28 @@ exports.applyOD = async (req, res) => {
       { checkRollNo: true, checkCompany: false, docType: "AIM/ITI" }
     );
 
+    let ocrFailed = false;
+    let fallbackReasons = [];
+
     if (!aimResult.success) {
-      const failedReasons = [];
+      ocrFailed = true;
       if (aimResult.verificationDetails) {
-        if (!aimResult.verificationDetails.name?.found) failedReasons.push("Student Name (in Aim File)");
-        if (!aimResult.verificationDetails.rollNo?.found) failedReasons.push("Roll No (in Aim File)");
+        if (!aimResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Aim File)");
+        if (!aimResult.verificationDetails.rollNo?.found) fallbackReasons.push("Roll No (in Aim File)");
       } else {
-        failedReasons.push(aimResult.message || "PDF Parsing Error (or Invalid File Format)");
+        fallbackReasons.push(aimResult.message || "Aim PDF Parsing Error");
       }
-
-      validationSteps.push({
-        name: "AI Verification (Aim File)",
-        success: false,
-        error: `Failed: ${failedReasons.join(", ")}`
-      });
-
-      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { console.error("Could not delete files", e); }
-
-      return res.status(400).json({
-        message: "Aim/Objective Document verification failed",
-        steps: validationSteps,
-        verificationDetails: aimResult.verificationDetails
-      });
     }
-    validationSteps.push({ name: "AI Verification (Aim File)", success: true });
-
-    // 2. Verify OFFER LETTER (ITO) -> Skip Roll No, Strict Company
-    const offerResult = await verifyDocumentContent(
-      offerFilePath,
-      student.name,
-      student.rollNo,
-      companyNameForOCR,
-      startDate,
-      endDate,
-      { checkRollNo: false, checkCompany: true, docType: "OFFER/ITO" }
-    );
 
     if (!offerResult.success) {
-      const failedReasons = [];
+      ocrFailed = true;
       if (offerResult.verificationDetails) {
-        if (!offerResult.verificationDetails.name?.found) failedReasons.push("Student Name (in Offer Letter)");
-        if (!offerResult.verificationDetails.company?.found) failedReasons.push("Company Name (in Offer Letter)");
+        if (!offerResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Offer Letter)");
+        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push("Company Name (in Offer Letter)");
       } else {
-        failedReasons.push(offerResult.message || "PDF Parsing Error (or Invalid File Format)");
+        fallbackReasons.push(offerResult.message || "Offer PDF Parsing Error");
       }
-
-      validationSteps.push({
-        name: "AI Verification (Offer Letter)",
-        success: false,
-        error: `Failed: ${failedReasons.join(", ")}`
-      });
-
-      try { fs.unlinkSync(aimFilePath); fs.unlinkSync(offerFilePath); } catch (e) { console.error("Could not delete files", e); }
-
-      return res.status(400).json({
-        message: "Offer Letter verification failed",
-        steps: validationSteps,
-        verificationDetails: offerResult.verificationDetails
-      });
     }
-    validationSteps.push({ name: "AI Verification (Offer Letter)", success: true });
 
 
 
@@ -659,14 +621,26 @@ exports.applyOD = async (req, res) => {
         label: "Applied",
         time: new Date(),
         description: "OD application submitted by student."
-      },
-      {
+      }
+    ];
+
+    if (!ocrFailed) {
+      timeline.push({
         status: "DOCS_VERIFIED",
         label: "Documents Verified",
         time: new Date(),
         description: "AI Verification passed successfully. Activity ID generated."
-      }
-    ];
+      });
+    } else {
+      timeline.push({
+        status: "PENDING",
+        label: "AI Verification Incomplete",
+        time: new Date(),
+        description: `Automated OCR verification failed: ${fallbackReasons.join(", ")}. Forwarded to Mentor for manual review of documents.`
+      });
+    }
+
+    const odStatus = ocrFailed ? "PENDING" : "DOCS_VERIFIED";
 
     const od = await prisma.od.create({
       data: {
@@ -680,10 +654,12 @@ exports.applyOD = async (req, res) => {
         duration: Number(duration),
         proofFile: aimFilePath,
         offerFile: offerFilePath,
-        status: "DOCS_VERIFIED", // Skip PENDING if OCR passed
+        status: odStatus,
         verificationDetails: {
-          ...offerResult.verificationDetails,
-          rollNo: aimResult.verificationDetails.rollNo // Use strict check from Aim file
+          ...(offerResult.verificationDetails || {}),
+          rollNo: aimResult.verificationDetails?.rollNo || null,
+          ocrFailed,
+          fallbackReasons
         },
         timeline: timeline
       }
@@ -692,8 +668,10 @@ exports.applyOD = async (req, res) => {
     // Notify Student and Mentor
     await notificationService.createNotification(
       student.email,
-      "OD Documents Verified",
-      `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
+      ocrFailed ? "OD Application Submitted" : "OD Documents Verified",
+      ocrFailed 
+        ? `Your OD request (${od.trackerId}) is pending Mentor review due to AI verification failure.` 
+        : `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
       "SUCCESS"
     );
 
@@ -735,8 +713,9 @@ exports.applyOD = async (req, res) => {
     }
 
     return res.status(201).json({
-      message: "OD applied successfully",
-      od
+      message: ocrFailed ? "OD applied but AI verification requires manual review" : "OD applied successfully",
+      od,
+      ocrFailed
     });
 
   } catch (error) {
