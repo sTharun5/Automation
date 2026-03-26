@@ -387,10 +387,26 @@ export default function ChatAssistant() {
             const response = await api.post("/od/apply", fd, { headers: { "Content-Type": "multipart/form-data" } });
             setAttachments([]);
             
-            if (response.data.ocrFailed) {
-                return `✅ **Submitted!**\nOD for **${selectedOffer.company.name}** applied.\nDuration: ${days} days.\n⚠️ *Note: AI verification failed, so this requires manual Mentor review.*`;
+            const v = response.data.verificationDetails || {};
+            let msg = `✅ **Submitted!**\nOD for **${selectedOffer.company.name}** applied.\nDuration: ${days} days.\n\n`;
+            
+            // Format AI verification results
+            msg += `**🔍 AI Verification Details:**\n`;
+            if (v.name?.matchedParts?.length > 0) {
+                msg += `- **Names Found:** ${v.name.matchedParts.join(", ")}\n`;
+            } else {
+                msg += `- **Names Found:** None\n`;
             }
-            return `✅ **Success!**\nOD for **${selectedOffer.company.name}** submitted.\nDuration: ${days} days. Track in 'My ODs'.`;
+            if (v.company?.searched) {
+                msg += `- **Company Searched:** ${v.company.searched} (${v.company.found ? "✅ Found" : "❌ Not Found"})\n`;
+            }
+            
+            if (response.data.ocrFailed) {
+                msg += `\n⚠️ *Note: AI verification flagged issues, so this requires manual Mentor review.*`;
+            } else {
+                msg += `\n*Track your status in 'My ODs'.*`;
+            }
+            return msg;
         } catch (error) {
             const errData = error.response?.data;
             if (errData?.steps) {

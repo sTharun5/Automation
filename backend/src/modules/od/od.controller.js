@@ -715,13 +715,16 @@ exports.applyOD = async (req, res) => {
     return res.status(201).json({
       message: ocrFailed ? "OD applied but AI verification requires manual review" : "OD applied successfully",
       od,
-      ocrFailed
+      ocrFailed,
+      verificationDetails: od.verificationDetails
     });
 
   } catch (error) {
     console.error("OD APPLY ERROR:", error);
     return res.status(500).json({
-      message: "Failed to apply OD"
+      message: "Failed to apply OD",
+      error: error.message,
+      stack: error.stack
     });
   }
 };
