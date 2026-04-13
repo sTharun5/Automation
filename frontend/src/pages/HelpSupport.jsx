@@ -4,7 +4,7 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useToast } from "../context/ToastContext";
-import { ArrowLeft, HelpCircle, FileQuestion, Send, Paperclip } from "lucide-react";
+import { ArrowLeft, HelpCircle, FileQuestion, Send, Paperclip, LifeBuoy, Mail, Building2 } from "lucide-react";
 import LoadingButton from "../components/LoadingButton";
 
 /**
