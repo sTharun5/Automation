@@ -19,7 +19,7 @@ const sendEmail = async (to, subject, html) => {
         sendSmtpEmail.htmlContent = html;
         sendSmtpEmail.sender = {
             name: "SMART OD",
-            email: "stharun612@10758301.brevosend.com" // Verified Brevo sender to bypass DMARC
+            email: process.env.MAIL_USER // Your verified Brevo sender email
         };
         sendSmtpEmail.to = [{ email: to }];
 
