@@ -1,33 +1,34 @@
-const SibApiV3Sdk = require("sib-api-v3-sdk");
+const nodemailer = require("nodemailer");
 
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+    }
+});
 
 /**
- * Send an email using Brevo (any recipient)
+ * Send an email
  * @param {string} to - Recipient email
  * @param {string} subject - Email subject
  * @param {string} html - Email body (HTML)
  */
 const sendEmail = async (to, subject, html) => {
     try {
-        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = html;
-        sendSmtpEmail.sender = {
-            name: "SMART OD",
-            email: process.env.MAIL_USER // Your verified Brevo sender email
-        };
-        sendSmtpEmail.to = [{ email: to }];
-
-        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-        console.log("BREVO SUCCESS:", data.messageId);
-        return data;
+        const info = await transporter.sendMail({
+            from: `SMART OD <${process.env.MAIL_USER}>`,
+            to,
+            subject,
+            html
+        });
+        console.log("Email sent: " + info.response);
+        return info;
     } catch (error) {
-        console.error("BREVO ERROR:", error.response?.body || error.message);
+        console.error("Error sending email:", error);
+        // Don't throw, just log, so it doesn't break the main flow
         return null;
     }
 };
