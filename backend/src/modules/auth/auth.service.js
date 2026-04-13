@@ -8,10 +8,7 @@ const prisma = require("../../config/db");
 ================================ */
 exports.sendOTP = async (email) => {
   if (!email.endsWith("@bitsathy.ac.in")) {
-    const adminUser = await prisma.admin.findUnique({ where: { email } });
-    if (!adminUser) {
-      throw new Error("Only @bitsathy.ac.in emails or registered admins allowed");
-    }
+    throw new Error("Only @bitsathy.ac.in emails allowed");
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
