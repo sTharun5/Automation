@@ -393,12 +393,23 @@ export default function ChatAssistant() {
             // Format AI verification results
             msg += `**🔍 AI Verification Details:**\n`;
             if (v.name?.matchedParts?.length > 0) {
-                msg += `- **Names Found:** ${v.name.matchedParts.join(", ")}\n`;
+                msg += `- **Name:** ${v.name.matchedParts.join(", ")} ✅\n`;
             } else {
-                msg += `- **Names Found:** None\n`;
+                msg += `- **Name:** Not found ❌\n`;
             }
             if (v.company?.searched) {
-                msg += `- **Company Searched:** ${v.company.searched} (${v.company.found ? "✅ Found" : "❌ Not Found"})\n`;
+                msg += `- **Company:** ${v.company.searched} (${v.company.found ? "✅ Found" : "❌ Not Found"})\n`;
+            }
+
+            // ✅ NEW: Strict date match reporting in chat
+            if (v.dates) {
+                msg += `\n**📅 Date Verification (Strict):**\n`;
+                msg += `- **Start Date (${v.dates.startDateSearched}):** ${v.dates.startDateMatched ? "✅ Found in document" : "❌ NOT found — date mismatch"}\n`;
+                msg += `- **End Date (${v.dates.endDateSearched}):** ${v.dates.endDateMatched ? "✅ Found in document" : "❌ NOT found — date mismatch"}\n`;
+
+                if (!v.dates.startDateMatched || !v.dates.endDateMatched) {
+                    msg += `\n⚠️ *Date mismatch: Ensure your ITI/ITO document contains the exact dates you entered. Accepted formats: DD/MM/YYYY, DD Month YYYY, DD-MM-YYYY.*\n`;
+                }
             }
             
             if (response.data.ocrFailed) {

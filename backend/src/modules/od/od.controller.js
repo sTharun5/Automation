@@ -24,6 +24,37 @@ const generateActivityId = () => {
 /* =====================================================
    HELPER: VERIFY PDF CONTENT (OCR)
 ===================================================== */
+/* =====================================================
+   HELPER: BUILD DATE VARIANTS FOR MATCHING
+   Generates multiple string representations of a date
+   to robustly search inside PDF text.
+===================================================== */
+function buildDateVariants(date) {
+  const d = String(date.getDate()).padStart(2, "0");
+  const dNoZero = String(date.getDate());
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = date.getFullYear().toString();
+  const monthLong = date.toLocaleString("default", { month: "long" }).toLowerCase();
+  const monthShort = date.toLocaleString("default", { month: "short" }).toLowerCase();
+
+  return [
+    `${d}/${m}/${y}`,           // 25/03/2026
+    `${d}-${m}-${y}`,           // 25-03-2026
+    `${d}.${m}.${y}`,           // 25.03.2026
+    `${dNoZero}/${m}/${y}`,     // 5/03/2026
+    `${dNoZero}-${m}-${y}`,     // 5-03-2026
+    `${dNoZero}.${m}.${y}`,     // 5.03.2026
+    `${d} ${monthLong} ${y}`,   // 25 march 2026
+    `${dNoZero} ${monthLong} ${y}`, // 5 march 2026
+    `${monthLong} ${d}, ${y}`,  // march 25, 2026
+    `${monthLong} ${dNoZero}, ${y}`, // march 5, 2026
+    `${d} ${monthShort} ${y}`,  // 25 mar 2026
+    `${dNoZero} ${monthShort} ${y}`, // 5 mar 2026
+    `${monthShort} ${d}, ${y}`, // mar 25, 2026
+    `${monthShort} ${dNoZero}, ${y}`, // mar 5, 2026
+  ];
+}
+
 async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true }) {
   try {
     const dataBuffer = await fs.promises.readFile(filePath); // async — no longer blocks event loop
@@ -51,7 +82,14 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
         yearsSearched: [],
         monthsSearched: [],
         yearsFound: [],
-        monthsFound: []
+        monthsFound: [],
+        // ── NEW: strict per-date matching ──
+        startDateMatched: false,
+        endDateMatched: false,
+        startDateSearched: startDateStr,
+        endDateSearched: endDateStr,
+        startDateVariantsFound: [],
+        endDateVariantsFound: []
       }
     };
 
@@ -71,13 +109,12 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
       verificationDetails.company.found = true; // Skip check
     }
 
-    // 2.1 Verify Roll Number (New) & Normalized
+    // 2.1 Verify Roll Number & Normalized
     if (options.checkRollNo) {
       const normalizedText = text.replace(/\s+/g, ""); // Remove all spaces
       const normalizedRollNo = studentRollNo.toLowerCase().replace(/\s+/g, "");
 
       const rollNoFound = normalizedText.includes(normalizedRollNo);
-
 
       verificationDetails.rollNo = {
         searched: studentRollNo,
@@ -90,7 +127,7 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
       };
     }
 
-    // 3. Verify Dates
+    // 3. Verify Dates — legacy year/month check (kept for backward compat)
     const start = new Date(startDateStr);
     const end = new Date(endDateStr);
 
@@ -105,7 +142,6 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
     verificationDetails.dates.yearsSearched = [...new Set(years)];
     verificationDetails.dates.monthsSearched = [...new Set(months)];
 
-    // Check which years and months were found
     verificationDetails.dates.yearsFound = years.filter(y => text.includes(y));
     verificationDetails.dates.monthsFound = months.filter(m => text.includes(m));
 
@@ -113,17 +149,46 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
     verificationDetails.dates.monthMatched = verificationDetails.dates.monthsFound.length > 0;
     verificationDetails.dates.found = verificationDetails.dates.yearMatched && verificationDetails.dates.monthMatched;
 
-    // Determine overall success
-    const allPassed = verificationDetails.name.found &&
+    // 3.1 ── NEW: Strict Start Date & End Date extraction and matching ──
+    // Build all recognisable string forms of the provided dates and search for them
+    const startVariants = buildDateVariants(start);
+    const endVariants   = buildDateVariants(end);
+
+    const foundStartVariants = startVariants.filter(v => text.includes(v));
+    const foundEndVariants   = endVariants.filter(v => text.includes(v));
+
+    verificationDetails.dates.startDateVariantsFound = foundStartVariants;
+    verificationDetails.dates.endDateVariantsFound   = foundEndVariants;
+    verificationDetails.dates.startDateMatched = foundStartVariants.length > 0;
+    verificationDetails.dates.endDateMatched   = foundEndVariants.length > 0;
+
+    // Both dates must be present in the document for a strict date match
+    const strictDatesMatched =
+      verificationDetails.dates.startDateMatched &&
+      verificationDetails.dates.endDateMatched;
+
+    // Determine overall success — dates are now part of the pass criteria
+    const allPassed =
+      verificationDetails.name.found &&
       verificationDetails.company.found &&
-      verificationDetails.rollNo.found; // ✅ Check logic handled by flags
+      verificationDetails.rollNo.found &&
+      strictDatesMatched; // ✅ Strict date match enforced
 
     // Build summary message
     let summary = [];
     summary.push(verificationDetails.name.found ? "✅ Name: Found" : "❌ Name: Not Found");
     if (options.checkRollNo) summary.push(verificationDetails.rollNo.found ? "✅ Roll No: Found" : "❌ Roll No: Not Found");
     if (options.checkCompany) summary.push(verificationDetails.company.found ? "✅ Company: Found" : "❌ Company: Not Found");
-    summary.push(verificationDetails.dates.found ? "✅ Joining Date: Found" : "⚠️ Joining Date: Not Found (Ignored)");
+    summary.push(
+      verificationDetails.dates.startDateMatched
+        ? `✅ Start Date (${startDateStr}): Found in document`
+        : `❌ Start Date (${startDateStr}): NOT found — date mismatch`
+    );
+    summary.push(
+      verificationDetails.dates.endDateMatched
+        ? `✅ End Date (${endDateStr}): Found in document`
+        : `❌ End Date (${endDateStr}): NOT found — date mismatch`
+    );
 
     return {
       success: allPassed,
@@ -595,8 +660,13 @@ exports.applyOD = async (req, res) => {
     if (!aimResult.success) {
       ocrFailed = true;
       if (aimResult.verificationDetails) {
-        if (!aimResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Aim File)");
-        if (!aimResult.verificationDetails.rollNo?.found) fallbackReasons.push("Roll No (in Aim File)");
+        if (!aimResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Aim/ITI File)");
+        if (!aimResult.verificationDetails.rollNo?.found) fallbackReasons.push("Roll No (in Aim/ITI File)");
+        // ✅ NEW: Strict date mismatch reporting for ITI
+        if (!aimResult.verificationDetails.dates?.startDateMatched)
+          fallbackReasons.push(`Start Date (${startDate}) not found in Aim/ITI File — date mismatch`);
+        if (!aimResult.verificationDetails.dates?.endDateMatched)
+          fallbackReasons.push(`End Date (${endDate}) not found in Aim/ITI File — date mismatch`);
       } else {
         fallbackReasons.push(aimResult.message || "Aim PDF Parsing Error");
       }
@@ -616,8 +686,13 @@ exports.applyOD = async (req, res) => {
     if (!offerResult.success) {
       ocrFailed = true;
       if (offerResult.verificationDetails) {
-        if (!offerResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Offer Letter)");
-        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push("Company Name (in Offer Letter)");
+        if (!offerResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Offer/ITO Letter)");
+        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push("Company Name (in Offer/ITO Letter)");
+        // ✅ NEW: Strict date mismatch reporting for ITO
+        if (!offerResult.verificationDetails.dates?.startDateMatched)
+          fallbackReasons.push(`Start Date (${startDate}) not found in Offer/ITO Letter — date mismatch`);
+        if (!offerResult.verificationDetails.dates?.endDateMatched)
+          fallbackReasons.push(`End Date (${endDate}) not found in Offer/ITO Letter — date mismatch`);
       } else {
         fallbackReasons.push(offerResult.message || "Offer PDF Parsing Error");
       }
