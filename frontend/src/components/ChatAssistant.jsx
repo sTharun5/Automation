@@ -186,8 +186,17 @@ function CopyButton({ text }) {
 /* =========================================
    💡 AUTO-SUGGESTION DATA
 ========================================= */
+// Compute dynamic example dates: today → today + 60 days (max OD window)
+const _fmtD = (date) => {
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    return `${d}.${m}.${date.getFullYear()}`;
+};
+const _suggestStart = _fmtD(new Date());
+const _suggestEnd = (() => { const e = new Date(); e.setDate(e.getDate() + 60); return _fmtD(e); })();
+
 const SUGGESTIONS = [
-    { trigger: /^ap/i, chips: ["Apply OD 10.08.2025 to 12.08.2025 for Google IT On Campus", "Application Procedure"] },
+    { trigger: /^ap/i, chips: [`Apply OD ${_suggestStart} to ${_suggestEnd} for Google IT On Campus`, "Application Procedure"] },
     { trigger: /^st|^tr|^ch|^my/i, chips: ["Check my Status", "Track my OD"] },
     { trigger: /^doc|^fo|^fi/i, chips: ["Document Formats", "File naming convention"] },
     { trigger: /^sys|^pu|^wh|^ab/i, chips: ["System Purpose", "What is Smart OD?"] },
@@ -332,7 +341,7 @@ export default function ChatAssistant() {
     /* ---- Smart Apply ---- */
     const processSmartApply = async (text) => {
         const dateMatch = text.match(/(\d{2}[-.](\d{2})[-.](\d{4})) to (\d{2}[-.](\d{2})[-.](\d{4}))/i);
-        if (!dateMatch) return "❌ **Invalid Date Format.**\nExample: `Apply OD 10.08.2025 to 12.08.2025`";
+        if (!dateMatch) return `❌ **Invalid Date Format.**\nExample: \`Apply OD ${_suggestStart} to ${_suggestEnd}\``;
 
         const startDate = dateMatch[1];
         const endDate = dateMatch[4];

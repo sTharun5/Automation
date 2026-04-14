@@ -37,6 +37,18 @@ import {
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  // Dynamic example dates: today → today + 60 days (max OD window)
+  const formatDDMMYYYY = (date) => {
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    return `${d}.${m}.${date.getFullYear()}`;
+  };
+  const _today = new Date();
+  const _maxDay = new Date(_today);
+  _maxDay.setDate(_maxDay.getDate() + 60);
+  const exampleStartDate = formatDDMMYYYY(_today);
+  const exampleEndDate   = formatDDMMYYYY(_maxDay);
+
   const [student, setStudent] = useState(null);
   const [dashboardData, setDashboardData] = useState(null); // ✅ New State
   const [loading, setLoading] = useState(true);
@@ -304,7 +316,7 @@ export default function Dashboard() {
 
                     <div className="flex items-center gap-3 text-xs font-mono bg-slate-900 rounded-lg p-3 border border-slate-800 w-fit">
                       <span className="text-indigo-400">$</span>
-                      <span className="text-slate-300">Apply OD 25.03.2026 to 27.04.2026 for Kaar Technologies IT on campus</span>
+                      <span className="text-slate-300">Apply OD {exampleStartDate} to {exampleEndDate} for Kaar Technologies IT on campus</span>
                     </div>
                   </div>
 
