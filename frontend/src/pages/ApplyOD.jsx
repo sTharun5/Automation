@@ -44,6 +44,9 @@ export default function ApplyOD() {
   const [verificationDetails, setVerificationDetails] = useState(null);
   const [verificationSummary, setVerificationSummary] = useState("");
 
+  // Per-field file validation errors
+  const [fileErrors, setFileErrors] = useState({ aimFile: "", offerFile: "" });
+
   // ✅ Internship Report Modal State
   const [showReportModal, setShowReportModal] = useState(false);
   const [pendingODs, setPendingODs] = useState([]); // ✅ Store pending ODs
@@ -101,7 +104,58 @@ export default function ApplyOD() {
     return days;
   };
 
-  /* ================= CHECK DATE CONFLICT ================= */
+  /* ================= FILE FORMAT VALIDATOR ================= */
+  /**
+   * Validates file name format before accepting the attachment.
+   * Expected: ROLLNO-TYPE-DD.MM.YYYY.pdf  (e.g. 7376222AD218-ITI-14.04.2026.pdf)
+   * Returns an error string, or "" if valid.
+   */
+  const validateFileFormat = (file, expectedType) => {
+    if (!file) return "No file selected.";
+
+    // 1. Must be PDF
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      return "Only PDF files are accepted.";
+    }
+
+    // 2. Strip extension and check regex
+    const nameWithoutExt = file.name.slice(0, -4); // remove .pdf
+    const regex = /^([A-Z0-9]+)-(ITO|ITI)-(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+    if (!regex.test(nameWithoutExt)) {
+      return `Invalid filename format. Expected: ${user.rollNo}-${expectedType}-DD.MM.YYYY.pdf`;
+    }
+
+    const parts = nameWithoutExt.split("-");
+    const fileRollNo = parts[0];
+    const fileType   = parts[1];
+    const fileDateStr = parts[2]; // DD.MM.YYYY
+
+    // 3. Roll number must match
+    if (fileRollNo !== user.rollNo) {
+      return `Roll No mismatch: filename has "${fileRollNo}", expected "${user.rollNo}".`;
+    }
+
+    // 4. Type must match
+    if (fileType !== expectedType) {
+      return `Wrong document type: filename has "${fileType}", expected "${expectedType}". (Aim=ITI, Offer=ITO)`;
+    }
+
+    // 5. Date must be today
+    const [day, month, year] = fileDateStr.split(".").map(Number);
+    const fileDate  = new Date(year, month - 1, day);
+    const today     = new Date();
+    today.setHours(0, 0, 0, 0);
+    fileDate.setHours(0, 0, 0, 0);
+    if (fileDate.getTime() !== today.getTime()) {
+      const dd = String(today.getDate()).padStart(2, "0");
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const yyyy = today.getFullYear();
+      return `Filename date "${fileDateStr}" must be today (${dd}.${mm}.${yyyy}).`;
+    }
+
+    return ""; // ✅ All checks passed
+  };
+
   const checkDateConflict = (startTime, endTime) => {
     if ((!startTime && !endTime) || !calendarEvents.length) return null;
 
@@ -323,14 +377,30 @@ export default function ApplyOD() {
                   type="file"
                   hidden
                   accept="application/pdf"
-                  onChange={(e) =>
-                    setForm({ ...form, aimFile: e.target.files[0] })
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    e.target.value = ""; // reset so same file can be reselected after fix
+                    const err = validateFileFormat(file, "ITI");
+                    if (err) {
+                      setFileErrors(prev => ({ ...prev, aimFile: err }));
+                      setForm(prev => ({ ...prev, aimFile: null }));
+                    } else {
+                      setFileErrors(prev => ({ ...prev, aimFile: "" }));
+                      setForm(prev => ({ ...prev, aimFile: file }));
+                    }
+                  }}
                 />
               </label>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-                {form.aimFile ? <span className="text-blue-500 font-bold">{form.aimFile.name}</span> : "PDF only (Max 2MB)"}
+                {form.aimFile
+                  ? <span className="text-emerald-500 font-bold flex items-center gap-1">✅ {form.aimFile.name}</span>
+                  : "PDF only — filename must match format below"}
               </p>
+              {fileErrors.aimFile && (
+                <p className="mt-2 text-red-500 text-xs font-semibold flex items-start gap-1">
+                  <span>❌</span> {fileErrors.aimFile}
+                </p>
+              )}
             </div>
 
             <p className="text-red-500 dark:text-red-400 text-sm mt-2">
@@ -362,14 +432,30 @@ export default function ApplyOD() {
                   type="file"
                   hidden
                   accept="application/pdf"
-                  onChange={(e) =>
-                    setForm({ ...form, offerFile: e.target.files[0] })
-                  }
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    e.target.value = "";
+                    const err = validateFileFormat(file, "ITO");
+                    if (err) {
+                      setFileErrors(prev => ({ ...prev, offerFile: err }));
+                      setForm(prev => ({ ...prev, offerFile: null }));
+                    } else {
+                      setFileErrors(prev => ({ ...prev, offerFile: "" }));
+                      setForm(prev => ({ ...prev, offerFile: file }));
+                    }
+                  }}
                 />
               </label>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-                {form.offerFile ? <span className="text-blue-500 font-bold">{form.offerFile.name}</span> : "PDF only (Max 2MB)"}
+                {form.offerFile
+                  ? <span className="text-emerald-500 font-bold flex items-center gap-1">✅ {form.offerFile.name}</span>
+                  : "PDF only — filename must match format below"}
               </p>
+              {fileErrors.offerFile && (
+                <p className="mt-2 text-red-500 text-xs font-semibold flex items-start gap-1">
+                  <span>❌</span> {fileErrors.offerFile}
+                </p>
+              )}
             </div>
 
             <p className="text-red-500 dark:text-red-400 text-sm mt-2">
