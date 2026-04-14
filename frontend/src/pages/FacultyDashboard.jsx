@@ -146,13 +146,13 @@ export default function FacultyDashboard() {
 
           {/* Mentees Listing */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden h-full flex flex-col">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col">
               <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                 <h2 className="font-bold text-slate-900 dark:text-white">Your Mentees</h2>
                 <span className="text-xs text-slate-500 uppercase font-black tracking-widest">{mentees.length} students</span>
               </div>
 
-              <div className="flex-1 overflow-y-auto max-h-[500px] p-6 custom-scrollbar">
+              <div className="p-6">
                 {loading ? (
                   <div className="flex justify-center py-20 animate-pulse text-blue-500">Loading mentees...</div>
                 ) : mentees.length > 0 ? (
