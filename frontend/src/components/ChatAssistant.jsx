@@ -294,23 +294,86 @@ export default function ChatAssistant() {
 
     /* ---- Attachments ---- */
     const handleFileSelect = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            e.target.value = "";
-            if (attachments.length >= 2) {
-                addBotMsg("⚠️ Maximum 2 attachments allowed (Offer Letter & Aim).");
-                return;
-            }
-            if (!file.type.includes("pdf")) {
-                addBotMsg("⚠️ Only PDF files are supported.");
-                return;
-            }
-            if (!file.name.includes("-ITO-") && !file.name.includes("-ITI-")) {
-                addBotMsg("⚠️ Filename warning: Ensure your file follows the format `RollNo-ITO/ITI-Date.pdf`.");
-            }
-            setAttachments(prev => [...prev, file]);
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+        e.target.value = ""; // always reset so same file can be retried after rename
+
+        // 1. Max 2 attachments
+        if (attachments.length >= 2) {
+            addBotMsg("⚠️ Maximum 2 attachments allowed (Offer Letter & Aim).");
+            return;
         }
+
+        // 2. Must be PDF
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            addBotMsg("❌ **Invalid File Type.** Only PDF files are accepted.");
+            return;
+        }
+
+        // 3. Strict filename format: ROLLNO-ITI/ITO-DD.MM.YYYY.pdf
+        const nameWithoutExt = file.name.slice(0, -4);
+        const regex = /^([A-Z0-9]+)-(ITO|ITI)-(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+        if (!regex.test(nameWithoutExt)) {
+            const user = JSON.parse(sessionStorage.getItem("user"));
+            const roll = user?.rollNo || "ROLLNO";
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, "0");
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const yyyy = today.getFullYear();
+            addBotMsg(
+                `❌ **Invalid Filename Format.**\n` +
+                `Expected format: \`${roll}-ITI-${dd}.${mm}.${yyyy}.pdf\` (Aim) or \`${roll}-ITO-${dd}.${mm}.${yyyy}.pdf\` (Offer Letter).\n` +
+                `Please rename your file and try again.`
+            );
+            return;
+        }
+
+        const parts = nameWithoutExt.split("-");
+        const fileRollNo  = parts[0];
+        const fileType    = parts[1];  // ITI or ITO
+        const fileDateStr = parts[2];  // DD.MM.YYYY
+
+        // 4. Roll number must match logged-in student
+        const user = JSON.parse(sessionStorage.getItem("user"));
+        if (user?.rollNo && fileRollNo !== user.rollNo) {
+            addBotMsg(
+                `❌ **Roll No Mismatch.**\n` +
+                `Filename has \`${fileRollNo}\`, but your roll number is \`${user.rollNo}\`.\n` +
+                `Please rename the file to start with your roll number.`
+            );
+            return;
+        }
+
+        // 5. Type must be ITI or ITO
+        if (fileType !== "ITI" && fileType !== "ITO") {
+            addBotMsg("❌ **Invalid Document Type.** Filename must contain `-ITI-` (Aim/Objective) or `-ITO-` (Offer Letter).");
+            return;
+        }
+
+        // 6. Date in filename must be today
+        const [day, month, year] = fileDateStr.split(".").map(Number);
+        const fileDate = new Date(year, month - 1, day);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        fileDate.setHours(0, 0, 0, 0);
+        if (fileDate.getTime() !== today.getTime()) {
+            const dd = String(today.getDate()).padStart(2, "0");
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const yyyy = today.getFullYear();
+            addBotMsg(
+                `❌ **Date Mismatch in Filename.**\n` +
+                `Filename has date \`${fileDateStr}\`, but today is \`${dd}.${mm}.${yyyy}\`.\n` +
+                `Rename the file to use today's date and try again.`
+            );
+            return;
+        }
+
+        // ✅ All checks passed
+        const label = fileType === "ITO" ? "Offer Letter" : "Aim/Objective";
+        addBotMsg(`✅ **${label}** attached: \`${file.name}\``);
+        setAttachments(prev => [...prev, file]);
     };
+
 
     const removeAttachment = (index) => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
