@@ -52,22 +52,24 @@ export default function ApplyOD() {
   const [pendingODs, setPendingODs] = useState([]);
 
   // ── IST live clock ──
-  const getISTNow = () =>
-    new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  // IST = UTC+5:30 = 19800 seconds ahead of UTC.
+  // We add 19800000ms to Date.now() (which is always UTC) then read UTC getters
+  // on the result — this works regardless of the browser's system timezone.
+  const getISTNow = () => new Date(Date.now() + 19800000);
   const [istNow, setIstNow] = useState(getISTNow);
   useEffect(() => {
     const t = setInterval(() => setIstNow(getISTNow()), 1000);
     return () => clearInterval(t);
   }, []);
   const istTime = [
-    String(istNow.getHours()).padStart(2, "0"),
-    String(istNow.getMinutes()).padStart(2, "0"),
-    String(istNow.getSeconds()).padStart(2, "0")
+    String(istNow.getUTCHours()).padStart(2, "0"),
+    String(istNow.getUTCMinutes()).padStart(2, "0"),
+    String(istNow.getUTCSeconds()).padStart(2, "0")
   ].join(":");
   const istDate = [
-    String(istNow.getDate()).padStart(2, "0"),
-    String(istNow.getMonth() + 1).padStart(2, "0"),
-    istNow.getFullYear()
+    String(istNow.getUTCDate()).padStart(2, "0"),
+    String(istNow.getUTCMonth() + 1).padStart(2, "0"),
+    istNow.getUTCFullYear()
   ].join(".");
 
   /* ================= LOAD CALENDAR EVENTS ================= */
@@ -172,18 +174,17 @@ export default function ApplyOD() {
       return `Filename date "${fileDateStr}" is not a valid calendar date.`;
     }
 
-    // Force IST for today's date so browser UTC offset doesn't cause drift
-    const istNow = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-    );
-    const todayDay   = istNow.getDate();
-    const todayMonth = istNow.getMonth() + 1;
-    const todayYear  = istNow.getFullYear();
+    // Force IST using raw UTC+5:30 offset (19800000ms) — works in all browsers
+    // regardless of system timezone. getUTC* reads the IST-shifted timestamp.
+    const istNowForCheck = new Date(Date.now() + 19800000);
+    const todayDay   = istNowForCheck.getUTCDate();
+    const todayMonth = istNowForCheck.getUTCMonth() + 1;
+    const todayYear  = istNowForCheck.getUTCFullYear();
 
     if (day !== todayDay || month !== todayMonth || year !== todayYear) {
-      const dd   = String(todayDay).padStart(2, "0");
-      const mm   = String(todayMonth).padStart(2, "0");
-      return `Filename date "${fileDateStr}" must be today's date (${dd}.${mm}.${todayYear}) in IST.`;
+      const dd = String(todayDay).padStart(2, "0");
+      const mm = String(todayMonth).padStart(2, "0");
+      return `Filename date "${fileDateStr}" must be today's IST date (${dd}.${mm}.${todayYear}).`;
     }
 
     return ""; // ✅ All checks passed
