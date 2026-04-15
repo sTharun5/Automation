@@ -717,7 +717,50 @@ exports.applyOD = async (req, res) => {
 
 
 
-    /* ===== SAVE OD ===== */
+    /* ===== IF AI VERIFICATION FAILED → REJECT IMMEDIATELY ===== */
+    if (ocrFailed) {
+      // Delete uploaded files — no point storing rejected docs
+      for (const filePath of [aimFilePath, offerFilePath]) {
+        try {
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        } catch (e) {
+          console.error("File cleanup error:", filePath, e.message);
+        }
+      }
+
+      // Notify + Email Student with clear rejection reasons
+      await notificationService.createNotification(
+        student.email,
+        "OD Application Rejected — AI Verification Failed",
+        `Your OD application was automatically rejected. Reason(s): ${fallbackReasons.join("; ")}. Please reapply with correct documents.`,
+        "ERROR"
+      );
+      sendEmail(
+        student.email,
+        `[SMART OD] OD Application Rejected — Document Verification Failed`,
+        `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#fff7f7;border-radius:12px;border-left:4px solid #ef4444">
+          <h2 style="color:#dc2626">&#10060; OD Application Rejected</h2>
+          <p>Hello <strong>${student.name}</strong>,</p>
+          <p>Your OD application for <strong>${companyNameForOCR}</strong> was automatically rejected because the uploaded documents failed AI verification.</p>
+          <div style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:0 0 8px;font-weight:600;color:#dc2626">Reason(s) for rejection:</p>
+            <ul style="margin:0;padding-left:20px;color:#374151">
+              ${fallbackReasons.map(r => `<li style="margin-bottom:4px">${r}</li>`).join("")}
+            </ul>
+          </div>
+          <p>Please ensure you upload the <strong>correct documents</strong> for the right company with matching dates and your details, then reapply.</p>
+          <p style="color:#94a3b8;font-size:12px">&#8212; SMART OD System</p>
+        </div>`
+      ).catch(e => console.error("Email Error (OD rejected):", e));
+
+      return res.status(422).json({
+        message: "OD application rejected: AI document verification failed.",
+        rejected: true,
+        reasons: fallbackReasons
+      });
+    }
+
+    /* ===== AI PASSED → SAVE OD ===== */
     const timeline = [
       {
         status: "PENDING",
@@ -727,119 +770,95 @@ exports.applyOD = async (req, res) => {
       }
     ];
 
-    if (!ocrFailed) {
-      timeline.push({
-        status: "DOCS_VERIFIED",
-        label: "Documents Verified",
-        time: new Date(),
-        description: "AI Verification passed successfully. Activity ID generated."
-      });
-    } else {
-      timeline.push({
-        status: "PENDING",
-        label: "AI Verification Incomplete",
-        time: new Date(),
-        description: `Automated OCR verification failed: ${fallbackReasons.join(", ")}. Forwarded to Mentor for manual review of documents.`
-      });
-    }
-
-    const odStatus = ocrFailed ? "PENDING" : "DOCS_VERIFIED";
+    // At this point AI passed — ocrFailed is always false below this line
+    timeline.push({
+      status: "DOCS_VERIFIED",
+      label: "Documents Verified",
+      time: new Date(),
+      description: "AI Verification passed successfully. Activity ID generated."
+    });
 
     const od = await prisma.od.create({
       data: {
         trackerId: generateTrackerId(),
         activityId: generateActivityId(),
         studentId: Number(studentId),
-        offerId: Number(offerId), // ✅ Link to offer
+        offerId: Number(offerId),
         type: "INTERNSHIP",
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         duration: Number(duration),
         proofFile: aimFilePath,
         offerFile: offerFilePath,
-        status: odStatus,
+        status: "DOCS_VERIFIED",
         verificationDetails: {
           ...(offerResult.verificationDetails || {}),
           rollNo: aimResult.verificationDetails?.rollNo || null,
-          ocrFailed,
-          fallbackReasons
+          ocrFailed: false,
+          fallbackReasons: []
         },
-        timeline: timeline
+        timeline
       }
     });
 
-    // Notify Student
+    // Notify + Email Student: verified
     await notificationService.createNotification(
       student.email,
-      ocrFailed ? "OD Application Submitted" : "OD Documents Verified",
-      ocrFailed 
-        ? `Your OD request (${od.trackerId}) is pending Mentor review due to AI verification failure.` 
-        : `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
+      "OD Documents Verified",
+      `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
       "SUCCESS"
     );
-    // Email Student
     sendEmail(
       student.email,
-      `[SMART OD] OD Application ${ocrFailed ? 'Received' : 'Verified'} — ${od.trackerId}`,
+      `[SMART OD] OD Application Verified — ${od.trackerId}`,
       `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px;border-left:4px solid #6366f1">
-        <h2 style="color:#4f46e5">📋 OD Application ${ocrFailed ? 'Received' : 'Verified'}</h2>
+        <h2 style="color:#4f46e5">&#9989; OD Documents Verified</h2>
         <p>Hello <strong>${student.name}</strong>,</p>
-        <p>${ocrFailed
-          ? `Your OD application has been received. It is pending Mentor review as AI verification could not be completed automatically.`
-          : `Your OD documents have passed AI verification and are now pending your Mentor's approval.`
-        }</p>
+        <p>Your OD documents have passed AI verification and are now pending your Mentor's approval.</p>
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
           <p style="margin:0 0 8px"><strong>Tracker ID:</strong> ${od.trackerId}</p>
           <p style="margin:0 0 8px"><strong>Company:</strong> ${companyNameForOCR}</p>
           <p style="margin:0 0 8px"><strong>Duration:</strong> ${duration} days</p>
-          ${!ocrFailed ? `<p style="margin:0"><strong>Activity ID:</strong> ${od.activityId}</p>` : ''}
+          <p style="margin:0"><strong>Activity ID:</strong> ${od.activityId}</p>
         </div>
         <p>You can track the status of your application on your dashboard.</p>
-        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+        <p style="color:#94a3b8;font-size:12px">&#8212; SMART OD System</p>
       </div>`
-    ).catch(e => console.error("Email Error (OD submit student):", e));
+    ).catch(e => console.error("Email Error (OD verified student):", e));
 
+    // Notify + Email Mentor (only ever reached when AI passed)
     if (student.mentorId) {
       const mentor = await prisma.faculty.findUnique({ where: { id: student.mentorId } });
       if (mentor) {
         await notificationService.createNotification(
           mentor.email,
           "New OD Approval Pending",
-          `Student ${student.name} (${student.rollNo}) has applied for OD. Review required.`,
+          `Student ${student.name} (${student.rollNo}) has applied for OD and passed AI verification. Review required.`,
           "INFO"
         );
-
-        // Send Email Notification to Mentor
-        try {
-          const emailHtml = `
-            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <h2 style="color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px;">New OD Approval Request</h2>
-              <p>Dear Faculty,</p>
-              <p>Your mentee <strong>${student.name}</strong> (${student.rollNo}) has submitted an OD application that has successfully passed initial Document AI Verification.</p>
-              <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
-                <p style="margin: 0 0 8px 0;"><strong>Company:</strong> ${companyNameForOCR}</p>
-                <p style="margin: 0 0 8px 0;"><strong>Duration:</strong> ${duration} Days</p>
-                <p style="margin: 0;"><strong>Activity ID:</strong> ${od.activityId}</p>
-              </div>
-              <p>Please log in to the SMART OD Portal to review and approve this application.</p>
-              <p style="font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px;">This is an automated message from the BIP SMART OD Automation System.</p>
+        sendEmail(
+          mentor.email,
+          "Action Required: New Student OD Application",
+          `<div style="font-family:Arial,sans-serif;padding:20px;color:#333;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px">
+            <h2 style="color:#1e3a8a;border-bottom:2px solid #1e3a8a;padding-bottom:10px">New OD Approval Request</h2>
+            <p>Dear Faculty,</p>
+            <p>Your mentee <strong>${student.name}</strong> (${student.rollNo}) has submitted an OD application that has passed AI Document Verification.</p>
+            <div style="background:#f8fafc;padding:15px;border-left:4px solid #10b981;border-radius:4px;margin:20px 0">
+              <p style="margin:0 0 8px"><strong>Company:</strong> ${companyNameForOCR}</p>
+              <p style="margin:0 0 8px"><strong>Duration:</strong> ${duration} Days</p>
+              <p style="margin:0"><strong>Activity ID:</strong> ${od.activityId}</p>
             </div>
-          `;
-          await sendEmail(
-            mentor.email,
-            "Action Required: New Student OD Application",
-            emailHtml
-          );
-        } catch (emailErr) {
-          console.error("Failed to send mentor email:", emailErr);
-        }
+            <p>Please log in to the SMART OD Portal to review and approve this application.</p>
+            <p style="font-size:12px;color:#64748b;margin-top:30px;border-top:1px solid #e2e8f0;padding-top:10px">This is an automated message from the BIP SMART OD Automation System.</p>
+          </div>`
+        ).catch(e => console.error("Failed to send mentor email:", e));
       }
     }
 
     return res.status(201).json({
-      message: ocrFailed ? "OD applied but AI verification requires manual review" : "OD applied successfully",
+      message: "OD applied successfully. Documents verified by AI.",
       od,
-      ocrFailed,
+      ocrFailed: false,
       verificationDetails: od.verificationDetails
     });
 

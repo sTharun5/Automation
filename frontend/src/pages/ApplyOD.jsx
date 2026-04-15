@@ -178,9 +178,12 @@ export default function ApplyOD() {
     });
   };
 
+  const [rejectionReasons, setRejectionReasons] = useState([]);
+
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     if (submitting) return;
+    setRejectionReasons([]); // clear previous rejection
     try {
       setSubmitting(true);
       if (!form.aimFile || !form.offerFile) {
@@ -201,17 +204,20 @@ export default function ApplyOD() {
         }
       );
 
-      if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success vibration
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
 
-
-      // ✅ ONLY NEW FUNCTIONALITY (NO UI CHANGE)
       const odId = res.data.od.id;
       navigate(`/student/od/${odId}`);
 
     } catch (err) {
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       const errorData = err.response?.data;
-      if (errorData?.verificationDetails) {
+
+      // ── New: AI verification failed → show reasons on page ──
+      if (err.response?.status === 422 && errorData?.rejected) {
+        setRejectionReasons(errorData.reasons || ["Document verification failed."]);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (errorData?.verificationDetails) {
         setVerificationDetails(errorData.verificationDetails);
         setVerificationSummary(errorData.summary);
         setShowVerificationModal(true);
@@ -474,6 +480,31 @@ export default function ApplyOD() {
             />
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">* IQAC status will be updated after document verification</p>
           </div>
+
+          {/* ── AI Rejection Banner ── */}
+          {rejectionReasons.length > 0 && (
+            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl mt-0.5">❌</span>
+                <div>
+                  <p className="font-bold text-red-700 dark:text-red-400 mb-2">
+                    Application Rejected — AI Document Verification Failed
+                  </p>
+                  <p className="text-sm text-red-600 dark:text-red-300 mb-3">
+                    Your documents did not pass verification for the following reason(s). Please fix and reapply:
+                  </p>
+                  <ul className="space-y-1">
+                    {rejectionReasons.map((reason, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                        <span className="mt-0.5 shrink-0">•</span>
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end">
             <LoadingButton
