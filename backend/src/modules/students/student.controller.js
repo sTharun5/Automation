@@ -1,6 +1,7 @@
 const prisma = require("../../config/db");
 const offerService = require("./offer.service");
 const notificationService = require("../notification/notification.service");
+const sendEmail = require("../../utils/sendEmail");
 
 exports.searchStudents = async (req, res) => {
   try {
@@ -292,6 +293,23 @@ exports.addOffer = async (req, res) => {
         `We are thrilled to inform you that you have secured an offer from ${offer.company.name} with a package of ${offer.lpa} LPA! 🚀`,
         "SUCCESS"
       );
+      sendEmail(
+        notifyStudent.email,
+        `🎉 Congratulations! Offer from ${offer.company.name}`,
+        `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-radius:12px;border-left:4px solid #22c55e">
+          <h2 style="color:#16a34a">🎉 Offer Received!</h2>
+          <p>Hello <strong>${notifyStudent.name}</strong>,</p>
+          <p>Congratulations! You have secured a placement offer. Here are your offer details:</p>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:0 0 8px"><strong>Company:</strong> ${offer.company.name}</p>
+            <p style="margin:0 0 8px"><strong>Package:</strong> ${offer.lpa} LPA</p>
+            ${offer.role ? `<p style="margin:0 0 8px"><strong>Role:</strong> ${offer.role}</p>` : ''}
+            ${offer.offerDate ? `<p style="margin:0"><strong>Offer Date:</strong> ${new Date(offer.offerDate).toLocaleDateString('en-IN')}</p>` : ''}
+          </div>
+          <p>Wishing you a successful career ahead! 🚀</p>
+          <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+        </div>`
+      ).catch(e => console.error("Email Error (offer added):", e));
     }
 
     res.status(201).json(offer);

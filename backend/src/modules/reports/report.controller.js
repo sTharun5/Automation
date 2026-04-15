@@ -1,5 +1,6 @@
 const prisma = require("../../config/db");
 const notificationService = require("../notification/notification.service");
+const sendEmail = require("../../utils/sendEmail");
 
 /* =====================================================
    UPLOAD REPORT (STUDENT)
@@ -68,7 +69,7 @@ exports.uploadReport = async (req, res) => {
             }
         });
 
-        // Notify Mentor
+        // Notify + Email Mentor
         const student = await prisma.student.findUnique({ where: { id: studentId }, include: { mentor: true } });
         if (student && student.mentor) {
             await notificationService.createNotification(
@@ -77,6 +78,21 @@ exports.uploadReport = async (req, res) => {
                 `Student ${student.name} (${student.rollNo}) has submitted an Internship Report for review.`,
                 "INFO"
             );
+            sendEmail(
+                student.mentor.email,
+                `[SMART OD] Internship Report Submitted by ${student.name}`,
+                `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                  <h2 style="color:#4f46e5">📄 Internship Report Submitted</h2>
+                  <p>Hello <strong>${student.mentor.name}</strong>,</p>
+                  <p>Your mentee has submitted an internship report for your review:</p>
+                  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                    <p style="margin:0 0 8px"><strong>Student:</strong> ${student.name}</p>
+                    <p style="margin:0"><strong>Roll No:</strong> ${student.rollNo}</p>
+                  </div>
+                  <p>Please log in to the SMART OD portal to review and approve/reject the report.</p>
+                  <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                </div>`
+            ).catch(e => console.error("Email Error (report submitted):", e));
         }
 
         res.status(201).json({ message: "Report uploaded successfully", report });
@@ -159,13 +175,25 @@ exports.updateReportStatus = async (req, res) => {
             }
         });
 
-        // Notify Student
+        // Notify + Email Student
         await notificationService.createNotification(
             report.student.email,
             `Internship Report ${status}`,
             `Your internship report has been ${status}. ${remarks ? `Remarks: ${remarks}` : ""}`,
             status === "APPROVED" ? "SUCCESS" : "ERROR"
         );
+        sendEmail(
+            report.student.email,
+            `[SMART OD] Internship Report ${status}`,
+            `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:${status === 'APPROVED' ? '#f0fdf4' : '#fff7f7'};border-radius:12px;border-left:4px solid ${status === 'APPROVED' ? '#22c55e' : '#ef4444'}">
+              <h2 style="color:${status === 'APPROVED' ? '#16a34a' : '#dc2626'}">${status === 'APPROVED' ? '✅' : '❌'} Internship Report ${status}</h2>
+              <p>Hello <strong>${report.student.name}</strong>,</p>
+              <p>Your internship report has been <strong>${status}</strong> by your mentor.</p>
+              ${remarks ? `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0"><strong>Mentor Remarks:</strong> ${remarks}</p></div>` : ''}
+              ${status === 'REJECTED' ? '<p>Please review the remarks and re-submit an updated report.</p>' : '<p>Congratulations on completing your internship! 🎓</p>'}
+              <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+            </div>`
+        ).catch(e => console.error("Email Error (report status):", e));
 
         res.json({ message: "Report status updated", report: updatedReport });
 

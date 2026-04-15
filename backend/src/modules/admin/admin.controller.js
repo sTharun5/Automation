@@ -1,6 +1,7 @@
 const prisma = require("../../config/db");
 const companyService = require("./company.service");
 const notificationService = require("../notification/notification.service");
+const sendEmail = require("../../utils/sendEmail");
 
 /* =====================================================
    ADD FACULTY (ADMIN ONLY)
@@ -238,7 +239,7 @@ exports.assignMentor = async (req, res) => {
     const mentor = await prisma.faculty.findUnique({ where: { id: Number(mentorId) } });
     const students = await prisma.student.findMany({ where: { id: { in: studentIds.map(id => Number(id)) } } });
 
-    // Notify Mentor
+    // Notify + Email Mentor
     if (mentor) {
       await notificationService.createNotification(
         mentor.email,
@@ -246,9 +247,23 @@ exports.assignMentor = async (req, res) => {
         `You have been assigned ${students.length} new students.`,
         "INFO"
       );
+      sendEmail(
+        mentor.email,
+        `[SMART OD] ${students.length} New Mentee(s) Assigned to You`,
+        `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+          <h2 style="color:#4f46e5">👨‍🏫 New Mentees Assigned</h2>
+          <p>Hello <strong>${mentor.name}</strong>,</p>
+          <p>You have been assigned <strong>${students.length} new student(s)</strong> as their Mentor:</p>
+          <ul style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px 16px 16px 32px;margin:16px 0">
+            ${students.map(s => `<li><strong>${s.name}</strong> (${s.rollNo}) — ${s.department || ''}</li>`).join('')}
+          </ul>
+          <p>Please log in to the SMART OD portal to view and manage your mentees.</p>
+          <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+        </div>`
+      ).catch(e => console.error("Email Error (mentor assigned):", e));
     }
 
-    // Notify Students
+    // Notify + Email Students
     for (const student of students) {
       await notificationService.createNotification(
         student.email,
@@ -256,6 +271,21 @@ exports.assignMentor = async (req, res) => {
         `You have been assigned a new mentor: ${mentor?.name}.`,
         "INFO"
       );
+      sendEmail(
+        student.email,
+        `[SMART OD] Your Mentor has been Assigned`,
+        `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+          <h2 style="color:#4f46e5">🎓 Mentor Assigned</h2>
+          <p>Hello <strong>${student.name}</strong>,</p>
+          <p>You have been assigned a mentor on the SMART OD portal:</p>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:0 0 8px"><strong>Mentor Name:</strong> ${mentor?.name}</p>
+            <p style="margin:0"><strong>Department:</strong> ${mentor?.department || 'N/A'}</p>
+          </div>
+          <p>Your mentor will review and approve your OD applications going forward.</p>
+          <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+        </div>`
+      ).catch(e => console.error("Email Error (student mentor assigned):", e));
     }
 
     res.json({ message: "Mentor assigned successfully to students" });

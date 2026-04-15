@@ -339,13 +339,28 @@ exports.scanInternalOD = async (req, res) => {
       });
     });
 
-    // Notify Student
+    // Notify + Email Student
     await notificationService.createNotification(
       student.email,
       "Internal OD Approved",
       `Attendance verified for ${event.name}. OD (${od.trackerId}) auto-approved.`,
       "SUCCESS"
     );
+    sendEmail(
+      student.email,
+      `[SMART OD] Internal Event OD Approved — ${event.name}`,
+      `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f0fdf4;border-radius:12px;border-left:4px solid #22c55e">
+        <h2 style="color:#16a34a">✅ Internal Event OD Approved</h2>
+        <p>Hello <strong>${student.name}</strong>,</p>
+        <p>Your attendance at <strong>${event.name}</strong> has been verified and your OD has been auto-approved.</p>
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 8px"><strong>Tracker ID:</strong> ${od.trackerId}</p>
+          <p style="margin:0 0 8px"><strong>Event:</strong> ${event.name}</p>
+          <p style="margin:0"><strong>Allocated Hours:</strong> ${event.allocatedHours}h</p>
+        </div>
+        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+      </div>`
+    ).catch(e => console.error("Email Error (QR approved):", e));
 
     // Sync to ERP async
     syncAttendanceToErp(student.rollNo, od.startDate, od.endDate, od.trackerId)
@@ -751,7 +766,7 @@ exports.applyOD = async (req, res) => {
       }
     });
 
-    // Notify Student and Mentor
+    // Notify Student
     await notificationService.createNotification(
       student.email,
       ocrFailed ? "OD Application Submitted" : "OD Documents Verified",
@@ -760,6 +775,27 @@ exports.applyOD = async (req, res) => {
         : `Your OD request (${od.trackerId}) has passed AI verification. Activity ID: ${od.activityId}. Pending Mentor Approval.`,
       "SUCCESS"
     );
+    // Email Student
+    sendEmail(
+      student.email,
+      `[SMART OD] OD Application ${ocrFailed ? 'Received' : 'Verified'} — ${od.trackerId}`,
+      `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px;border-left:4px solid #6366f1">
+        <h2 style="color:#4f46e5">📋 OD Application ${ocrFailed ? 'Received' : 'Verified'}</h2>
+        <p>Hello <strong>${student.name}</strong>,</p>
+        <p>${ocrFailed
+          ? `Your OD application has been received. It is pending Mentor review as AI verification could not be completed automatically.`
+          : `Your OD documents have passed AI verification and are now pending your Mentor's approval.`
+        }</p>
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+          <p style="margin:0 0 8px"><strong>Tracker ID:</strong> ${od.trackerId}</p>
+          <p style="margin:0 0 8px"><strong>Company:</strong> ${companyNameForOCR}</p>
+          <p style="margin:0 0 8px"><strong>Duration:</strong> ${duration} days</p>
+          ${!ocrFailed ? `<p style="margin:0"><strong>Activity ID:</strong> ${od.activityId}</p>` : ''}
+        </div>
+        <p>You can track the status of your application on your dashboard.</p>
+        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+      </div>`
+    ).catch(e => console.error("Email Error (OD submit student):", e));
 
     if (student.mentorId) {
       const mentor = await prisma.faculty.findUnique({ where: { id: student.mentorId } });
