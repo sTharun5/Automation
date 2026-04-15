@@ -803,8 +803,10 @@ exports.applyOD = async (req, res) => {
         offerFile: offerFilePath,
         status: "DOCS_VERIFIED",
         verificationDetails: {
-          ...(offerResult.verificationDetails || {}),
-          rollNo: aimResult.verificationDetails?.rollNo || null
+          name: aimResult.verificationDetails?.name || offerResult.verificationDetails?.name || null,
+          rollNo: aimResult.verificationDetails?.rollNo || null,
+          company: offerResult.verificationDetails?.company || aimResult.verificationDetails?.company || null,
+          dates: aimResult.verificationDetails?.dates || null
         },
         timeline
       }
