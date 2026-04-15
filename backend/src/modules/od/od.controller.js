@@ -804,9 +804,7 @@ exports.applyOD = async (req, res) => {
         status: "DOCS_VERIFIED",
         verificationDetails: {
           ...(offerResult.verificationDetails || {}),
-          rollNo: aimResult.verificationDetails?.rollNo || null,
-          ocrFailed: false,
-          fallbackReasons: []
+          rollNo: aimResult.verificationDetails?.rollNo || null
         },
         timeline
       }
