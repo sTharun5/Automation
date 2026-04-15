@@ -11,37 +11,32 @@ const app = express();
 // Trust the proxy (Render) so rate limiting works correctly
 app.set("trust proxy", 1);
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    process.env.CLIENT_URL,
-    process.env.CLIENT_URL?.replace(/\/$/, "") // Allow without trailing slash
-].filter(Boolean);
+/* ─── CORS origin resolver (shared between cors() and error handler) ─── */
+function isAllowedOrigin(origin) {
+    if (!origin) return true; // same-origin / mobile / curl
+    if (origin.startsWith("http://localhost:")) return true;
+    if (origin.toLowerCase().includes("vercel.app")) return true;
+    const explicit = [
+        process.env.CLIENT_URL,
+        process.env.CLIENT_URL?.replace(/\/$/, "")
+    ].filter(Boolean);
+    return explicit.some(o => o === origin || o === origin.replace(/\/$/, ""));
+}
 
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
-        // 1. Allow if no origin (local/mobile)
-        if (!origin) return callback(null, true);
-
-        // 2. Allow any localhost
-        if (origin.startsWith("http://localhost:")) {
-            return callback(null, true);
-        }
-
-        // 3. Allow any Vercel subdomain (preview + production links)
-        if (origin.toLowerCase().includes("vercel.app")) {
-            return callback(null, true);
-        }
-
-        // 4. Check explicit allowed list
-        if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
-            return callback(null, true);
-        }
-
+        if (isAllowedOrigin(origin)) return callback(null, true);
         callback(new Error("Not allowed by CORS"));
     },
     credentials: true
-}));
+};
+
+// 1. Apply CORS to every request (including error paths)
+app.use(cors(corsOptions));
+
+// 2. Explicitly handle OPTIONS preflight for ALL routes so they always
+//    get a 204 before hitting the rate limiter or any middleware.
+app.options("*", cors(corsOptions));
 
 // Security headers
 app.use(helmet({
@@ -103,9 +98,28 @@ const reportRoutes = require("./modules/reports/report.routes");
 app.use("/api/reports", reportRoutes);
 
 const coordinatorRoutes = require("./modules/events/coordinator.routes");
-app.use("/api", coordinatorRoutes); // Using raw /api because the routes define /events/:eventId/... internally
+app.use("/api", coordinatorRoutes);
 
 const eventRoutes = require("./modules/events/event.routes");
 app.use("/api/events", eventRoutes);
 
+/* ─── Global error handler — always stamp CORS headers ─── */
+// This catches errors thrown by any middleware (rate limiter, auth, etc.)
+// and ensures the browser receives the Access-Control-Allow-Origin header
+// even on error responses, preventing false "CORS blocked" messages.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    const origin = req.headers.origin;
+    if (isAllowedOrigin(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin || "*");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    console.error(`[ERROR] ${req.method} ${req.path} →`, message);
+    res.status(status).json({ message });
+});
+
 module.exports = app;
+
