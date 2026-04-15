@@ -1,9 +1,5 @@
 const prisma = require("../../config/db");
-const SibApiV3Sdk = require("sib-api-v3-sdk");
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+const sendEmail = require("../../utils/sendEmail");
 
 /* =====================================================
    SUBMIT SUPPORT QUERY
@@ -18,65 +14,49 @@ exports.submitQuery = async (req, res) => {
             return res.status(400).json({ message: "Subject and Description are required" });
         }
 
-        // 1. Prepare Email Content
         const senderRole = user.role;
         const senderId = user.rollNo || user.facultyId || user.email;
         const senderName = user.name || "Unknown User";
 
-        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-        sendSmtpEmail.subject = `[SUPPORT] ${senderRole}: ${subject}`;
-        sendSmtpEmail.htmlContent = `
-            <h3>New Support Query</h3>
-            <p><strong>From:</strong> ${senderName} (${senderId})</p>
-            <p><strong>Role:</strong> ${senderRole}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <hr />
-            <h4>Subject: ${subject}</h4>
-            <p>${description}</p>
-            <hr />
-            <p><em>This query was submitted via the Smart OD Portal.</em></p>
+        // Build HTML body for admin support email
+        const htmlContent = `
+            <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                <h2 style="color:#4f46e5">🛠️ New Support Query</h2>
+                <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                    <p style="margin:0 0 8px"><strong>From:</strong> ${senderName} (${senderId})</p>
+                    <p style="margin:0 0 8px"><strong>Role:</strong> ${senderRole}</p>
+                    <p style="margin:0"><strong>Email:</strong> ${user.email}</p>
+                </div>
+                <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0"/>
+                <h4 style="margin:0 0 8px">Subject: ${subject}</h4>
+                <p style="margin:0">${description}</p>
+                <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0"/>
+                <p style="color:#94a3b8;font-size:12px">This query was submitted via the Smart OD Portal.</p>
+            </div>
         `;
-        sendSmtpEmail.sender = { name: "SMART OD", email: process.env.MAIL_USER };
-        sendSmtpEmail.to = [{ email: process.env.ADMIN_EMAIL || "stharun612@gmail.com" }];
-        sendSmtpEmail.attachments = [];
 
-        if (file) {
-            const fs = require('fs');
-            const data = fs.readFileSync(file.path);
-            sendSmtpEmail.attachments.push({
-                name: file.originalname,
-                content: data.toString('base64')
-            });
-        }
+        // Send email to admin (fire-and-forget, non-blocking)
+        sendEmail(
+            process.env.ADMIN_EMAIL || "stharun612@gmail.com",
+            `[SUPPORT] ${senderRole}: ${subject}`,
+            htmlContent
+        ).catch(err => console.error("SUPPORT EMAIL ERROR:", err));
 
-        try {
-            const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-            console.log("BREVO SUPPORT SUCCESS:", data.messageId);
-        } catch (emailErr) {
-            console.error("BREVO SUPPORT ERROR:", emailErr.response?.body || emailErr.message);
-        }
+        // Note: file attachments cannot be sent via Brevo REST API in this simple form,
+        // but the text-based query is sent and admins also get an in-app notification below.
 
-        // 4. Create Dashboard Notification for Admin
-        // We assume there's a generic way to notify admins or we drop it into the 'notification' table 
-        // targeted at all admins or a specific admin email.
-        // For now, let's find all admins and notify them (or just the main one)
-
-        // Fetch all admins
-        const admins = await prisma.admin.findMany(); // Assuming admin model exists
-
+        // Create Dashboard Notification for all Admins
+        const admins = await prisma.admin.findMany();
         if (admins.length > 0) {
             const notifications = admins.map(admin => ({
-                email: admin.email, // Targeted at admin email
+                email: admin.email,
                 title: `New Support Query: ${subject}`,
                 message: `From ${senderName} (${senderRole}): ${description.substring(0, 50)}...`,
                 type: "ALERT",
                 read: false,
                 createdAt: new Date()
             }));
-
-            await prisma.notification.createMany({
-                data: notifications
-            });
+            await prisma.notification.createMany({ data: notifications });
         }
 
         return res.status(200).json({ message: "Query submitted successfully. Admin has been notified." });
