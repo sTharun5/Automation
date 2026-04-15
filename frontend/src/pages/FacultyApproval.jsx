@@ -32,7 +32,7 @@ export default function FacultyApproval() {
     const [loading, setLoading] = useState(true);
     const [selectedOd, setSelectedOd] = useState(null);
     const [remarks, setRemarks] = useState("");
-    const [processing, setProcessing] = useState(false); // ✅ Added
+    const [processing, setProcessing] = useState(null); // null | 'APPROVE' | 'REJECT'
     const { showToast } = useToast();
 
     const fetchPendingODs = useCallback(async () => {
@@ -55,9 +55,9 @@ export default function FacultyApproval() {
 
     const handleUpdateStatus = async (id, status) => {
         if (processing) return;
-
+        const action = status === "REJECTED" ? "REJECT" : "APPROVE";
         try {
-            setProcessing(true);
+            setProcessing(action);
             await api.put(`/od/update-status/${id}`, { status, remarks });
             setSelectedOd(null);
             setRemarks("");
@@ -67,7 +67,7 @@ export default function FacultyApproval() {
             console.error(err);
             showToast("Failed to update status", "error");
         } finally {
-            setProcessing(false);
+            setProcessing(null);
         }
     };
 
@@ -238,7 +238,7 @@ export default function FacultyApproval() {
                                             <div className="flex gap-4">
                                                 <LoadingButton
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "REJECTED")}
-                                                    isLoading={processing}
+                                                    isLoading={processing === "REJECT"}
                                                     loadingText="Rejecting..."
                                                     className="flex-1 py-4 px-6 rounded-xl border-2 border-red-100 dark:border-red-900/30 text-red-600 font-black uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10"
                                                 >
@@ -246,7 +246,7 @@ export default function FacultyApproval() {
                                                 </LoadingButton>
                                                 <LoadingButton
                                                     onClick={() => handleUpdateStatus(selectedOd.id, "MENTOR_APPROVED")}
-                                                    isLoading={processing}
+                                                    isLoading={processing === "APPROVE"}
                                                     loadingText="Approving..."
                                                     className="flex-1 py-4 px-6 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-500/20"
                                                 >
