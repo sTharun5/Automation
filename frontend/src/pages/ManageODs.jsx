@@ -25,7 +25,10 @@ import {
     RefreshCcw,
     PieChart,
     Users,
-    ChevronLeft
+    ChevronLeft,
+    FileText,
+    X,
+    ExternalLink
 } from "lucide-react";
 
 /**
@@ -46,6 +49,7 @@ export default function ManageODs() {
     const [statusFilter, setStatusFilter] = useState("active"); // 'active' | 'history'
     const [loading, setLoading] = useState(false);
     const [tableLoading, setTableLoading] = useState(false);
+    const [docModal, setDocModal] = useState({ isOpen: false, loading: false, data: null });
     const { showToast } = useToast();
 
     // Modal State
@@ -57,6 +61,18 @@ export default function ManageODs() {
         isDanger: false,
         remarks: ""
     });
+
+    /* ================= DOCUMENT VIEWER ================= */
+    const handleViewDocuments = async (odId) => {
+        setDocModal({ isOpen: true, loading: true, data: null });
+        try {
+            const res = await api.get(`/od/admin/documents/${odId}`);
+            setDocModal({ isOpen: true, loading: false, data: res.data });
+        } catch (err) {
+            showToast("Failed to load documents", "error");
+            setDocModal({ isOpen: false, loading: false, data: null });
+        }
+    };
 
     /* ================= SEARCH / SELECT ================= */
 
@@ -807,6 +823,18 @@ export default function ManageODs() {
                                                                 </span>
                                                             )}
                                                         </td>
+                                                        {od.status === "APPROVED" && od.type === "INTERNSHIP" && (
+                                                            <td className="px-6 py-4">
+                                                                <button
+                                                                    onClick={() => handleViewDocuments(od.id)}
+                                                                    aria-label="View internship documents"
+                                                                    className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded transition-colors"
+                                                                >
+                                                                    <FileText className="w-3.5 h-3.5" />
+                                                                    View Docs
+                                                                </button>
+                                                            </td>
+                                                        )}
                                                     </tr>
                                                 ))}
                                                 {!tableLoading && filteredODs.length === 0 && (
@@ -894,7 +922,121 @@ export default function ManageODs() {
                     setConfirmModal({ ...confirmModal, isOpen: false })
                 }
             />
+
+            {/* ── Document Viewer Modal ── */}
+            {docModal.isOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                    onClick={() => setDocModal({ isOpen: false, loading: false, data: null })}
+                >
+                    <div
+                        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                                    <FileText className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                                        Internship Documents
+                                    </h2>
+                                    {docModal.data && (
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                            {docModal.data.student?.name} ({docModal.data.student?.rollNo}) &mdash; {docModal.data.company}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setDocModal({ isOpen: false, loading: false, data: null })}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                aria-label="Close document viewer"
+                            >
+                                <X className="w-5 h-5 text-slate-500" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6">
+                            {docModal.loading ? (
+                                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                                    <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                                    <p className="text-slate-500 text-sm">Loading documents…</p>
+                                </div>
+                            ) : docModal.data ? (
+                                <div className="space-y-6">
+                                    {/* Tracker info */}
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <span className="bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                                            {docModal.data.status}
+                                        </span>
+                                        <span>Tracker: <strong className="text-slate-700 dark:text-slate-300">#{docModal.data.trackerId}</strong></span>
+                                    </div>
+
+                                    {/* Document cards */}
+                                    {Object.values(docModal.data.documents).map((doc) => (
+                                        <div
+                                            key={doc.label}
+                                            className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
+                                        >
+                                            <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="w-4 h-4 text-indigo-500" />
+                                                    <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">
+                                                        {doc.label}
+                                                    </span>
+                                                </div>
+                                                {doc.available ? (
+                                                    <a
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-lg transition-colors"
+                                                    >
+                                                        <ExternalLink className="w-3.5 h-3.5" />
+                                                        Open PDF
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-xs text-red-500 italic">File deleted (OD was rejected)</span>
+                                                )}
+                                            </div>
+                                            {doc.available && (
+                                                <div className="bg-slate-100 dark:bg-slate-900">
+                                                    <iframe
+                                                        src={doc.url}
+                                                        title={doc.label}
+                                                        className="w-full h-72 border-0"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            )}
+                                            {!doc.available && (
+                                                <div className="flex items-center justify-center py-10 bg-red-50 dark:bg-red-900/10">
+                                                    <div className="text-center">
+                                                        <XCircle className="w-10 h-10 text-red-300 mx-auto mb-2" />
+                                                        <p className="text-sm text-red-500">Document not available</p>
+                                                        <p className="text-xs text-slate-400 mt-1">Files are deleted when an OD is rejected</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-slate-500">
+                                    No document data available.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </div>
     );
 }
+

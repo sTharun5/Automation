@@ -1134,6 +1134,27 @@ exports.updateOdStatus = async (req, res) => {
       }
     }
 
+    // ── On REJECTION: delete uploaded files from disk & null DB fields ──
+    if (status === "REJECTED") {
+      const odForFiles = await prisma.od.findUnique({
+        where: { id: Number(id) },
+        select: { proofFile: true, offerFile: true }
+      });
+      const filesToDelete = [odForFiles?.proofFile, odForFiles?.offerFile].filter(Boolean);
+      for (const filePath of filesToDelete) {
+        try {
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        } catch (e) {
+          console.error("File delete error:", filePath, e.message);
+        }
+      }
+      // Null out file references in DB
+      await prisma.od.update({
+        where: { id: Number(id) },
+        data: { proofFile: null, offerFile: null }
+      });
+    }
+
     return res.status(200).json({
       message: "OD status updated successfully",
       od: updatedOd
@@ -1144,6 +1165,75 @@ exports.updateOdStatus = async (req, res) => {
     return res.status(500).json({
       message: "Failed to update OD status"
     });
+  }
+};
+
+/* =====================================================
+   GET OD DOCUMENTS (ADMIN) — AIM + OFFER LETTER
+   Only available for APPROVED internship ODs
+===================================================== */
+exports.getODDocuments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const email = req.user.email;
+
+    const admin = await prisma.admin.findUnique({ where: { email } });
+    const faculty = await prisma.faculty.findUnique({ where: { email } });
+    if (!admin && !faculty) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const od = await prisma.od.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        trackerId: true,
+        status: true,
+        type: true,
+        proofFile: true,
+        offerFile: true,
+        student: { select: { name: true, rollNo: true } },
+        offer: { include: { company: true } }
+      }
+    });
+
+    if (!od) return res.status(404).json({ message: "OD not found" });
+    if (od.type !== "INTERNSHIP") {
+      return res.status(400).json({ message: "Documents only available for internship ODs" });
+    }
+
+    // Build publicly accessible URLs (files served via /uploads static)
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const toUrl = (filePath) => {
+      if (!filePath) return null;
+      // Replace Windows backslashes just in case
+      const normalized = filePath.replace(/\\/g, "/");
+      return `${baseUrl}/${normalized}`;
+    };
+
+    return res.json({
+      odId: od.id,
+      trackerId: od.trackerId,
+      status: od.status,
+      student: od.student,
+      company: od.offer?.company?.name || "Unknown",
+      documents: {
+        aimObjective: {
+          label: "AIM / Objective (ITI)",
+          url: toUrl(od.proofFile),
+          available: !!od.proofFile
+        },
+        offerLetter: {
+          label: "Offer Letter (ITO)",
+          url: toUrl(od.offerFile),
+          available: !!od.offerFile
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("GET OD DOCUMENTS ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch OD documents" });
   }
 };
 
@@ -1214,7 +1304,10 @@ exports.getStudentODs = async (req, res) => {
       ...od,
       studentName: od.student.name,
       studentRollNo: od.student.rollNo,
-      companyName: od.offer?.company?.name || "Unknown"
+      companyName: od.offer?.company?.name || "Unknown",
+      // Only expose file paths for APPROVED ODs
+      proofFile: od.status === "APPROVED" ? od.proofFile : undefined,
+      offerFile: od.status === "APPROVED" ? od.offerFile : undefined
     }));
 
     return res.json(mappedODs);

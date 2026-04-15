@@ -58,6 +58,8 @@ router.get("/admin/all", verifyToken, odController.getAllODs);
 router.get("/admin/company-stats", verifyToken, odController.getCompanyStats);
 router.get("/admin/company-placed", verifyToken, odController.getCompanyPlacedStudents);
 router.get("/admin/student/:studentId", verifyToken, odController.getStudentODs);
+router.get("/admin/documents/:id", verifyToken, odController.getODDocuments);
+
 
 // Dynamic routes (must come after static routes)
 router.get("/:id", verifyToken, odController.getOdById);
