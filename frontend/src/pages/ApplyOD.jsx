@@ -49,7 +49,26 @@ export default function ApplyOD() {
 
   // ✅ Internship Report Modal State
   const [showReportModal, setShowReportModal] = useState(false);
-  const [pendingODs, setPendingODs] = useState([]); // ✅ Store pending ODs
+  const [pendingODs, setPendingODs] = useState([]);
+
+  // ── IST live clock ──
+  const getISTNow = () =>
+    new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const [istNow, setIstNow] = useState(getISTNow);
+  useEffect(() => {
+    const t = setInterval(() => setIstNow(getISTNow()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const istTime = [
+    String(istNow.getHours()).padStart(2, "0"),
+    String(istNow.getMinutes()).padStart(2, "0"),
+    String(istNow.getSeconds()).padStart(2, "0")
+  ].join(":");
+  const istDate = [
+    String(istNow.getDate()).padStart(2, "0"),
+    String(istNow.getMonth() + 1).padStart(2, "0"),
+    istNow.getFullYear()
+  ].join(".");
 
   /* ================= LOAD CALENDAR EVENTS ================= */
   useEffect(() => {
@@ -386,6 +405,15 @@ export default function ApplyOD() {
           </div>
 
           {error && <p className="text-red-500 dark:text-red-400 mb-4 text-sm">{error}</p>}
+
+          {/* ── IST Clock — use this date in your filename ── */}
+          <div className="mb-5 flex items-center gap-3 bg-slate-900 dark:bg-slate-800 text-white rounded-xl px-5 py-3 w-fit select-none">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">IST</span>
+            <span className="font-mono text-lg font-bold tracking-wider text-emerald-400">{istTime}</span>
+            <span className="text-slate-500">•</span>
+            <span className="font-mono text-sm font-semibold text-slate-200">{istDate}</span>
+            <span className="text-xs text-slate-500 ml-1">← use this date in filename</span>
+          </div>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Aim & Objective <span className="text-red-500">*</span></label>
