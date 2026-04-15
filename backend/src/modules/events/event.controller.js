@@ -2,6 +2,8 @@ const { authenticator } = require('otplib');
 const qrcode = require('qrcode');
 
 const prisma = require("../../config/db");
+const sendEmail = require("../../utils/sendEmail");
+const notificationService = require('../notification/notification.service');
 
 
 // Configure TOTP constraints (30 second default window, but we update UI every 15)
@@ -47,6 +49,66 @@ exports.createInternalEvent = async (req, res) => {
                 studentCoordinatorId: studentCoordinatorId ? parseInt(studentCoordinatorId) : null
             }
         });
+
+        // ── Send notifications + emails to coordinators ──
+        const eventStart = new Date(startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        const eventEnd   = new Date(endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+        if (staffCoordinatorId) {
+            const fac = await prisma.faculty.findUnique({ where: { id: parseInt(staffCoordinatorId) } });
+            if (fac) {
+                await notificationService.createNotification(
+                    fac.email,
+                    `You are assigned as Staff Coordinator`,
+                    `You have been assigned as the Staff Coordinator for the internal event "${name}" (${eventStart} – ${eventEnd}). Please manage the student coordinator and approve the roster.`,
+                    "INFO"
+                );
+                await sendEmail(
+                    fac.email,
+                    `[SMART OD] You are assigned as Staff Coordinator — ${name}`,
+                    `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                        <h2 style="color:#4f46e5">📋 Staff Coordinator Assignment</h2>
+                        <p>Hello <strong>${fac.name}</strong>,</p>
+                        <p>You have been assigned as the <strong>Staff Coordinator</strong> for the internal event:</p>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                            <p style="margin:0 0 8px"><strong>Event:</strong> ${name}</p>
+                            <p style="margin:0 0 8px"><strong>Start:</strong> ${eventStart}</p>
+                            <p style="margin:0"><strong>End:</strong> ${eventEnd}</p>
+                        </div>
+                        <p>Please log in to manage the student coordinator and approve the roster once submitted.</p>
+                        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                    </div>`
+                );
+            }
+        }
+
+        if (studentCoordinatorId) {
+            const stu = await prisma.student.findUnique({ where: { id: parseInt(studentCoordinatorId) } });
+            if (stu) {
+                await notificationService.createNotification(
+                    stu.email,
+                    `You are assigned as Student Coordinator`,
+                    `You have been selected as the Student Coordinator for "${name}" (${eventStart} – ${eventEnd}). Please upload the participant roster in the Events section.`,
+                    "INFO"
+                );
+                await sendEmail(
+                    stu.email,
+                    `[SMART OD] You are assigned as Student Coordinator — ${name}`,
+                    `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                        <h2 style="color:#4f46e5">🎓 Student Coordinator Assignment</h2>
+                        <p>Hello <strong>${stu.name}</strong>,</p>
+                        <p>You have been selected as the <strong>Student Coordinator</strong> for:</p>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                            <p style="margin:0 0 8px"><strong>Event:</strong> ${name}</p>
+                            <p style="margin:0 0 8px"><strong>Start:</strong> ${eventStart}</p>
+                            <p style="margin:0"><strong>End:</strong> ${eventEnd}</p>
+                        </div>
+                        <p>Please log in to the student portal, navigate to <strong>My Events</strong>, and upload the participant roster before the event begins.</p>
+                        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                    </div>`
+                );
+            }
+        }
 
         res.status(201).json({
             message: "Internal Event successfully created.",
@@ -120,6 +182,67 @@ exports.editInternalEvent = async (req, res) => {
             where: { id: parseInt(eventId) },
             data: dataToUpdate
         });
+
+        const evtStart = new Date(updatedEvent.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        const evtEnd   = new Date(updatedEvent.endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+        // Notify new staff coordinator if changed
+        if (dataToUpdate.staffCoordinatorId && dataToUpdate.staffCoordinatorId !== event.staffCoordinatorId) {
+            const newFac = await prisma.faculty.findUnique({ where: { id: dataToUpdate.staffCoordinatorId } });
+            if (newFac) {
+                await notificationService.createNotification(
+                    newFac.email,
+                    `You are assigned as Staff Coordinator`,
+                    `You have been assigned as the Staff Coordinator for "${updatedEvent.name}" (${evtStart} – ${evtEnd}).`,
+                    "INFO"
+                );
+                await sendEmail(
+                    newFac.email,
+                    `[SMART OD] Staff Coordinator Assignment — ${updatedEvent.name}`,
+                    `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                        <h2 style="color:#4f46e5">📋 Staff Coordinator Assignment</h2>
+                        <p>Hello <strong>${newFac.name}</strong>,</p>
+                        <p>You have been assigned as the <strong>Staff Coordinator</strong> for:</p>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                            <p style="margin:0 0 8px"><strong>Event:</strong> ${updatedEvent.name}</p>
+                            <p style="margin:0 0 8px"><strong>Start:</strong> ${evtStart}</p>
+                            <p style="margin:0"><strong>End:</strong> ${evtEnd}</p>
+                        </div>
+                        <p>Please log in to manage the student coordinator and approve the roster.</p>
+                        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                    </div>`
+                );
+            }
+        }
+
+        // Notify new student coordinator if changed
+        if (dataToUpdate.studentCoordinatorId && dataToUpdate.studentCoordinatorId !== event.studentCoordinatorId) {
+            const newStu = await prisma.student.findUnique({ where: { id: dataToUpdate.studentCoordinatorId } });
+            if (newStu) {
+                await notificationService.createNotification(
+                    newStu.email,
+                    `You are assigned as Student Coordinator`,
+                    `You have been selected as the Student Coordinator for "${updatedEvent.name}" (${evtStart} – ${evtEnd}). Please upload the participant roster.`,
+                    "INFO"
+                );
+                await sendEmail(
+                    newStu.email,
+                    `[SMART OD] Student Coordinator Assignment — ${updatedEvent.name}`,
+                    `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                        <h2 style="color:#4f46e5">🎓 Student Coordinator Assignment</h2>
+                        <p>Hello <strong>${newStu.name}</strong>,</p>
+                        <p>You have been selected as the <strong>Student Coordinator</strong> for:</p>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                            <p style="margin:0 0 8px"><strong>Event:</strong> ${updatedEvent.name}</p>
+                            <p style="margin:0 0 8px"><strong>Start:</strong> ${evtStart}</p>
+                            <p style="margin:0"><strong>End:</strong> ${evtEnd}</p>
+                        </div>
+                        <p>Please log in and upload the participant roster before the event begins.</p>
+                        <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                    </div>`
+                );
+            }
+        }
 
         res.json({
             message: "Event updated successfully",

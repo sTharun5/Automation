@@ -1,5 +1,6 @@
 const prisma = require("../../config/db");
 const notificationService = require('../notification/notification.service');
+const sendEmail = require("../../utils/sendEmail");
 
 /* =====================================================
    STAFF: ASSIGN STUDENT COORDINATOR
@@ -49,12 +50,31 @@ exports.assignStudentCoordinator = async (req, res) => {
             }
         });
 
-        // 4. Notify Student
+        // 4. Notify + Email Student
+        const evtStart = new Date(event.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        const evtEnd   = new Date(event.endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
         await notificationService.createNotification(
             student.email,
             "Coordinator Assignment",
             `You have been designated as the Student Coordinator for ${event.name}. Please upload the participant roster.`,
             "INFO"
+        );
+        await sendEmail(
+            student.email,
+            `[SMART OD] You are assigned as Student Coordinator — ${event.name}`,
+            `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f8fafc;border-radius:12px">
+                <h2 style="color:#4f46e5">🎓 Student Coordinator Assignment</h2>
+                <p>Hello <strong>${student.name}</strong>,</p>
+                <p>Prof. <strong>${staff.name}</strong> has designated you as the <strong>Student Coordinator</strong> for:</p>
+                <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                    <p style="margin:0 0 8px"><strong>Event:</strong> ${event.name}</p>
+                    <p style="margin:0 0 8px"><strong>Start:</strong> ${evtStart}</p>
+                    <p style="margin:0"><strong>End:</strong> ${evtEnd}</p>
+                </div>
+                <p>Please log in to the student portal, go to <strong>My Events</strong>, and upload the participant roster before the event begins.</p>
+                <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+            </div>`
         );
 
         res.status(200).json({
@@ -115,13 +135,25 @@ exports.revokeStudentCoordinator = async (req, res) => {
             }
         });
 
-        // 3. Optional: Notify Student
+        // 3. Notify + Email Student
         if (event.studentCoordinator?.email) {
             await notificationService.createNotification(
                 event.studentCoordinator.email,
                 "Coordinator Role Revoked",
                 `Your coordinator access for the event "${event.name}" has been revoked by the staff in charge.`,
                 "WARNING"
+            );
+            await sendEmail(
+                event.studentCoordinator.email,
+                `[SMART OD] Your Coordinator Role has been Revoked — ${event.name}`,
+                `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#fff7f7;border-radius:12px;border-left:4px solid #ef4444">
+                    <h2 style="color:#dc2626">⚠️ Coordinator Role Revoked</h2>
+                    <p>Hello <strong>${event.studentCoordinator.name}</strong>,</p>
+                    <p>Your role as <strong>Student Coordinator</strong> for the event <strong>${event.name}</strong> has been revoked by the assigned staff.</p>
+                    ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+                    <p>Please contact your staff coordinator if you believe this is a mistake.</p>
+                    <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                </div>`
             );
         }
 
@@ -367,6 +399,27 @@ exports.approveRoster = async (req, res) => {
             await prisma.notification.createMany({ data: notifications });
         }
 
+        // 3. Email all rostered students their gate pass is ready
+        const emailPromises = provisionalOds.map(od =>
+            sendEmail(
+                od.student.email,
+                `[SMART OD] Your Gate Pass is Ready — ${event.name}`,
+                `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#f0fdf4;border-radius:12px;border-left:4px solid #22c55e">
+                    <h2 style="color:#16a34a">✅ Gate Pass Ready</h2>
+                    <p>Hello <strong>${od.student.name}</strong>,</p>
+                    <p>You are officially registered for:</p>
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+                        <p style="margin:0 0 8px"><strong>Event:</strong> ${event.name}</p>
+                        <p style="margin:0 0 8px"><strong>Start:</strong> ${new Date(event.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                        <p style="margin:0"><strong>End:</strong> ${new Date(event.endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                    </div>
+                    <p>Your <strong>Digital Gate Pass QR</strong> is now available on your student dashboard. Show it to your class teacher to get permission to attend.</p>
+                    <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                </div>`
+            )
+        );
+        await Promise.allSettled(emailPromises); // allSettled so one failed email doesn't block others
+
         res.status(200).json({
             message: "Roster officially approved. Digital Gate Passes generated for registered students.",
             approvedCount: provisionalOds.length
@@ -425,6 +478,46 @@ exports.revokeStaffCoordinator = async (req, res) => {
                 timeline: [...currentTimeline, logEntry]
             }
         });
+
+        // 3. Notify + Email revoked staff
+        await notificationService.createNotification(
+            event.staffCoordinator.email,
+            "Staff Coordinator Access Revoked",
+            `Your Staff Coordinator access for the event "${event.name}" has been revoked by the admin. Reason: ${reason || 'No reason provided.'}.`,
+            "WARNING"
+        );
+        await sendEmail(
+            event.staffCoordinator.email,
+            `[SMART OD] Your Staff Coordinator Access has been Revoked — ${event.name}`,
+            `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#fff7f7;border-radius:12px;border-left:4px solid #ef4444">
+                <h2 style="color:#dc2626">⚠️ Staff Coordinator Access Revoked</h2>
+                <p>Hello <strong>${event.staffCoordinator.name}</strong>,</p>
+                <p>Your role as <strong>Staff Coordinator</strong> for <strong>${event.name}</strong> has been revoked by an administrator.</p>
+                ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+                <p>If you believe this is an error, please contact the admin.</p>
+                <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+            </div>`
+        );
+
+        // 4. Notify + Email revoked student coordinator (if any)
+        if (event.studentCoordinator) {
+            await notificationService.createNotification(
+                event.studentCoordinator.email,
+                "Student Coordinator Access Revoked",
+                `Your Student Coordinator access for "${event.name}" has been removed along with the staff coordinator by an admin.`,
+                "WARNING"
+            );
+            await sendEmail(
+                event.studentCoordinator.email,
+                `[SMART OD] Your Coordinator Role has been Removed — ${event.name}`,
+                `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#fff7f7;border-radius:12px;border-left:4px solid #ef4444">
+                    <h2 style="color:#dc2626">⚠️ Coordinator Role Removed</h2>
+                    <p>Hello <strong>${event.studentCoordinator.name}</strong>,</p>
+                    <p>Your <strong>Student Coordinator</strong> role for <strong>${event.name}</strong> has been removed as the staff coordinator was revoked by an administrator.</p>
+                    <p style="color:#94a3b8;font-size:12px">— SMART OD System</p>
+                </div>`
+            );
+        }
 
         res.json({ message: `Access revoked for Prof. ${event.staffCoordinator.name} and their team.` });
 
