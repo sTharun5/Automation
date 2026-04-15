@@ -140,21 +140,24 @@ export default function ApplyOD() {
       return `Wrong document type: filename has "${fileType}", expected "${expectedType}". (Aim=ITI, Offer=ITO)`;
     }
 
-    // 5. Date must be today
+    // 5. Validate the date is a real calendar date.
+    //    ⚠️ Strict same-day check removed — IST users past midnight (UTC still
+    //    the previous day) were being falsely rejected. Actual internship date
+    //    validation is enforced by AI OCR on the document content itself.
     const [day, month, year] = fileDateStr.split(".").map(Number);
-    const fileDate  = new Date(year, month - 1, day);
-    const today     = new Date();
-    today.setHours(0, 0, 0, 0);
-    fileDate.setHours(0, 0, 0, 0);
-    if (fileDate.getTime() !== today.getTime()) {
-      const dd = String(today.getDate()).padStart(2, "0");
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const yyyy = today.getFullYear();
-      return `Filename date "${fileDateStr}" must be today (${dd}.${mm}.${yyyy}).`;
+    const fileDate = new Date(year, month - 1, day);
+    if (
+      isNaN(fileDate.getTime()) ||
+      fileDate.getFullYear() !== year ||
+      fileDate.getMonth() + 1 !== month ||
+      fileDate.getDate() !== day
+    ) {
+      return `Filename date "${fileDateStr}" is not a valid calendar date.`;
     }
 
     return ""; // ✅ All checks passed
   };
+
 
   const checkDateConflict = (startTime, endTime) => {
     if ((!startTime && !endTime) || !calendarEvents.length) return null;
