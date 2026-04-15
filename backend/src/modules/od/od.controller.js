@@ -681,7 +681,7 @@ exports.applyOD = async (req, res) => {
       if (aimResult.verificationDetails) {
         if (!aimResult.verificationDetails.name?.found)    fallbackReasons.push("Student Name not found in AIM/ITI file");
         if (!aimResult.verificationDetails.rollNo?.found)  fallbackReasons.push("Roll No not found in AIM/ITI file");
-        if (!aimResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in AIM/ITI file — wrong company document?");
+        if (!aimResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in AIM/ITI file — wrong company document?`);
         if (!aimResult.verificationDetails.dates?.startDateMatched)
           fallbackReasons.push(`Start Date (${startDate}) not found in AIM/ITI file — date mismatch`);
         if (!aimResult.verificationDetails.dates?.endDateMatched)
@@ -709,7 +709,7 @@ exports.applyOD = async (req, res) => {
       ocrFailed = true;
       if (offerResult.verificationDetails) {
         if (!offerResult.verificationDetails.name?.found)    fallbackReasons.push("Student Name not found in Offer Letter/ITO");
-        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in Offer Letter/ITO — wrong offer letter?");
+        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in Offer Letter/ITO — wrong offer letter?`);
       } else {
         fallbackReasons.push(offerResult.message || "Offer Letter/ITO PDF Parsing Error");
       }
