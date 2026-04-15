@@ -27,9 +27,9 @@ const searchStudentsService = async (query) => {
   return await prisma.student.findMany({
     where: {
       OR: [
-        { name: { contains: query } },
-        { rollNo: { contains: query } },
-        { email: { contains: query } }
+        { name: { contains: query, mode: 'insensitive' } },
+        { rollNo: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } }
       ]
     },
     take: 20,

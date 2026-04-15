@@ -1257,7 +1257,7 @@ exports.getAllODs = async (req, res) => {
     // Filter by Student Roll No
     if (rollNo) {
       whereClause.student = {
-        rollNo: { contains: rollNo }
+        rollNo: { contains: rollNo, mode: 'insensitive' }
       };
     }
 
@@ -1265,7 +1265,7 @@ exports.getAllODs = async (req, res) => {
     if (company) {
       whereClause.offer = {
         company: {
-          name: { contains: company }
+          name: { contains: company, mode: 'insensitive' }
         }
       };
     }
@@ -1332,7 +1332,7 @@ exports.getCompanyStats = async (req, res) => {
 
     const companies = await prisma.company.findMany({
       where: {
-        name: { contains: query }
+        name: { contains: query, mode: 'insensitive' }
       },
       take: 10,
       include: {

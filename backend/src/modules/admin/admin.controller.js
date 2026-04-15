@@ -171,9 +171,9 @@ exports.searchFaculty = async (req, res) => {
     const faculty = await prisma.faculty.findMany({
       where: {
         OR: [
-          { facultyId: { contains: query } },
-          { name: { contains: query } },
-          { email: { contains: query } }
+          { facultyId: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } }
         ]
       },
       take: 10
@@ -198,9 +198,9 @@ exports.searchStudents = async (req, res) => {
     const students = await prisma.student.findMany({
       where: {
         OR: [
-          { rollNo: { contains: query } },
-          { name: { contains: query } },
-          { email: { contains: query } }
+          { rollNo: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } }
         ]
       },
       take: 10
