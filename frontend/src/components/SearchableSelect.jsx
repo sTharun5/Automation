@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X } from 'lucide-react';
 
 
 /**
@@ -34,6 +35,8 @@ export default function SearchableSelect({
     const [filteredOptions, setFilteredOptions] = useState(options);
     const [isLoading, setIsLoading] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
+    // For async mode: persist the last selected option so the bar shows it after filteredOptions clears
+    const [asyncSelectedOption, setAsyncSelectedOption] = useState(null);
 
     const containerRef = useRef(null);
     const inputRef = useRef(null);
@@ -95,14 +98,26 @@ export default function SearchableSelect({
         }
     }, [activeIndex]);
 
-    const selectedOption = options.find(opt => opt.value === value) || (isAsync ? filteredOptions.find(opt => opt.value === value) : null);
+    // Sync mode: find from options prop. Async mode: use persisted asyncSelectedOption.
+    const selectedOption = isAsync
+        ? (asyncSelectedOption?.value === value ? asyncSelectedOption : null)
+        : options.find(opt => opt.value === value) || null;
 
     const handleSelect = (option) => {
         onChange(option.value, option);
+        if (isAsync) setAsyncSelectedOption(option); // persist for async display
         setQuery("");
         setIsOpen(false);
         setActiveIndex(-1);
     };
+
+    const handleClear = useCallback((e) => {
+        e.stopPropagation();
+        onChange("", null);
+        if (isAsync) setAsyncSelectedOption(null);
+        setQuery("");
+        setFilteredOptions(isAsync ? [] : options);
+    }, [onChange, isAsync, options]);
 
     const handleKeyDown = (e) => {
         if (!isOpen) {
@@ -165,8 +180,8 @@ export default function SearchableSelect({
                     ${error ? 'border-rose-500 ring-rose-500/10' : ''}
                 `}
             >
-                <div className="flex items-center gap-3 overflow-hidden">
-                    {selectedOption?.icon && <span className="text-lg grayscale group-hover:grayscale-0 transition-all">{selectedOption.icon}</span>}
+                <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
+                    {selectedOption?.icon && <span className="text-lg grayscale group-hover:grayscale-0 transition-all shrink-0">{selectedOption.icon}</span>}
                     <div className="flex flex-col truncate">
                         <span className={`text-sm font-bold truncate ${selectedOption ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
                             {selectedOption ? selectedOption.label : placeholder}
@@ -178,12 +193,25 @@ export default function SearchableSelect({
                         )}
                     </div>
                 </div>
-                <svg
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                </svg>
+                <div className="flex items-center gap-1 shrink-0">
+                    {/* Clear / Deselect button */}
+                    {selectedOption && !disabled && (
+                        <span
+                            role="button"
+                            aria-label="Clear selection"
+                            onClick={handleClear}
+                            className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 flex items-center justify-center text-slate-400 transition-colors cursor-pointer"
+                        >
+                            <X className="w-3 h-3" />
+                        </span>
+                    )}
+                    <svg
+                        className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
 
             {/* ERROR MESSAGE */}

@@ -164,7 +164,7 @@ export default function ManageInternalEvents() {
             showToast("Internal event created successfully!", "success");
             setIsCreating(false);
             fetchData();
-            setFormData({ name: '', startDate: '', endDate: '', allocatedHours: 2, maxParticipants: 0, staffCoordinatorId: '' });
+            setFormData({ name: '', startDate: '', endDate: '', allocatedHours: 2, maxParticipants: 0, staffCoordinatorId: '', studentCoordinatorId: '' });
         } catch (error) {
             showToast(error.response?.data?.message || "Failed to create event", "error");
         } finally {
