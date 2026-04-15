@@ -55,7 +55,7 @@ function buildDateVariants(date) {
   ];
 }
 
-async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true }) {
+async function verifyDocumentContent(filePath, studentName, studentRollNo, companyName, startDateStr, endDateStr, options = { checkRollNo: true, checkCompany: true, skipDates: false }) {
   try {
     const dataBuffer = await fs.promises.readFile(filePath); // async — no longer blocks event loop
     const data = await pdf(dataBuffer); // pdf-parse exports a function directly, not a class
@@ -163,9 +163,10 @@ async function verifyDocumentContent(filePath, studentName, studentRollNo, compa
     verificationDetails.dates.endDateMatched   = foundEndVariants.length > 0;
 
     // Both dates must be present in the document for a strict date match
-    const strictDatesMatched =
-      verificationDetails.dates.startDateMatched &&
-      verificationDetails.dates.endDateMatched;
+    // Only enforced for documents that are NOT flagged with skipDates
+    const strictDatesMatched = options.skipDates
+      ? true // Date check is skipped for this document
+      : verificationDetails.dates.startDateMatched && verificationDetails.dates.endDateMatched;
 
     // Determine overall success — dates are now part of the pass criteria
     const allPassed =
@@ -658,7 +659,10 @@ exports.applyOD = async (req, res) => {
     const offerFilePath = req.files.offerFile[0].path;
 
     /* ===== SMART OCR VERIFICATION ===== */
-    // 1. Verify AIM/OBJECTIVE (ITI) -> Strict Roll No Check
+    // 1. Verify AIM/OBJECTIVE (ITI)
+    //    Checks: Student Name ✅ | Roll No ✅ | Company Name ✅ | Start Date ✅ | End Date ✅
+    //    Rationale: The ITI (internship permission letter) must contain the student's details,
+    //               the target company, and the exact internship period.
     const aimResult = await verifyDocumentContent(
       aimFilePath,
       student.name,
@@ -666,7 +670,7 @@ exports.applyOD = async (req, res) => {
       companyNameForOCR,
       startDate,
       endDate,
-      { checkRollNo: true, checkCompany: false, docType: "AIM/ITI" }
+      { checkRollNo: true, checkCompany: true, skipDates: false, docType: "AIM/ITI" }
     );
 
     let ocrFailed = false;
@@ -675,19 +679,22 @@ exports.applyOD = async (req, res) => {
     if (!aimResult.success) {
       ocrFailed = true;
       if (aimResult.verificationDetails) {
-        if (!aimResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Aim/ITI File)");
-        if (!aimResult.verificationDetails.rollNo?.found) fallbackReasons.push("Roll No (in Aim/ITI File)");
-        // ✅ NEW: Strict date mismatch reporting for ITI
+        if (!aimResult.verificationDetails.name?.found)    fallbackReasons.push("Student Name not found in AIM/ITI file");
+        if (!aimResult.verificationDetails.rollNo?.found)  fallbackReasons.push("Roll No not found in AIM/ITI file");
+        if (!aimResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in AIM/ITI file — wrong company document?");
         if (!aimResult.verificationDetails.dates?.startDateMatched)
-          fallbackReasons.push(`Start Date (${startDate}) not found in Aim/ITI File — date mismatch`);
+          fallbackReasons.push(`Start Date (${startDate}) not found in AIM/ITI file — date mismatch`);
         if (!aimResult.verificationDetails.dates?.endDateMatched)
-          fallbackReasons.push(`End Date (${endDate}) not found in Aim/ITI File — date mismatch`);
+          fallbackReasons.push(`End Date (${endDate}) not found in AIM/ITI file — date mismatch`);
       } else {
-        fallbackReasons.push(aimResult.message || "Aim PDF Parsing Error");
+        fallbackReasons.push(aimResult.message || "AIM/ITI PDF Parsing Error");
       }
     }
 
-    // 2. Verify OFFER LETTER (ITO) -> Skip Roll No, Strict Company
+    // 2. Verify OFFER LETTER (ITO)
+    //    Checks: Student Name ✅ | Company Name ✅ | Dates ❌ (not checked — offer letters may
+    //            state offer/joining dates, not internship period dates)
+    //    Roll No ❌ (offer letters typically don't contain roll numbers)
     const offerResult = await verifyDocumentContent(
       offerFilePath,
       student.name,
@@ -695,21 +702,16 @@ exports.applyOD = async (req, res) => {
       companyNameForOCR,
       startDate,
       endDate,
-      { checkRollNo: false, checkCompany: true, docType: "OFFER/ITO" }
+      { checkRollNo: false, checkCompany: true, skipDates: true, docType: "OFFER/ITO" }
     );
 
     if (!offerResult.success) {
       ocrFailed = true;
       if (offerResult.verificationDetails) {
-        if (!offerResult.verificationDetails.name?.found) fallbackReasons.push("Student Name (in Offer/ITO Letter)");
-        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push("Company Name (in Offer/ITO Letter)");
-        // ✅ NEW: Strict date mismatch reporting for ITO
-        if (!offerResult.verificationDetails.dates?.startDateMatched)
-          fallbackReasons.push(`Start Date (${startDate}) not found in Offer/ITO Letter — date mismatch`);
-        if (!offerResult.verificationDetails.dates?.endDateMatched)
-          fallbackReasons.push(`End Date (${endDate}) not found in Offer/ITO Letter — date mismatch`);
+        if (!offerResult.verificationDetails.name?.found)    fallbackReasons.push("Student Name not found in Offer Letter/ITO");
+        if (!offerResult.verificationDetails.company?.found) fallbackReasons.push(`Company "${companyNameForOCR}" not found in Offer Letter/ITO — wrong offer letter?");
       } else {
-        fallbackReasons.push(offerResult.message || "Offer PDF Parsing Error");
+        fallbackReasons.push(offerResult.message || "Offer Letter/ITO PDF Parsing Error");
       }
     }
 
