@@ -554,22 +554,33 @@ exports.applyOD = async (req, res) => {
       }
 
       // Step 4: Date Check
-      const checkToday = new Date();
-      checkToday.setHours(0, 0, 0, 0);
+      // We enforce IST (UTC+5:30) via raw offset (19800000ms) to ensure the server's
+      // internal timezone (which is usually UTC in production) doesn't cause midnight drift.
+      const istNowForCheck = new Date(Date.now() + 19800000);
+      const todayDay = istNowForCheck.getUTCDate();
+      const todayMonth = istNowForCheck.getUTCMonth() + 1;
+      const todayYear = istNowForCheck.getUTCFullYear();
 
       const [day, month, year] = fileDate.split(".").map(Number);
-      const parsedFileDate = new Date(year, month - 1, day); // Month is 0-indexed
+      
+      // Basic calendar validity check
+      const parsedFileDate = new Date(year, month - 1, day);
+      if (
+        isNaN(parsedFileDate.getTime()) ||
+        parsedFileDate.getFullYear() !== year ||
+        parsedFileDate.getMonth() + 1 !== month ||
+        parsedFileDate.getDate() !== day
+      ) {
+        throw new Error(`Filename date ${fileDate} is not a valid calendar date.`);
+      }
 
-      if (parsedFileDate.getTime() !== checkToday.getTime()) {
-        const formatDate = (date) => {
-          const d = String(date.getDate()).padStart(2, '0');
-          const m = String(date.getMonth() + 1).padStart(2, '0');
-          const y = date.getFullYear();
-          return `${d}.${m}.${y}`;
-        };
-        const todayStr = formatDate(checkToday);
+      // Ensure that it perfectly matches the IST date (just like the frontend requires)
+      if (day !== todayDay || month !== todayMonth || year !== todayYear) {
+        const dd = String(todayDay).padStart(2, '0');
+        const mm = String(todayMonth).padStart(2, '0');
+        const todayStr = `${dd}.${mm}.${todayYear}`;
 
-        throw new Error(`Filename date ${fileDate} must be strictly today (${todayStr}).`);
+        throw new Error(`Filename date ${fileDate} must be exactly today's IST date (${todayStr}).`);
       }
 
       // Validation Passed
