@@ -1075,26 +1075,9 @@ exports.updateOdStatus = async (req, res) => {
       status = "APPROVED"; // Auto-promote to Final Approved
     }
 
-    // ✅ CONFLICT CHECK FOR APPROVAL (New)
-    if (status === "APPROVED") {
-      const overlapEvents = await prisma.calendarEvent.findMany({
-        where: {
-          type: "EXAM",
-          OR: [
-            {
-              startDate: { lte: od.endDate },
-              endDate: { gte: od.startDate }
-            }
-          ]
-        }
-      });
-
-      if (overlapEvents.length > 0) {
-        return res.status(400).json({
-          message: `Cannot approve OD. Conflict with Exam: "${overlapEvents[0].title}"`
-        });
-      }
-    }
+    // NOTE: Exam conflict is already enforced at application time (applyOD).
+    // Re-checking here would silently block mentor approvals for ODs that
+    // were validly submitted before a new exam was added to the calendar.
 
     // Update Timeline
     const currentTimeline = Array.isArray(od.timeline) ? od.timeline : [];

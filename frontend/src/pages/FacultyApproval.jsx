@@ -65,7 +65,7 @@ export default function FacultyApproval() {
             showToast(`OD ${status.toLowerCase()} successfully`, "success");
         } catch (err) {
             console.error(err);
-            showToast("Failed to update status", "error");
+            showToast(err?.response?.data?.message || "Failed to update status", "error");
         } finally {
             setProcessing(null);
         }
