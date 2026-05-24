@@ -337,7 +337,7 @@ export default function ManageInternalEvents() {
         if (!selectedEvent || approvingRoster) return;
         try {
             setApprovingRoster(true);
-            const res = await api.post(`/events/${selectedEvent.id}/roster/approve`);
+            const res = await api.post(`/events/${selectedEvent.id}/approve-roster`);
             showToast(res.data.message || "Roster approved successfully", "success");
             handleViewRoster(selectedEvent);
             fetchData();

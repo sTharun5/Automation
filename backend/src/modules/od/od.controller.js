@@ -1055,7 +1055,7 @@ exports.updateOdStatus = async (req, res) => {
     // Check if OD exists
     const od = await prisma.od.findUnique({
       where: { id: Number(id) },
-      include: { student: true }
+      include: { student: true, offer: { include: { company: true } } }
     });
     if (!od) {
       return res.status(404).json({ message: "OD not found" });
@@ -1110,9 +1110,10 @@ exports.updateOdStatus = async (req, res) => {
       where: { id: Number(id) },
       data: {
         status,
+        remarks: remarks || undefined,
         timeline: [...currentTimeline, newEvent]
       },
-      include: { student: true }
+      include: { student: true, offer: { include: { company: true } } }
     });
 
     // Handle ERP Sync asynchronously if Approved
@@ -1150,13 +1151,14 @@ exports.updateOdStatus = async (req, res) => {
 
       // ✅ Send Email for APPROVED / REJECTED (Non-blocking)
       if (status === "APPROVED" || status === "REJECTED") {
+        const companyName = od.offer?.company?.name || "Internship";
         sendEmail(
           od.student.email,
-          `OD Request ${status}: ${od.companyName || "Application"}`,
+          `OD Request ${status}: ${companyName}`,
           `<div style="font-family: Arial, sans-serif; color: #333;">
               <h2>OD Status Update</h2>
               <p>Dear ${od.student.name},</p>
-              <p>Your OD request (Tracker: #${od.trackerId}) for <strong>${od.companyName || "Internship"}</strong> has been <strong>${status}</strong>.</p>
+              <p>Your OD request (Tracker: #${od.trackerId}) for <strong>${companyName}</strong> has been <strong>${status}</strong>.</p>
               <br/>
               <p><strong>Remarks:</strong> ${remarks || "No remarks provided."}</p>
               <br/>
@@ -1283,7 +1285,10 @@ exports.getMentorODs = async (req, res) => {
             ods: {
               where: { status: { in: ["PENDING", "DOCS_VERIFIED", "MENTOR_APPROVED"] } },
               orderBy: { createdAt: "desc" },
-              include: { student: true }
+              include: {
+                student: true,
+                offer: { include: { company: true } }
+              }
             }
           }
         }
